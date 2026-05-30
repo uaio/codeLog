@@ -1,4 +1,4 @@
-import type { StorageSnapshot } from '../types/index.js';
+import type { StorageSnapshot, CookieEntry } from '../types/index.js';
 
 export type StorageReportCallback = (snapshot: Omit<StorageSnapshot, 'deviceId' | 'tabId'>) => void;
 
@@ -34,12 +34,12 @@ export class StorageReader {
   }
 
   /** 读取并上报存储快照（可手动触发） */
-  readAndReport(): void {
+  async readAndReport(): Promise<void> {
     try {
-      const snapshot = this.readStorage();
+      const snapshot = await this.readStorage();
       this.onReport(snapshot);
     } catch (error) {
-      console.error('[openLog] Failed to read storage:', error);
+      console.error('[codeLog] Failed to read storage:', error);
     }
   }
 
@@ -69,7 +69,7 @@ export class StorageReader {
   }
 
   /** 读取存储数据 */
-  readStorage(): Omit<StorageSnapshot, 'deviceId' | 'tabId'> {
+  async readStorage(): Promise<Omit<StorageSnapshot, 'deviceId' | 'tabId'>> {
     const localStorageData: Record<string, string> = {};
     const sessionStorageData: Record<string, string> = {};
     let localStorageSize = 0;
@@ -102,8 +102,26 @@ export class StorageReader {
     }
 
     let cookies = '';
+    let cookieEntries: CookieEntry[] | undefined;
     try {
       cookies = document.cookie;
+
+      // cookieStore API (Chrome 87+) 提供完整属性：path / domain / expires / secure / sameSite
+      if (typeof window !== 'undefined' && 'cookieStore' in window) {
+        const rawList = await (window as any).cookieStore.getAll() as Array<{
+          name: string; value: string; path?: string; domain?: string;
+          expires?: number | null; secure?: boolean; sameSite?: string;
+        }>;
+        cookieEntries = rawList.map((c) => ({
+          name: c.name,
+          value: c.value,
+          path: c.path,
+          domain: c.domain,
+          expires: c.expires != null ? new Date(c.expires).toISOString() : undefined,
+          secure: c.secure,
+          sameSite: c.sameSite as CookieEntry['sameSite'],
+        }));
+      }
     } catch {
       // ignore
     }
@@ -113,6 +131,7 @@ export class StorageReader {
       localStorage: localStorageData,
       sessionStorage: sessionStorageData,
       cookies,
+      cookieEntries,
       localStorageSize,
       sessionStorageSize,
     };
@@ -123,7 +142,7 @@ export class StorageReader {
   private debouncedReport(): void {
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
     this.debounceTimer = setTimeout(() => {
-      this.readAndReport();
+      void this.readAndReport();
     }, 200);
   }
 

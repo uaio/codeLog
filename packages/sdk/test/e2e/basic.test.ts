@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { OpenLog } from '../../src/index.js';
+import { CodeLog } from '../../src/index.js';
 
 // Mock browser APIs
 const mockLocation = {
@@ -42,8 +42,8 @@ vi.stubGlobal('window', {
 vi.stubGlobal('navigator', mockNavigator);
 vi.stubGlobal('localStorage', mockLocalStorage);
 
-describe('OpenLog E2E', () => {
-  let openlog: OpenLog;
+describe('CodeLog E2E', () => {
+  let codelog: CodeLog;
   let originalLog: typeof globalThis.console.log;
   let originalWarn: typeof globalThis.console.warn;
   let originalError: typeof globalThis.console.error;
@@ -64,8 +64,8 @@ describe('OpenLog E2E', () => {
 
   afterEach(() => {
     // Destroy console instance
-    if (openlog) {
-      openlog.destroy();
+    if (codelog) {
+      codelog.destroy();
     }
 
     // Restore console methods
@@ -79,18 +79,18 @@ describe('OpenLog E2E', () => {
 
   describe('Initialization', () => {
     it('should initialize with required projectId', () => {
-      openlog = new OpenLog({
+      codelog = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080'
       });
 
-      expect(openlog).toBeDefined();
-      expect(openlog.isRemoteEnabled()).toBe(true);
+      expect(codelog).toBeDefined();
+      expect(codelog.isRemoteEnabled()).toBe(true);
     });
 
     it('should throw error without projectId', () => {
       expect(() => {
-        openlog = new OpenLog({
+        codelog = new CodeLog({
           server: 'ws://localhost:8080'
         } as any);
       }).toThrow('projectId is required');
@@ -99,13 +99,13 @@ describe('OpenLog E2E', () => {
     it('should warn when multiple instances detected', () => {
       const warnSpy = vi.spyOn(globalThis.console, 'warn');
 
-      openlog = new OpenLog({
+      codelog = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080'
       });
 
       // Creating second instance should warn
-      const console2 = new OpenLog({
+      const console2 = new CodeLog({
         projectId: 'test-project-2',
         server: 'ws://localhost:8080'
       });
@@ -120,7 +120,7 @@ describe('OpenLog E2E', () => {
 
   describe('Console Interception', () => {
     beforeEach(() => {
-      openlog = new OpenLog({
+      codelog = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080'
       });
@@ -191,33 +191,33 @@ describe('OpenLog E2E', () => {
 
   describe('Remote Control', () => {
     beforeEach(() => {
-      openlog = new OpenLog({
+      codelog = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080'
       });
     });
 
     it('should disable remote monitoring', () => {
-      openlog.disableRemote();
+      codelog.disableRemote();
 
-      expect(openlog.isRemoteEnabled()).toBe(false);
-      expect(mockLocalStorage.getItem('openlog_remote_test-project')).toBe('false');
+      expect(codelog.isRemoteEnabled()).toBe(false);
+      expect(mockLocalStorage.getItem('codelog_remote_test-project')).toBe('false');
     });
 
     it('should enable remote monitoring', () => {
-      openlog.disableRemote();
-      expect(openlog.isRemoteEnabled()).toBe(false);
+      codelog.disableRemote();
+      expect(codelog.isRemoteEnabled()).toBe(false);
 
-      openlog.enableRemote();
+      codelog.enableRemote();
 
-      expect(openlog.isRemoteEnabled()).toBe(true);
+      expect(codelog.isRemoteEnabled()).toBe(true);
     });
 
     it('should respect localStorage preference on init', () => {
       // Set preference to disabled
-      mockLocalStorage.setItem('openlog_remote_test-project', 'false');
+      mockLocalStorage.setItem('codelog_remote_test-project', 'false');
 
-      const testConsole = new OpenLog({
+      const testConsole = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080'
       });
@@ -236,7 +236,7 @@ describe('OpenLog E2E', () => {
 
   describe('Lifecycle', () => {
     it('should cleanup resources on destroy', () => {
-      openlog = new OpenLog({
+      codelog = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080'
       });
@@ -244,7 +244,7 @@ describe('OpenLog E2E', () => {
       // Call some console methods to ensure interception is active
       globalThis.console.log('Before destroy');
 
-      openlog.destroy();
+      codelog.destroy();
 
       // After destroy, console methods should be restored to original
       // Verify we can call console methods without errors
@@ -254,21 +254,21 @@ describe('OpenLog E2E', () => {
     });
 
     it('should handle multiple destroy calls safely', () => {
-      openlog = new OpenLog({
+      codelog = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080'
       });
 
       expect(() => {
-        openlog.destroy();
-        openlog.destroy(); // Second destroy should be safe
+        codelog.destroy();
+        codelog.destroy(); // Second destroy should be safe
       }).not.toThrow();
     });
   });
 
   describe('Custom Configuration', () => {
     it('should accept custom heartbeat interval', () => {
-      const testConsole = new OpenLog({
+      const testConsole = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080',
         heartbeatInterval: 5000
@@ -280,7 +280,7 @@ describe('OpenLog E2E', () => {
     });
 
     it('should accept network configuration', () => {
-      const testConsole = new OpenLog({
+      const testConsole = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080',
         network: { enabled: true, ignoreUrls: ['/health'] }
@@ -294,7 +294,7 @@ describe('OpenLog E2E', () => {
 
   describe('Error Handling', () => {
     it('should not throw when reporter fails', () => {
-      openlog = new OpenLog({
+      codelog = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080'
       });
@@ -306,7 +306,7 @@ describe('OpenLog E2E', () => {
     });
 
     it('should handle malformed arguments gracefully', () => {
-      openlog = new OpenLog({
+      codelog = new CodeLog({
         projectId: 'test-project',
         server: 'ws://localhost:8080'
       });

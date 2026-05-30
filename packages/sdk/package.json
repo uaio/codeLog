@@ -1,9 +1,9 @@
 {
-  "name": "@openlogs/sdk",
+  "name": "@codelog/sdk",
   "version": "0.2.1",
-  "description": "Mobile H5 SDK for openLog — real-time console, network, storage, DOM, performance collection",
+  "description": "Mobile H5 SDK for codeLog — real-time console, network, storage, DOM, performance collection",
   "keywords": [
-    "openlog",
+    "codelog",
     "sdk",
     "mobile-debugging",
     "h5",
@@ -12,14 +12,14 @@
     "performance",
     "eruda"
   ],
-  "author": "openLog Contributors",
+  "author": "codeLog Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uaio/openLog.git",
+    "url": "https://github.com/uaio/codeLog.git",
     "directory": "packages/sdk"
   },
-  "homepage": "https://github.com/uaio/openLog/tree/main/packages/sdk",
+  "homepage": "https://github.com/uaio/codeLog/tree/main/packages/sdk",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -43,8 +43,8 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "@openlogs/eruda": "workspace:*",
-    "@openlogs/types": "workspace:*",
+    "@codelog/eruda": "workspace:*",
+    "@codelog/types": "workspace:*",
     "vite": "^5.0.0",
     "vite-plugin-dts": "^3.7.0",
     "vitest": "^1.6.0",

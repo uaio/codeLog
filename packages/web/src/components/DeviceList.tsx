@@ -9,6 +9,50 @@ interface DeviceListProps {
   selectedDeviceId?: string;
 }
 
+/** Parse UA string to a short browser/OS label */
+function parseUA(ua: string): string {
+  if (!ua || ua.startsWith('ingest/')) return ua;
+  // Chrome
+  const chrome = ua.match(/Chrome\/(\d+)/);
+  const safari = ua.match(/Safari\/(\d+)/);
+  const firefox = ua.match(/Firefox\/(\d+)/);
+  const edge = ua.match(/Edg\/(\d+)/);
+  const mobile = /Mobile|Android|iPhone|iPad/.test(ua);
+  const platform = /iPhone/.test(ua)
+    ? 'iPhone'
+    : /iPad/.test(ua)
+      ? 'iPad'
+      : /Android/.test(ua)
+        ? 'Android'
+        : /Macintosh/.test(ua)
+          ? 'macOS'
+          : /Windows/.test(ua)
+            ? 'Windows'
+            : /Linux/.test(ua)
+              ? 'Linux'
+              : '';
+
+  const browser = edge
+    ? `Edge ${edge[1]}`
+    : chrome && !safari
+      ? `Chrome ${chrome[1]}`
+      : safari && !chrome
+        ? `Safari`
+        : firefox
+          ? `Firefox ${firefox[1]}`
+          : 'Browser';
+
+  return [platform, browser, mobile && !platform ? '📱' : ''].filter(Boolean).join(' · ');
+}
+
+function formatTime(ms: number): string {
+  const diff = Date.now() - ms;
+  if (diff < 60_000) return '刚刚';
+  if (diff < 3600_000) return `${Math.floor(diff / 60_000)}分钟前`;
+  if (diff < 86400_000) return `${Math.floor(diff / 3600_000)}小时前`;
+  return new Date(ms).toLocaleString();
+}
+
 export function DeviceList({ projectId, onSelectDevice, selectedDeviceId }: DeviceListProps) {
   const { devices, loading, selectedId, setSelectedId } = useDevices(projectId);
   const { t } = useI18n();
@@ -59,39 +103,59 @@ export function DeviceList({ projectId, onSelectDevice, selectedDeviceId }: Devi
                   <span style={styles.groupCount}>{groupDevices.length}</span>
                 </div>
               )}
-              {groupDevices.map((device) => (
-                <div
-                  key={device.deviceId}
-                  onClick={() => handleSelect(device)}
-                  style={{
-                    ...styles.deviceItem,
-                    ...(currentSelectedId === device.deviceId ? styles.selected : {}),
-                    ...(device.online ? styles.onlineBorder : styles.offlineBorder),
-                  }}
-                >
-                  <div style={styles.deviceInfo}>
-                    <div style={styles.deviceName}>{device.ua}</div>
-                    <div style={styles.deviceDetails}>
-                      {device.screen} · {device.language}
+              {groupDevices.map((device) => {
+                const isSelected = currentSelectedId === device.deviceId;
+                const parsedUA = parseUA(device.ua);
+                return (
+                  <div
+                    key={device.deviceId}
+                    onClick={() => handleSelect(device)}
+                    style={{
+                      ...styles.deviceItem,
+                      ...(isSelected ? styles.selected : {}),
+                      ...(isSelected
+                        ? {}
+                        : device.online
+                          ? styles.onlineBorder
+                          : styles.offlineBorder),
+                    }}
+                    title={device.ua}
+                  >
+                    <div style={styles.deviceInfo}>
+                      <div style={styles.deviceName}>{parsedUA || device.ua}</div>
+                      <div style={styles.deviceDetails}>
+                        📐 {device.screen}
+                        {device.pixelRatio > 1 ? ` @${device.pixelRatio}x` : ''}
+                        {' · '}
+                        🌐 {device.language}
+                      </div>
+                      <div style={styles.deviceFooter}>
+                        {!hasMultipleProjects && (
+                          <span style={styles.projectBadge}>{device.projectId}</span>
+                        )}
+                        <span style={styles.connectTime}>
+                          🕐 {formatTime(device.connectTime)}
+                        </span>
+                        {device.activeTabs > 1 && (
+                          <span style={styles.tabBadge}>{device.activeTabs} tabs</span>
+                        )}
+                      </div>
                     </div>
-                    {!hasMultipleProjects && (
-                      <div style={styles.projectBadge}>{device.projectId}</div>
-                    )}
-                  </div>
 
-                  <div style={styles.deviceMeta}>
-                    <div
-                      style={{
-                        ...styles.status,
-                        backgroundColor: device.online ? '#f6ffed' : '#fff2f0',
-                        color: device.online ? '#52c41a' : '#ff4d4f',
-                      }}
-                    >
-                      {device.online ? t.common.online : t.common.offline}
+                    <div style={styles.deviceMeta}>
+                      <div
+                        style={{
+                          ...styles.status,
+                          backgroundColor: device.online ? '#f6ffed' : '#fff2f0',
+                          color: device.online ? '#52c41a' : '#ff4d4f',
+                        }}
+                      >
+                        {device.online ? t.common.online : t.common.offline}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ))}
         </div>
@@ -163,8 +227,8 @@ const styles = {
   deviceItem: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px',
+    alignItems: 'flex-start',
+    padding: '10px 12px',
     marginBottom: '6px',
     backgroundColor: '#fff',
     borderRadius: '6px',
@@ -175,6 +239,7 @@ const styles = {
   selected: {
     borderLeftColor: '#1890ff',
     boxShadow: '0 2px 8px rgba(24, 144, 255, 0.15)',
+    backgroundColor: '#f0f7ff',
   },
   onlineBorder: {
     borderLeftColor: '#52c41a',
@@ -196,11 +261,17 @@ const styles = {
   },
   deviceDetails: {
     fontSize: '11px',
-    color: '#999',
+    color: '#888',
+    marginBottom: '3px',
+  },
+  deviceFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    flexWrap: 'wrap' as const,
   },
   projectBadge: {
     display: 'inline-block',
-    marginTop: '3px',
     fontSize: '10px',
     color: '#8c8c8c',
     backgroundColor: '#f0f0f0',
@@ -208,16 +279,30 @@ const styles = {
     borderRadius: '3px',
     fontFamily: 'monospace',
   },
+  connectTime: {
+    fontSize: '10px',
+    color: '#aaa',
+  },
+  tabBadge: {
+    fontSize: '10px',
+    color: '#1890ff',
+    backgroundColor: '#e6f7ff',
+    padding: '1px 5px',
+    borderRadius: '3px',
+  },
   deviceMeta: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'flex-end',
     gap: '4px',
+    marginLeft: '8px',
+    flexShrink: 0,
   },
   status: {
     fontSize: '11px',
     padding: '2px 8px',
     borderRadius: '10px',
     fontWeight: 500,
+    whiteSpace: 'nowrap' as const,
   },
 };

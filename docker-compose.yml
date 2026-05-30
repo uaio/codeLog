@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  codelog:
+    image: codelog-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: codelog
+    restart: unless-stopped
+    ports:
+      - "${PORT:-38291}:38291"
+    volumes:
+      - codelog-data:/data
+    environment:
+      - NODE_ENV=production
+      # Optional: restrict CORS origins (comma-separated)
+      - CODELOG_CORS_ORIGIN=${CODELOG_CORS_ORIGIN:-}
+      # Optional: API key for authentication
+      - CODELOG_API_KEY=${CODELOG_API_KEY:-}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:38291/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  codelog-data:
+    driver: local

@@ -1,7 +1,7 @@
 ---
 layout: home
 hero:
-  name: openLog
+  name: codeLog
   text: Frontend H5 Monitoring for AI Agents
   tagline: Real-time data collection, PC visualization, AI-queryable — embed one line, debug from anywhere
   actions:
@@ -10,7 +10,7 @@ hero:
       link: /guide/
     - theme: alt
       text: View on GitHub
-      link: https://github.com/uaio/openLog
+      link: https://github.com/uaio/codeLog
 features:
   - icon: 📝
     title: Console Logs

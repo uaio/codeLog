@@ -3,10 +3,10 @@ import { wsClient } from '../ws-client.js';
 import { API_BASE_URL } from '../config.js';
 import { ensureSdk } from './ensure_sdk.js';
 
-export const startOpenlog = {
-  name: 'start_openlog',
+export const startCodelog = {
+  name: 'start_codelog',
   description:
-    'Start the openLog monitoring server, establish WebSocket connection, and auto-detect whether the user project has the SDK integrated. Returns server addresses and SDK status.',
+    'Start the codeLog monitoring server, establish WebSocket connection, and auto-detect whether the user project has the SDK integrated. Returns server addresses and SDK status.',
   inputSchema: {
     type: 'object' as const,
     properties: {
@@ -45,15 +45,15 @@ export const startOpenlog = {
       url,
       sdkStatus,
       message: sdkStatus.detected
-        ? `openLog server started at ${url}. SDK is already integrated. Use list_devices to check connected devices.`
-        : `openLog server started at ${url}. SDK is NOT yet integrated in the project. Follow the instructions in sdkStatus to inject it.`,
+        ? `codeLog server started at ${url}. SDK is already integrated. Use list_devices to check connected devices.`
+        : `codeLog server started at ${url}. SDK is NOT yet integrated in the project. Follow the instructions in sdkStatus to inject it.`,
     };
   },
 };
 
-export const stopOpenlog = {
-  name: 'stop_openlog',
-  description: '停止 openLog 监控服务并断开 WebSocket 连接。在不再需要监控时调用。',
+export const stopCodelog = {
+  name: 'stop_codelog',
+  description: '停止 codeLog 监控服务并断开 WebSocket 连接。在不再需要监控时调用。',
   inputSchema: {
     type: 'object' as const,
     properties: {},
@@ -65,7 +65,7 @@ export const stopOpenlog = {
 
     return {
       status: 'stopped',
-      message: 'openLog 服务已关闭，WebSocket 连接已断开。',
+      message: 'codeLog 服务已关闭，WebSocket 连接已断开。',
     };
   },
 };

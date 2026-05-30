@@ -20,7 +20,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('[openLog Web] Uncaught error:', error, errorInfo);
+    console.error('[codeLog Web] Uncaught error:', error, errorInfo);
   }
 
   render() {

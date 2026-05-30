@@ -8,7 +8,7 @@ export interface PersistenceOptions {
   retentionDays?: number;
 }
 
-const DEFAULT_DB_DIR = join(homedir(), '.openlog');
+const DEFAULT_DB_DIR = join(homedir(), '.codelog');
 const DEFAULT_DB_PATH = join(DEFAULT_DB_DIR, 'data.db');
 const DEFAULT_RETENTION_DAYS = 1;
 

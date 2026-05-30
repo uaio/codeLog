@@ -10,6 +10,8 @@ export interface Locale {
     analysis: string;
     settings: string;
     mock: string;
+    system: string;
+    indexeddb: string;
   };
   // Common
   common: {

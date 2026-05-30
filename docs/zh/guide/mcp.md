@@ -1,11 +1,11 @@
 # MCP 集成
 
-openLog 包含一个 Model Context Protocol（MCP）服务器，使 AI 助手能够与调试数据进行交互。
+codeLog 包含一个 Model Context Protocol（MCP）服务器，使 AI 助手能够与调试数据进行交互。
 
 ## 设置
 
 ```bash
-npx @openlogs/mcp
+npx @codelog/mcp
 ```
 
 或者添加到你的 MCP 客户端配置中：
@@ -13,9 +13,9 @@ npx @openlogs/mcp
 ```json
 {
   "mcpServers": {
-    "openlog": {
+    "codelog": {
       "command": "npx",
-      "args": ["@openlogs/mcp"]
+      "args": ["@codelog/mcp"]
     }
   }
 }
@@ -101,8 +101,8 @@ npx @openlogs/mcp
 | `init_dev_session` | 初始化开发会话 |
 | `get_checkpoints` | 获取所有检查点标记 |
 | `verify_checkpoint` | 验证指定的检查点 |
-| `start_openlog` | 启动 openLog 服务器 |
-| `stop_openlog` | 停止 openLog 服务器 |
+| `start_codelog` | 启动 codeLog 服务器 |
+| `stop_codelog` | 停止 codeLog 服务器 |
 
 ## 示例提示
 
@@ -112,14 +112,14 @@ npx @openlogs/mcp
 - "哪些网络请求失败了？"
 - "分析当前页面的性能"
 - "localStorage 中存储了什么？"
-- "帮我在 React 项目中设置 openLog"
+- "帮我在 React 项目中设置 codeLog"
 
 ## SDK 自动注入
 
-`ensure_sdk` 工具可以自动检测你的项目框架并添加 openLog SDK：
+`ensure_sdk` 工具可以自动检测你的项目框架并添加 codeLog SDK：
 
 ```
-> 使用 ensure_sdk 工具将 openLog 添加到我的项目中
+> 使用 ensure_sdk 工具将 codeLog 添加到我的项目中
 ```
 
 支持的框架：React、Vue、Next.js、原生 HTML 等。

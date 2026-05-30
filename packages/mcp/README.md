@@ -1,11 +1,11 @@
-# @openlogs/mcp
+# @codelog/mcp
 
-> MCP (Model Context Protocol) server for openLog — 30+ AI-callable tools for real-device debugging.
+> MCP (Model Context Protocol) server for codeLog — 30+ AI-callable tools for real-device debugging.
 
 ## Installation
 
 ```bash
-npm install @openlogs/mcp
+npm install @codelog/mcp
 ```
 
 ## Setup
@@ -13,7 +13,7 @@ npm install @openlogs/mcp
 ### Auto-detection (Recommended)
 
 ```bash
-npx @openlogs/cli init
+npx @codelog/cli init
 # Auto-detects Claude Code / Cursor / Windsurf and writes MCP config
 ```
 
@@ -24,9 +24,9 @@ Add to your MCP config:
 ```json
 {
   "mcpServers": {
-    "openlog": {
+    "codelog": {
       "command": "npx",
-      "args": ["-y", "@openlogs/cli", "--mcp"]
+      "args": ["-y", "@codelog/cli", "--mcp"]
     }
   }
 }
@@ -47,7 +47,7 @@ Add to your MCP config:
 | `get_network_requests` | Get network request history |
 | `get_storage` | Get storage snapshot |
 | `get_page_context` | Get current page URL and metadata |
-| `get_checkpoints` | Get `@openlog[checkpoint]` verification data |
+| `get_checkpoints` | Get `@codelog[checkpoint]` verification data |
 
 ### Remote Actions
 | Tool | Description |
@@ -94,18 +94,18 @@ Add to your MCP config:
 ### Lifecycle
 | Tool | Description |
 |------|-------------|
-| `start_openlog` | Start the openLog server |
-| `stop_openlog` | Stop the openLog server |
+| `start_codelog` | Start the codeLog server |
+| `stop_codelog` | Stop the codeLog server |
 | `ensure_sdk` | Auto-detect and inject SDK into user project |
 
 ## Development
 
 ```bash
-pnpm --filter @openlogs/mcp dev    # Watch mode
-pnpm --filter @openlogs/mcp build  # Build
-pnpm --filter @openlogs/mcp test   # Run tests
+pnpm --filter @codelog/mcp dev    # Watch mode
+pnpm --filter @codelog/mcp build  # Build
+pnpm --filter @codelog/mcp test   # Run tests
 ```
 
 ## License
 
-MIT © [openLog](https://github.com/uaio/openLog)
+MIT © [codeLog](https://github.com/uaio/codeLog)

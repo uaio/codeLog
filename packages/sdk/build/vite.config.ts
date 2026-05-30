@@ -9,16 +9,16 @@ export default defineConfig({
     },
     lib: {
       entry: './src/index.ts',
-      name: 'OpenLog',
+      name: 'CodeLog',
       formats: ['es', 'cjs', 'iife'],
       fileName: (format) => {
         if (format === 'es') return 'index.js';
         if (format === 'cjs') return 'index.cjs';
-        return 'openlog.iife.js'; // CDN 专用产物
+        return 'codelog.iife.js'; // CDN 专用产物
       }
     },
     rollupOptions: {
-      external: ['@openlogs/eruda'],
+      external: ['@codelog/eruda'],
       input: {
         index: './src/index.ts'
       },

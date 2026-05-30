@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Persistence Tests** — 16 unit tests for SQLite storage layer
 - **VitePress Documentation Site** — Full docs with guides and API reference
 - **CI/CD Workflows** — GitHub Actions for lint/build/test, npm publish, docs deploy
-- **Claude Code Slash Commands** — `/openlog:start`, `/openlog:stop`, `/openlog:logs`, etc.
+- **Claude Code Slash Commands** — `/codelog:start`, `/codelog:stop`, `/codelog:logs`, etc.
 - **`ensure_sdk` MCP Tool** — Auto-detect and inject SDK into user projects
 - **Network Throttling** — Simulate 3G/4G/offline from PC panel or AI tools
 - **XHR Mock Support** — API mocking now works for both Fetch and XMLHttpRequest
@@ -49,16 +49,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of openLog monorepo
-- `@openlogs/sdk` — Mobile H5 SDK with console, network, storage, DOM, performance, error, and screenshot collectors
-- `@openlogs/server` — Node.js WebSocket + REST API server
-- `@openlogs/web` — PC debug panel with 9 tabs (Console, Network, Storage, Element, Performance, Benchmark, Mock, Health, AI Analysis)
-- `@openlogs/mcp` — MCP Server with 30+ AI-callable tools
-- `@openlogs/cli` — CLI entry point with `npx @openlogs/cli` and `npx @openlogs/cli init`
-- `@openlogs/types` — Shared TypeScript type definitions (Envelope v1 format)
+- Initial release of codeLog monorepo
+- `@codelog/sdk` — Mobile H5 SDK with console, network, storage, DOM, performance, error, and screenshot collectors
+- `@codelog/server` — Node.js WebSocket + REST API server
+- `@codelog/web` — PC debug panel with 9 tabs (Console, Network, Storage, Element, Performance, Benchmark, Mock, Health, AI Analysis)
+- `@codelog/mcp` — MCP Server with 30+ AI-callable tools
+- `@codelog/cli` — CLI entry point with `npx @codelog/cli` and `npx @codelog/cli init`
+- `@codelog/types` — Shared TypeScript type definitions (Envelope v1 format)
 - `POST /api/ingest` — External data ingestion API
-- `@openlog[checkpoint]` instrumentation and verification system
-- Claude Code slash commands (`/openlog:start`, `/openlog:stop`, `/openlog:logs`, etc.)
+- `@codelog[checkpoint]` instrumentation and verification system
+- Claude Code slash commands (`/codelog:start`, `/codelog:stop`, `/codelog:logs`, etc.)
 - Multi-AI tool support (Claude Code, Cursor, Windsurf)
 - Built-in Eruda on-device debug panel
 - Real-time WebSocket communication

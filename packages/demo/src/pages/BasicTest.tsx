@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { initOpenLog } from '../openlog';
+import { initCodeLog } from '../codelog';
 
 interface LogItem {
   level: 'log' | 'info' | 'warn' | 'error' | 'checkpoint';
@@ -22,7 +22,7 @@ export default function BasicTest() {
   const reqCount = useRef(0);
 
   useEffect(() => {
-    initOpenLog().then(() => setSdkReady(true));
+    initCodeLog().then(() => setSdkReady(true));
   }, []);
 
   // ── Console 测试 ──────────────────────────────────────────
@@ -77,18 +77,18 @@ export default function BasicTest() {
   // ── Storage 测试 ──────────────────────────────────────────
   const testSetStorage = () => {
     const val = `value_${Date.now()}`;
-    localStorage.setItem('openlog_test_key', val);
-    console.log('localStorage.setItem', { key: 'openlog_test_key', value: val });
+    localStorage.setItem('codelog_test_key', val);
+    console.log('localStorage.setItem', { key: 'codelog_test_key', value: val });
     add('log', `写入 localStorage: ${val}`);
   };
   const testGetStorage = () => {
-    const val = localStorage.getItem('openlog_test_key');
-    console.log('localStorage.getItem', { key: 'openlog_test_key', value: val });
+    const val = localStorage.getItem('codelog_test_key');
+    console.log('localStorage.getItem', { key: 'codelog_test_key', value: val });
     add('log', `读取 localStorage: ${val ?? '(未设置)'}`);
   };
   const testClearStorage = () => {
-    localStorage.removeItem('openlog_test_key');
-    console.log('localStorage.removeItem', 'openlog_test_key');
+    localStorage.removeItem('codelog_test_key');
+    console.log('localStorage.removeItem', 'codelog_test_key');
     add('warn', '清除 localStorage key');
   };
 
@@ -96,7 +96,7 @@ export default function BasicTest() {
   const testUncaughtError = () => {
     add('error', '即将触发未捕获错误');
     setTimeout(() => {
-      throw new Error('测试未捕获错误 — openLog 应该能捕获此错误');
+      throw new Error('测试未捕获错误 — codeLog 应该能捕获此错误');
     }, 100);
   };
   const testPromiseReject = () => {
@@ -108,7 +108,7 @@ export default function BasicTest() {
     <div>
       <div className="page-header">
         <h2>🧪 基础功能测试</h2>
-        <p>测试 openLog SDK 各项数据采集能力，打开 PC 面板实时查看</p>
+        <p>测试 codeLog SDK 各项数据采集能力，打开 PC 面板实时查看</p>
       </div>
 
       <div className="section">
@@ -119,8 +119,8 @@ export default function BasicTest() {
           </span>
         </h3>
         <p style={{ fontSize: 12, color: '#888' }}>
-          修改 <code>src/openlog.ts</code> 中的 <code>SERVER_URL</code> 或设置环境变量{' '}
-          <code>VITE_OPENLOG_SERVER=ws://192.168.x.x:38291</code>
+          修改 <code>src/codelog.ts</code> 中的 <code>SERVER_URL</code> 或设置环境变量{' '}
+          <code>VITE_CODELOG_SERVER=ws://192.168.x.x:38291</code>
         </p>
       </div>
 

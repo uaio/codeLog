@@ -1,20 +1,20 @@
 {
-  "name": "@openlogs/web",
+  "name": "@codelog/web",
   "version": "0.2.1",
   "private": true,
-  "description": "PC debug panel for openLog — React-based real-time monitoring dashboard",
+  "description": "PC debug panel for codeLog — React-based real-time monitoring dashboard",
   "keywords": [
-    "openlog",
+    "codelog",
     "web",
     "debug-panel",
     "react",
     "dashboard"
   ],
-  "author": "openLog Contributors",
+  "author": "codeLog Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uaio/openLog.git",
+    "url": "https://github.com/uaio/codeLog.git",
     "directory": "packages/web"
   },
   "type": "module",

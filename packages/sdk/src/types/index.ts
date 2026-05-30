@@ -2,6 +2,7 @@ import type {
   ConsolePayload,
   NetworkPayload,
   StoragePayload,
+  CookieEntry,
   DOMPayload,
   DOMNode as TypesDOMNode,
   PerformancePayload,
@@ -16,9 +17,9 @@ import type {
   ErrorPayload,
   LifecyclePayload,
   CustomPayload,
-} from '@openlogs/types';
+} from '@codelog/types';
 
-// ─── SDK 特有的配置类型（@openlogs/types 未定义） ───────────────────────
+// ─── SDK 特有的配置类型（@codelog/types 未定义） ───────────────────────
 
 export interface DeviceInfo {
   deviceId: string;
@@ -37,6 +38,8 @@ export interface RemoteConfig {
   server?: string;
   port?: number;
   lang?: 'zh' | 'en';
+  /** Optional secret key sent as x-api-key header to authenticate with the server */
+  secret?: string;
 }
 
 export interface ErudaConfig {
@@ -117,7 +120,10 @@ export interface NetworkRequestEntry extends NetworkPayload, TransportFields {
 /** 存储快照 */
 export interface StorageSnapshot extends StoragePayload, TransportFields {}
 
-/** DOM 节点 — 直接使用 @openlogs/types 定义 */
+/** Cookie 条目（完整属性，来自 cookieStore API） */
+export type { CookieEntry } from '@codelog/types';
+
+/** DOM 节点 — 直接使用 @codelog/types 定义 */
 export type DOMNode = TypesDOMNode;
 
 /** DOM 快照 */
@@ -129,7 +135,7 @@ export interface ScreenshotData extends ScreenshotPayload, TransportFields {}
 /** 性能上报数据 */
 export interface PerformanceReport extends PerformancePayload, TransportFields {}
 
-/** 直接 re-export @openlogs/types 中的共享类型 */
+/** 直接 re-export @codelog/types 中的共享类型 */
 export type {
   PerfScoreItem,
   TypesMockRule as MockRuleType,

@@ -2,6 +2,7 @@ import { CSSProperties, useState, useCallback } from 'react';
 import { useStorage } from '../hooks/useStorage.js';
 import { useI18n } from '../i18n/index.js';
 import { api } from '../api/client.js';
+import type { CookieEntry } from '../types/index.js';
 
 interface StoragePanelProps {
   deviceId?: string;
@@ -127,7 +128,56 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
     );
   };
 
-  const renderCookies = (raw: string) => {
+  const renderCookies = (raw: string, entries?: CookieEntry[]) => {
+    // Prefer rich cookieEntry list when available (cookieStore API)
+    if (entries && entries.length > 0) {
+      return (
+        <div>
+          <div style={styles.sizeBar}>
+            <span style={styles.countLabel}>{entries.length} 条 Cookie</span>
+            <span style={{ ...styles.countLabel, fontSize: '11px', color: '#aaa' }}>
+              via cookieStore API
+            </span>
+          </div>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={{ ...styles.th, width: '18%' }}>Name</th>
+                <th style={{ ...styles.th, width: '22%' }}>Value</th>
+                <th style={{ ...styles.th, width: '10%' }}>Path</th>
+                <th style={{ ...styles.th, width: '14%' }}>Domain</th>
+                <th style={{ ...styles.th, width: '18%' }}>Expires</th>
+                <th style={{ ...styles.th, width: '8%' }}>Secure</th>
+                <th style={{ ...styles.th, width: '10%' }}>SameSite</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map((c, i) => (
+                <tr key={i} style={styles.tr}>
+                  <td style={{ ...styles.td, ...styles.keyCell }}>{c.name}</td>
+                  <td style={{ ...styles.td, ...styles.valueCell }}>
+                    <span style={styles.valueText}>{c.value}</span>
+                  </td>
+                  <td style={{ ...styles.td, ...styles.metaCell }}>{c.path ?? '/'}</td>
+                  <td style={{ ...styles.td, ...styles.metaCell }}>{c.domain ?? ''}</td>
+                  <td style={{ ...styles.td, ...styles.metaCell }}>
+                    {c.expires
+                      ? new Date(c.expires).toLocaleString()
+                      : <span style={{ color: '#bbb' }}>Session</span>}
+                  </td>
+                  <td style={{ ...styles.td, ...styles.metaCell }}>
+                    {c.secure ? <span style={{ color: '#52c41a' }}>✓</span> : ''}
+                  </td>
+                  <td style={{ ...styles.td, ...styles.metaCell }}>{c.sameSite ?? ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    // Fallback: parse raw document.cookie string (name/value only)
     if (!raw || raw.trim() === '') {
       return (
         <div style={styles.empty}>
@@ -136,7 +186,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
         </div>
       );
     }
-    const entries = raw
+    const fallbackEntries = raw
       .split(';')
       .map((c) => c.trim())
       .filter(Boolean)
@@ -148,7 +198,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
     return (
       <div>
         <div style={styles.sizeBar}>
-          <span style={styles.countLabel}>{entries.length} 条 Cookie</span>
+          <span style={styles.countLabel}>{fallbackEntries.length} 条 Cookie</span>
         </div>
         <table style={styles.table}>
           <thead>
@@ -158,7 +208,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
             </tr>
           </thead>
           <tbody>
-            {entries.map(({ key, value }, i) => (
+            {fallbackEntries.map(({ key, value }, i) => (
               <tr key={i} style={styles.tr}>
                 <td style={{ ...styles.td, ...styles.keyCell }}>{key}</td>
                 <td style={{ ...styles.td, ...styles.valueCell }}>
@@ -195,7 +245,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
     if (activeTab === 'sessionStorage') {
       return renderKVTable(snapshot.sessionStorage, snapshot.sessionStorageSize);
     }
-    return renderCookies(snapshot.cookies);
+    return renderCookies(snapshot.cookies, snapshot.cookieEntries);
   };
 
   return (
@@ -418,6 +468,12 @@ const styles: Record<string, CSSProperties> = {
   },
   valueCell: {
     maxWidth: 0,
+  },
+  metaCell: {
+    fontFamily: 'monospace',
+    fontSize: '11px',
+    color: '#666',
+    wordBreak: 'break-all' as const,
   },
   valueText: {
     display: 'block',

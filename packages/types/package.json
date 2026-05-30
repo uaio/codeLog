@@ -1,22 +1,22 @@
 {
-  "name": "@openlogs/types",
+  "name": "@codelog/types",
   "version": "0.2.1",
-  "description": "Shared TypeScript type definitions for openLog (Envelope format, events, protocol)",
+  "description": "Shared TypeScript type definitions for codeLog (Envelope format, events, protocol)",
   "keywords": [
-    "openlog",
+    "codelog",
     "types",
     "typescript",
     "mobile-debugging",
     "logging"
   ],
-  "author": "openLog Contributors",
+  "author": "codeLog Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uaio/openLog.git",
+    "url": "https://github.com/uaio/codeLog.git",
     "directory": "packages/types"
   },
-  "homepage": "https://github.com/uaio/openLog/tree/main/packages/types",
+  "homepage": "https://github.com/uaio/codeLog/tree/main/packages/types",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

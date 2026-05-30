@@ -1,13 +1,13 @@
 # SDK API 参考
 
-## `new OpenLog(config)`
+## `new CodeLog(config)`
 
-初始化 openLog SDK。
+初始化 codeLog SDK。
 
 ```typescript
-import OpenLog from '@openlogs/sdk';
+import CodeLog from '@codelog/sdk';
 
-const logger = new OpenLog({
+const logger = new CodeLog({
   server: 'ws://localhost:38291',
   projectId: 'my-app',
 });
@@ -16,7 +16,7 @@ const logger = new OpenLog({
 ### 返回值
 
 ```typescript
-interface OpenLogInstance {
+interface CodeLogInstance {
   /** 销毁实例并恢复原始的 console/fetch/XHR */
   destroy(): void;
   /** 获取生成的设备 ID */
@@ -31,7 +31,7 @@ interface OpenLogInstance {
 采集器使用的内部事件总线。可用于高级场景：
 
 ```typescript
-import { DataBus } from '@openlogs/sdk/core/DataBus';
+import { DataBus } from '@codelog/sdk/core/DataBus';
 
 const bus = new DataBus();
 

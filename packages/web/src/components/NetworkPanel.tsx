@@ -47,6 +47,21 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
   const [tab, setTab] = useState<'headers' | 'request' | 'response'>('headers');
   const { t } = useI18n();
 
+  const handleResend = () => {
+    if (request.type !== 'fetch' && request.type !== 'xhr') return;
+    const method = request.method.toUpperCase();
+    const init: RequestInit = {
+      method,
+      headers: request.requestHeaders,
+    };
+    if (method !== 'GET' && method !== 'HEAD' && request.requestBody) {
+      init.body = request.requestBody;
+    }
+    fetch(request.url, init)
+      .then((res) => res.text().then((body) => alert(`Resend ${res.status}:\n${body.slice(0, 300)}`)))
+      .catch((e) => alert(`Resend failed: ${e}`));
+  };
+
   return (
     <div style={detailStyles.container}>
       <div style={detailStyles.header}>
@@ -56,6 +71,11 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
         <span style={detailStyles.url} title={request.url}>
           {request.url}
         </span>
+        {(request.type === 'fetch' || request.type === 'xhr') && (
+          <button onClick={handleResend} style={detailStyles.resendBtn} title="Resend request">
+            ↩ 重发
+          </button>
+        )}
         <button onClick={onClose} style={detailStyles.closeBtn}>
           ✕
         </button>
@@ -141,6 +161,7 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
   const { requests, clearRequests, loading } = useNetworkRequests(deviceId, 500, tabId);
   const [selected, setSelected] = useState<NetworkRequest | null>(null);
   const [filterMethod, setFilterMethod] = useState<string>('ALL');
+  const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchText, setSearchText] = useState('');
   const { t } = useI18n();
@@ -148,6 +169,7 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
       if (filterMethod !== 'ALL' && req.method.toUpperCase() !== filterMethod) return false;
+      if (filterType !== 'all' && req.type !== filterType) return false;
       if (filterStatus === 'success' && (req.status === undefined || req.status >= 400))
         return false;
       if (filterStatus === 'error' && req.status !== undefined && req.status < 400 && !req.error)
@@ -155,7 +177,7 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
       if (searchText && !req.url.toLowerCase().includes(searchText.toLowerCase())) return false;
       return true;
     });
-  }, [requests, filterMethod, filterStatus, searchText]);
+  }, [requests, filterMethod, filterType, filterStatus, searchText]);
 
   if (!deviceId) {
     return (
@@ -187,6 +209,21 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
           <option value="PUT">PUT</option>
           <option value="DELETE">DELETE</option>
           <option value="PATCH">PATCH</option>
+          <option value="WS">WS</option>
+          <option value="SSE">SSE</option>
+          <option value="BEACON">BEACON</option>
+        </select>
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          style={styles.select}
+        >
+          <option value="all">All Types</option>
+          <option value="fetch">fetch</option>
+          <option value="xhr">xhr</option>
+          <option value="ws">ws</option>
+          <option value="sse">sse</option>
+          <option value="beacon">beacon</option>
         </select>
         <select
           value={filterStatus}
@@ -222,7 +259,10 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
             >
               <span style={{ ...styles.method, color: methodColor(req.method) }}>{req.method}</span>
               <span style={{ ...styles.status, color: statusColor(req.status) }}>
-                {req.status || '—'}
+                {req.type === 'ws' && req.wsDirection === 'send' ? '↑' :
+                 req.type === 'ws' && req.wsDirection === 'receive' ? '↓' :
+                 req.type === 'sse' ? '⟶' :
+                 req.status || '—'}
               </span>
               <span style={styles.url} title={req.url}>
                 {formatUrl(req.url)}
@@ -403,6 +443,16 @@ const detailStyles: Record<string, CSSProperties> = {
     fontSize: 14,
     color: '#999',
     padding: '2px 6px',
+  },
+  resendBtn: {
+    border: '1px solid #1890ff',
+    background: '#e6f7ff',
+    color: '#1890ff',
+    cursor: 'pointer',
+    fontSize: 11,
+    padding: '2px 8px',
+    borderRadius: 4,
+    whiteSpace: 'nowrap',
   },
   meta: {
     display: 'flex',

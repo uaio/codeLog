@@ -3,13 +3,13 @@
 ## 安装
 
 ```bash
-npm install @openlogs/sdk
+npm install @codelog/sdk
 ```
 
 或通过 CDN：
 
 ```html
-<script src="https://unpkg.com/@openlogs/sdk/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk/dist/codelog.iife.js"></script>
 ```
 
 ## 初始化
@@ -17,9 +17,9 @@ npm install @openlogs/sdk
 ### ES Module
 
 ```typescript
-import { OpenLog } from '@openlogs/sdk';
+import { CodeLog } from '@codelog/sdk';
 
-const logger = new OpenLog({
+const logger = new CodeLog({
   projectId: 'my-app',
   server: 'ws://192.168.1.100:38291',
 });
@@ -29,7 +29,7 @@ const logger = new OpenLog({
 
 ```html
 <script>
-  OpenLog.init({
+  CodeLog.init({
     projectId: 'my-app',
     server: 'ws://192.168.1.100:38291',
   });
@@ -39,7 +39,7 @@ const logger = new OpenLog({
 ## 配置选项
 
 ```typescript
-interface OpenLogOptions {
+interface CodeLogOptions {
   /** 必填。用于设备分组的项目标识符 */
   projectId: string;
   /** WebSocket 服务器地址（例如 'ws://192.168.1.100:38291'） */
@@ -241,12 +241,12 @@ logger.destroy();
 
 ## 静态方法
 
-### `OpenLog.init(options)`（仅限 IIFE）
+### `CodeLog.init(options)`（仅限 IIFE）
 
-使用 CDN 构建时，`OpenLog.init()` 创建并返回单例实例：
+使用 CDN 构建时，`CodeLog.init()` 创建并返回单例实例：
 
 ```javascript
-const logger = OpenLog.init({ projectId: 'my-app' });
+const logger = CodeLog.init({ projectId: 'my-app' });
 ```
 
 ## 数据类型

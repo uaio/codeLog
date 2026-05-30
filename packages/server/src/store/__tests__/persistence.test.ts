@@ -9,7 +9,7 @@ describe('Persistence', () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), 'openlog-test-'));
+    tmpDir = mkdtempSync(join(tmpdir(), 'codelog-test-'));
     db = new Persistence({ dbPath: join(tmpDir, 'test.db'), retentionDays: 1 });
   });
 

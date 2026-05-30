@@ -105,14 +105,24 @@ export class DOMCollector {
       const dom = serializeNode(root, 0);
       if (!dom) return;
 
+      // Capture full HTML snapshot (capped at 500KB to avoid huge payloads)
+      let htmlSnapshot: string | undefined;
+      try {
+        const raw = document.documentElement.outerHTML;
+        htmlSnapshot = raw.length > 512_000 ? raw.slice(0, 512_000) + '\n<!-- [truncated] -->' : raw;
+      } catch {
+        // outerHTML may fail in some environments
+      }
+
       this.callback({
         timestamp: Date.now(),
         url: window.location.href,
         title: document.title,
         dom,
+        htmlSnapshot,
       });
     } catch (err) {
-      console.warn('[openLog] DOM 快照采集失败', err);
+      console.warn('[codeLog] DOM 快照采集失败', err);
     }
   }
 

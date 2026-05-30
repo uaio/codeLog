@@ -2,11 +2,16 @@ import { getDeviceInfo, generateTabId, updateDeviceActiveTime } from './core/dev
 import { DataBus } from './core/DataBus.js';
 import { Reporter } from './transport/reporter.js';
 import { NetworkInterceptor } from './interceptors/network.js';
+import { WebSocketInterceptor } from './interceptors/websocket.js';
+import { EventSourceInterceptor } from './interceptors/eventsource.js';
+import { BeaconInterceptor } from './interceptors/beacon.js';
 import { StorageReader } from './interceptors/storage.js';
 import { ErrorInterceptor } from './interceptors/error.js';
 import { DOMCollector } from './interceptors/dom.js';
 import { PerformanceCollector } from './interceptors/performance.js';
 import { ScreenshotCollector } from './interceptors/screenshot.js';
+import { SystemInfoCollector } from './interceptors/system.js';
+import { IndexedDBInterceptor } from './interceptors/indexeddb.js';
 import { ErudaPlugin } from './plugins/ErudaPlugin.js';
 import { BrowserAdapter } from './platform/browser/index.js';
 import { scorePerfRun } from './core/perf-score.js';
@@ -18,7 +23,11 @@ import type { RemoteConfig, ErudaConfig, NetworkInterceptorConfig } from './type
 import type { ThrottlePreset } from './interceptors/network-throttle.js';
 import type { MockRule } from './types/index.js';
 import type { PerfRunSession } from './types/index.js';
-import { serializeArgs, cleanStackTrace } from './core/utils/serialize.js';
+import { serializeArgs, cleanStackTrace, extractConsoleCssStyles } from './core/utils/serialize.js';
+import { serializeConsoleArgs } from './core/utils/atom.js';
+import { GestureActivator, type GestureConfig } from './core/gesture.js';
+import { OfflineBuffer, type OfflineBufferOptions } from './core/offline-buffer.js';
+import { PluginManager, type CodeLogPlugin } from './plugins/PluginManager.js';
 
 // Eruda 类型声明
 interface Eruda {
@@ -34,8 +43,8 @@ export const version = '0.1.0';
 /** 默认心跳间隔（毫秒） */
 const DEFAULT_HEARTBEAT_INTERVAL = 30000;
 
-/** 用于检测已存在 OpenLog 实例的符号 */
-const OPENLOG_INSTANCE_KEY = Symbol.for('openlog.instance');
+/** 用于检测已存在 CodeLog 实例的符号 */
+const CODELOG_INSTANCE_KEY = Symbol.for('codelog.instance');
 
 interface OriginalConsole {
   log: typeof console.log;
@@ -46,11 +55,13 @@ interface OriginalConsole {
   trace: typeof console.trace;
 }
 
-export interface OpenLogOptions extends RemoteConfig {
+export interface CodeLogOptions extends RemoteConfig {
   /** 心跳间隔（毫秒），默认 30000 */
   heartbeatInterval?: number;
   /** Eruda 调试面板配置 */
   eruda?: ErudaConfig;
+  /** 手势激活调试面板配置 */
+  gesture?: GestureConfig;
   /** 网络请求拦截配置 */
   network?: NetworkInterceptorConfig;
   /** 是否自动捕获全局 JS 错误和未处理的 Promise rejection，默认 true */
@@ -67,11 +78,25 @@ export interface OpenLogOptions extends RemoteConfig {
     /** 是否启用性能监控，默认 true */
     enabled?: boolean;
   };
+  /**
+   * Console data processor — called for each console entry before it is sent.
+   * Return the (optionally modified) entry to keep it, or null/undefined to drop it.
+   */
+  consoleProcessor?: (entry: {
+    level: string;
+    message: string;
+    args: unknown[];
+    timestamp: number;
+  }) => { level: string; message: string; args: unknown[]; timestamp: number } | null | undefined | false;
+  /** Offline buffer configuration — persist events to localStorage when disconnected */
+  offline?: OfflineBufferOptions & { enabled?: boolean };
+  /** Plugins to install on startup */
+  plugins?: CodeLogPlugin[];
   /** 平台适配器，默认 BrowserAdapter */
   platform?: PlatformAdapter;
 }
 
-export class OpenLog {
+export class CodeLog {
   private dataBus: DataBus;
   private reporter: Reporter;
   private erudaPlugin: ErudaPlugin;
@@ -85,6 +110,9 @@ export class OpenLog {
   private erudaInitialized = false;
   private eruda: Eruda | null = null;
   private networkInterceptor: NetworkInterceptor | null = null;
+  private wsInterceptor: WebSocketInterceptor | null = null;
+  private sseInterceptor: EventSourceInterceptor | null = null;
+  private beaconInterceptor: BeaconInterceptor | null = null;
   private storageReader: StorageReader | null = null;
   private errorInterceptor: ErrorInterceptor | null = null;
   private domCollector: DOMCollector | null = null;
@@ -100,16 +128,23 @@ export class OpenLog {
   private mockApi: MockAPI | null = null;
   private visibilityHandler: (() => void) | null = null;
   private beforeUnloadHandler: (() => void) | null = null;
+  private systemCollector: SystemInfoCollector | null = null;
+  private idbInterceptor: IndexedDBInterceptor | null = null;
+  private resolvedServerUrl: string | undefined;
+  private gestureActivator: GestureActivator | null = null;
+  private consoleProcessor: CodeLogOptions['consoleProcessor'] | undefined;
+  private offlineBuffer: OfflineBuffer | null = null;
+  private pluginManager: PluginManager = new PluginManager();
 
-  constructor(options: OpenLogOptions) {
+  constructor(options: CodeLogOptions) {
     if (!options.projectId) {
       throw new Error('projectId is required');
     }
 
-    // 检测是否已存在 OpenLog 实例
-    const existingInstance = (globalThis as Record<symbol, unknown>)[OPENLOG_INSTANCE_KEY];
+    // 检测是否已存在 CodeLog 实例
+    const existingInstance = (globalThis as Record<symbol, unknown>)[CODELOG_INSTANCE_KEY];
     if (existingInstance) {
-      console.warn('openLog: 检测到已存在的实例，多个实例可能导致竞态条件');
+      console.warn('codeLog: 检测到已存在的实例，多个实例可能导致竞态条件');
     }
 
     this.projectId = options.projectId;
@@ -117,6 +152,10 @@ export class OpenLog {
     this.deviceInfo = getDeviceInfo(options.projectId, this.platform);
     this.tabId = generateTabId();
     this.heartbeatIntervalMs = options.heartbeatInterval ?? DEFAULT_HEARTBEAT_INTERVAL;
+    this.consoleProcessor = options.consoleProcessor;
+    if (options.offline?.enabled !== false && typeof localStorage !== 'undefined') {
+      this.offlineBuffer = new OfflineBuffer(options.offline ?? {});
+    }
 
     // ① 创建 DataBus — 所有数据采集的唯一来源，最先初始化
     this.dataBus = new DataBus();
@@ -125,15 +164,29 @@ export class OpenLog {
     this.reporter = new Reporter(this.deviceInfo, this.tabId, this.platform);
     this.reporter.attachDataBus(this.dataBus);
 
+    // ② Offline buffer: subscribe to console/error events for localStorage persistence
+    if (this.offlineBuffer) {
+      const buf = this.offlineBuffer;
+      this.dataBus.on('console', (payload) => buf.push('console', payload));
+      this.dataBus.on('error', (payload) => buf.push('error', payload));
+      // Auto-save on page hide
+      if (typeof document !== 'undefined') {
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden') buf.save();
+        });
+      }
+    }
+
     // ③ Eruda 展示插件实例（会在 Eruda 异步加载后绑定）
     this.erudaPlugin = new ErudaPlugin();
 
     // 解析服务器地址：优先 server，其次 port（自动推断 hostname）
     const resolvedServer = options.server ?? resolveServerUrl(options.port);
+    this.resolvedServerUrl = resolvedServer;
 
     // 检查用户是否之前关闭了远程监控
     const remoteDisabled =
-      this.platform.storage.getItem(`openlog_remote_${this.projectId}`) === 'false';
+      this.platform.storage.getItem(`codelog_remote_${this.projectId}`) === 'false';
     if (!remoteDisabled) {
       this.reporter.connect(resolvedServer);
     }
@@ -186,7 +239,7 @@ export class OpenLog {
     });
 
     // 标记实例存在
-    (globalThis as Record<symbol, unknown>)[OPENLOG_INSTANCE_KEY] = this;
+    (globalThis as Record<symbol, unknown>)[CODELOG_INSTANCE_KEY] = this;
 
     // 定期更新活跃时间
     this.heartbeatTimerId = this.platform.timer.setInterval(() => {
@@ -215,12 +268,44 @@ export class OpenLog {
       this.dataBus.emit('lifecycle', { event: 'page_unload', url: location.href });
     };
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
+
+    // ⑧ System info — collect once on connect, re-collect on network/battery change
+    this.systemCollector = new SystemInfoCollector((payload) => {
+      this.dataBus.emit('system', payload);
+    });
+    void this.systemCollector.startWatching();
+
+    // ⑨ IndexedDB monitoring
+    this.idbInterceptor = new IndexedDBInterceptor((entry) => {
+      this.dataBus.emit('indexeddb', entry);
+    });
+    this.idbInterceptor.start();
+
+    // ⑩ Gesture activation (optional)
+    if (options.gesture) {
+      this.gestureActivator = new GestureActivator(options.gesture);
+      this.gestureActivator.start();
+    }
+
+    // ⑪ Plugin manager — initialise context and install any plugins passed in options
+    this.pluginManager = new PluginManager();
+    const httpBase = resolvedServer
+      ? resolvedServer.replace(/^ws:\/\//, 'http://').replace(/^wss:\/\//, 'https://').replace(/\/ws$/, '')
+      : undefined;
+    this.pluginManager.setContext({
+      dataBus: this.dataBus,
+      projectId: this.projectId,
+      serverUrl: httpBase,
+    });
+    for (const plugin of options.plugins ?? []) {
+      void this.pluginManager.use(plugin);
+    }
   }
 
   private async initEruda(config?: ErudaConfig): Promise<void> {
     try {
       // 动态导入 eruda UMD 模块
-      const erudaModule = await import('@openlogs/eruda');
+      const erudaModule = await import('@codelog/eruda');
       // @ts-ignore - eruda is UMD module, default export is the eruda object
       this.eruda = erudaModule.default || erudaModule;
 
@@ -245,10 +330,10 @@ export class OpenLog {
         this.erudaPlugin.attach(this.eruda as any, this.dataBus, this);
         this.erudaInitialized = true;
       } else {
-        console.warn('openLog: Eruda 初始化失败 - 无效的 eruda 模块');
+        console.warn('codeLog: Eruda 初始化失败 - 无效的 eruda 模块');
       }
     } catch (error) {
-      console.warn('openLog: Eruda 加载失败', error);
+      console.warn('codeLog: Eruda 加载失败', error);
     }
   }
 
@@ -274,12 +359,28 @@ export class OpenLog {
       return function (...args: unknown[]) {
         // ① DataBus emit 在第一时间发生（先于原始 console 调用，先于 Eruda 面板展示）
         try {
-          const message = serializeArgs(args);
+          let message = serializeArgs(args);
+          let processedArgs = args;
+          // Apply user-defined console processor
+          if (self.consoleProcessor) {
+            const result = self.consoleProcessor({ level, message, args, timestamp: Date.now() });
+            if (!result) {
+              // Processor dropped this entry
+              originalFn.apply(console, args);
+              return;
+            }
+            message = result.message;
+            processedArgs = result.args;
+          }
+          const cssStyles = extractConsoleCssStyles(processedArgs);
+          const serializedArgs = serializeConsoleArgs(processedArgs);
           const entry = {
             timestamp: Date.now(),
             level,
             message,
-            args, // 原始参数，供 ErudaPlugin 富文本渲染
+            args: processedArgs, // 原始参数，供 ErudaPlugin 富文本渲染
+            serializedArgs, // 富结构化参数，供 Web 面板树展开
+            ...(cssStyles.length > 0 ? { cssStyles } : {}),
             ...(captureStack ? { stack: cleanStackTrace(new Error().stack) } : {}),
           };
           self.dataBus.emit('console', entry);
@@ -304,6 +405,15 @@ export class OpenLog {
     const bus = this.dataBus;
     this.networkInterceptor = new NetworkInterceptor((entry) => bus.emit('network', entry), config);
     this.networkInterceptor.start();
+
+    this.wsInterceptor = new WebSocketInterceptor((entry) => bus.emit('network', entry));
+    this.wsInterceptor.start();
+
+    this.sseInterceptor = new EventSourceInterceptor((entry) => bus.emit('network', entry));
+    this.sseInterceptor.start();
+
+    this.beaconInterceptor = new BeaconInterceptor((entry) => bus.emit('network', entry));
+    this.beaconInterceptor.start();
   }
 
   private initStorageReader(): void {
@@ -318,7 +428,7 @@ export class OpenLog {
 
     // 注册刷新存储的回调
     this.reporter.onRefreshStorage(() => {
-      this.storageReader?.readAndReport();
+      void this.storageReader?.readAndReport();
     });
   }
 
@@ -377,8 +487,8 @@ export class OpenLog {
     this.dataBus.emit('console', {
       timestamp: Date.now(),
       level: 'log',
-      message: '[openLog] 🏁 跑分开始...',
-      args: ['[openLog] 🏁 跑分开始...'],
+      message: '[codeLog] 🏁 跑分开始...',
+      args: ['[codeLog] 🏁 跑分开始...'],
     });
   }
 
@@ -414,8 +524,8 @@ export class OpenLog {
     this.dataBus.emit('console', {
       timestamp: Date.now(),
       level: 'log',
-      message: `[openLog] 🏁 跑分结束，综合评分: ${scoreResult.total}`,
-      args: [`[openLog] 🏁 跑分结束，综合评分: ${scoreResult.total}`],
+      message: `[codeLog] 🏁 跑分结束，综合评分: ${scoreResult.total}`,
+      args: [`[codeLog] 🏁 跑分结束，综合评分: ${scoreResult.total}`],
     });
     return session;
   }
@@ -471,6 +581,18 @@ export class OpenLog {
       this.networkInterceptor.stop();
       this.networkInterceptor = null;
     }
+    if (this.wsInterceptor) {
+      this.wsInterceptor.stop();
+      this.wsInterceptor = null;
+    }
+    if (this.sseInterceptor) {
+      this.sseInterceptor.stop();
+      this.sseInterceptor = null;
+    }
+    if (this.beaconInterceptor) {
+      this.beaconInterceptor.stop();
+      this.beaconInterceptor = null;
+    }
 
     // 停止 Storage 实时监听（保留快照读能力）
     this.storageReader?.unwatch();
@@ -483,8 +605,8 @@ export class OpenLog {
     this.dataBus.emit('console', {
       timestamp: Date.now(),
       level: 'warn',
-      message: '[openLog] Zen Mode ON — 已停止高开销采集',
-      args: ['[openLog] Zen Mode ON — 已停止高开销采集'],
+      message: '[codeLog] Zen Mode ON — 已停止高开销采集',
+      args: ['[codeLog] Zen Mode ON — 已停止高开销采集'],
     });
   }
 
@@ -502,8 +624,8 @@ export class OpenLog {
     this.dataBus.emit('console', {
       timestamp: Date.now(),
       level: 'log',
-      message: '[openLog] Zen Mode OFF — 已恢复所有采集',
-      args: ['[openLog] Zen Mode OFF — 已恢复所有采集'],
+      message: '[codeLog] Zen Mode OFF — 已恢复所有采集',
+      args: ['[codeLog] Zen Mode OFF — 已恢复所有采集'],
     });
   }
 
@@ -527,6 +649,95 @@ export class OpenLog {
   /** 上报自定义事件 */
   report(name: string, data: unknown): void {
     this.dataBus.emit('custom', { name, data });
+  }
+
+  /**
+   * Upload buffered console logs to the server for offline replay.
+   * Call this to persist the current session's logs before the page unloads.
+   */
+  async uploadLogs(options?: { startTime?: number; endTime?: number }): Promise<string | null> {
+    if (!this.resolvedServerUrl) return null;
+
+    const httpBase = this.resolvedServerUrl
+      .replace(/^ws:\/\//, 'http://')
+      .replace(/^wss:\/\//, 'https://')
+      .replace(/\/ws$/, '');
+
+    const logs = this.dataBus
+      .getBuffer?.('console')
+      ?.map((e: any) => ({
+        timestamp: e.timestamp,
+        level: e.level,
+        message: e.message,
+        stack: e.stack,
+        tabId: this.tabId,
+      })) ?? [];
+
+    try {
+      const res = await fetch(`${httpBase}/api/saved-logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceId: this.deviceInfo.deviceId,
+          ua: this.deviceInfo.ua,
+          projectId: this.projectId,
+          startTime: options?.startTime ?? Date.now() - 3600_000,
+          endTime: options?.endTime ?? Date.now(),
+          logs,
+        }),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json.id ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Flush the offline buffer: upload buffered events to the server and clear the buffer.
+   * Returns the saved session ID, or null if upload failed.
+   */
+  async flushOfflineBuffer(): Promise<string | null> {
+    if (!this.offlineBuffer || !this.resolvedServerUrl) return null;
+
+    const entries = this.offlineBuffer.flush();
+    if (entries.length === 0) return null;
+
+    const httpBase = this.resolvedServerUrl
+      .replace(/^ws:\/\//, 'http://')
+      .replace(/^wss:\/\//, 'https://')
+      .replace(/\/ws$/, '');
+
+    const logs = entries
+      .filter((e) => e.type === 'console' || e.type === 'error')
+      .map((e: any) => ({
+        timestamp: e.ts,
+        level: (e.payload as any)?.level ?? 'log',
+        message: (e.payload as any)?.message ?? '',
+        stack: (e.payload as any)?.stack,
+        tabId: this.tabId,
+      }));
+
+    try {
+      const res = await fetch(`${httpBase}/api/saved-logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceId: this.deviceInfo.deviceId,
+          ua: this.deviceInfo.ua,
+          projectId: this.projectId,
+          startTime: entries[0]?.ts ?? Date.now(),
+          endTime: entries[entries.length - 1]?.ts ?? Date.now(),
+          logs,
+        }),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json.id ?? null;
+    } catch {
+      return null;
+    }
   }
 
   destroy(): void {
@@ -561,8 +772,8 @@ export class OpenLog {
     }
 
     // 清除全局实例标记
-    if ((globalThis as Record<symbol, unknown>)[OPENLOG_INSTANCE_KEY] === this) {
-      delete (globalThis as Record<symbol, unknown>)[OPENLOG_INSTANCE_KEY];
+    if ((globalThis as Record<symbol, unknown>)[CODELOG_INSTANCE_KEY] === this) {
+      delete (globalThis as Record<symbol, unknown>)[CODELOG_INSTANCE_KEY];
     }
 
     // 解绑 Eruda 插件
@@ -579,6 +790,18 @@ export class OpenLog {
     if (this.networkInterceptor) {
       this.networkInterceptor.stop();
       this.networkInterceptor = null;
+    }
+    if (this.wsInterceptor) {
+      this.wsInterceptor.stop();
+      this.wsInterceptor = null;
+    }
+    if (this.sseInterceptor) {
+      this.sseInterceptor.stop();
+      this.sseInterceptor = null;
+    }
+    if (this.beaconInterceptor) {
+      this.beaconInterceptor.stop();
+      this.beaconInterceptor = null;
     }
 
     // 停止错误拦截
@@ -605,6 +828,23 @@ export class OpenLog {
       this.storageReader = null;
     }
 
+    // 停止系统信息监听
+    if (this.systemCollector) {
+      this.systemCollector.stopWatching();
+      this.systemCollector = null;
+    }
+
+    // 停止 IndexedDB 监控
+    if (this.idbInterceptor) {
+      this.idbInterceptor.stop();
+      this.idbInterceptor = null;
+    }
+
+    if (this.gestureActivator) {
+      this.gestureActivator.stop();
+      this.gestureActivator = null;
+    }
+
     // 解绑 Reporter，清空 DataBus 订阅
     if (this.networkThrottle) {
       this.networkThrottle.destroy();
@@ -620,13 +860,38 @@ export class OpenLog {
     }
     this.reporter.detachDataBus();
     this.dataBus.clear();
-
+    this.pluginManager.destroyAll();
     this.reporter.disconnect();
+  }
+
+  /** Install a plugin dynamically at runtime */
+  use(plugin: CodeLogPlugin): Promise<void> {
+    return this.pluginManager.use(plugin);
+  }
+
+  /** Enable a previously disabled plugin */
+  enablePlugin(name: string): void {
+    this.pluginManager.enable(name);
+  }
+
+  /** Disable a plugin without uninstalling it */
+  disablePlugin(name: string): void {
+    this.pluginManager.disable(name);
+  }
+
+  /** Remove and uninstall a plugin */
+  removePlugin(name: string): void {
+    this.pluginManager.remove(name);
+  }
+
+  /** List all installed plugins */
+  listPlugins(): Array<{ name: string; state: string }> {
+    return this.pluginManager.list();
   }
 }
 
 // 默认导出
-export default OpenLog;
+export default CodeLog;
 
 // 导出平台适配接口，供外部平台实现
 export type {
@@ -638,30 +903,34 @@ export type {
   WSEvents,
 } from './platform/types.js';
 export { BrowserAdapter } from './platform/browser/index.js';
+export type { CodeLogPlugin, PluginContext } from './plugins/PluginManager.js';
+export { DataHarborPlugin } from './plugins/DataHarborPlugin.js';
+export { RRWebPlugin } from './plugins/RRWebPlugin.js';
+export { OSpyPlugin } from './plugins/OSpyPlugin.js';
 
 // ─────────────────────────────────────────────────────────────
 // CDN / IIFE 友好 API
-// 用法：<script src="https://unpkg.com/@openlogs/sdk/dist/openlog.iife.js"></script>
-//       OpenLog.init({ projectId: 'my-app', lang: 'zh', port: 38291 })
+// 用法：<script src="https://unpkg.com/@codelog/sdk/dist/codelog.iife.js"></script>
+//       CodeLog.init({ projectId: 'my-app', lang: 'zh', port: 38291 })
 // ─────────────────────────────────────────────────────────────
 
-let _instance: OpenLog | null = null;
+let _instance: CodeLog | null = null;
 
 /**
  * 全局初始化入口，适用于 CDN script 标签引入场景。
  * 重复调用会销毁旧实例并重新初始化。
  */
-export function init(options: OpenLogOptions): OpenLog {
+export function init(options: CodeLogOptions): CodeLog {
   if (_instance) {
     _instance.destroy();
     _instance = null;
   }
-  _instance = new OpenLog(options);
+  _instance = new CodeLog(options);
   return _instance;
 }
 
 /** 获取当前全局实例（CDN 场景下使用） */
-export function getInstance(): OpenLog | null {
+export function getInstance(): CodeLog | null {
   return _instance;
 }
 

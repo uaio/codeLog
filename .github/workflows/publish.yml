@@ -36,9 +36,9 @@ jobs:
           " "$VERSION"
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @openlogs/types --filter @openlogs/server --filter @openlogs/sdk run build
-      - run: pnpm --filter @openlogs/web run build
-      - run: pnpm --filter @openlogs/mcp --filter @openlogs/cli run build
+      - run: pnpm --filter @codelog/types --filter @codelog/server --filter @codelog/sdk run build
+      - run: pnpm --filter @codelog/web run build
+      - run: pnpm --filter @codelog/mcp --filter @codelog/cli run build
 
       - name: Remove sourcemaps from dist
         run: find packages/*/dist -name '*.map' -delete
@@ -49,39 +49,39 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION=$(node -p "require('./packages/types/package.json').version")
-          if npm view @openlogs/types@$VERSION version 2>/dev/null; then
+          if npm view @codelog/types@$VERSION version 2>/dev/null; then
             echo "published=true" >> $GITHUB_OUTPUT
             echo "Version $VERSION already exists on npm, skipping publish"
           else
             echo "published=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish @openlogs/types
+      - name: Publish @codelog/types
         if: steps.version-check.outputs.published != 'true'
-        run: pnpm --filter @openlogs/types publish --no-git-checks --access public
+        run: pnpm --filter @codelog/types publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @openlogs/sdk
+      - name: Publish @codelog/sdk
         if: steps.version-check.outputs.published != 'true'
-        run: pnpm --filter @openlogs/sdk publish --no-git-checks --access public
+        run: pnpm --filter @codelog/sdk publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @openlogs/server
+      - name: Publish @codelog/server
         if: steps.version-check.outputs.published != 'true'
-        run: pnpm --filter @openlogs/server publish --no-git-checks --access public
+        run: pnpm --filter @codelog/server publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @openlogs/mcp
+      - name: Publish @codelog/mcp
         if: steps.version-check.outputs.published != 'true'
-        run: pnpm --filter @openlogs/mcp publish --no-git-checks --access public
+        run: pnpm --filter @codelog/mcp publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @openlogs/cli
+      - name: Publish @codelog/cli
         if: steps.version-check.outputs.published != 'true'
-        run: pnpm --filter @openlogs/cli publish --no-git-checks --access public
+        run: pnpm --filter @codelog/cli publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

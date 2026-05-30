@@ -1,6 +1,6 @@
 # API Mocking & Network Throttling
 
-openLog lets you mock API responses and simulate network conditions directly from the PC panel or AI tools — no backend changes needed.
+codeLog lets you mock API responses and simulate network conditions directly from the PC panel or AI tools — no backend changes needed.
 
 ## API Mocking
 

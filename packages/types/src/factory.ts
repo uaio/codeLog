@@ -3,7 +3,7 @@
  * 确保所有上报数据都遵循统一格式
  */
 
-import type { OpenLogEnvelope, Platform, DeviceContext } from './envelope.js';
+import type { CodeLogEnvelope, Platform, DeviceContext } from './envelope.js';
 import type { EventType, EventPayloadMap } from './events/index.js';
 import { SCHEMA_VERSION } from './constants.js';
 
@@ -28,7 +28,7 @@ export function createEnvelope<T extends EventType>(
   type: T,
   data: EventPayloadMap[T],
   ts?: number,
-): OpenLogEnvelope<T> {
+): CodeLogEnvelope<T> {
   return {
     v: SCHEMA_VERSION,
     platform: ctx.platform,

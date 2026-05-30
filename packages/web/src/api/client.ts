@@ -4,6 +4,10 @@ import type {
   StorageSnapshot,
   DOMSnapshot,
   PerformanceReport,
+  SystemInfo,
+  IDBOperationEntry,
+  SavedLogSessionMeta,
+  SavedLogSession,
 } from '../types/index.js';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:38291/api';
@@ -106,6 +110,36 @@ export const api = {
     const res = await fetch(url);
     if (res.status === 404) return null;
     return handleResponse(res, url);
+  },
+
+  async getSystemInfo(deviceId: string): Promise<SystemInfo | null> {
+    const url = `${API_BASE}/devices/${deviceId}/system`;
+    const res = await fetch(url);
+    if (res.status === 404) return null;
+    return handleResponse(res, url);
+  },
+
+  async getIndexedDB(deviceId: string): Promise<IDBOperationEntry[]> {
+    const url = `${API_BASE}/devices/${deviceId}/indexeddb`;
+    const res = await fetch(url);
+    return handleResponse(res, url);
+  },
+
+  async listSavedLogs(): Promise<SavedLogSessionMeta[]> {
+    const url = `${API_BASE}/saved-logs`;
+    const res = await fetch(url);
+    return handleResponse(res, url);
+  },
+
+  async getSavedLog(sessionId: string): Promise<SavedLogSession> {
+    const url = `${API_BASE}/saved-logs/${sessionId}`;
+    const res = await fetch(url);
+    return handleResponse(res, url);
+  },
+
+  async deleteSavedLog(sessionId: string): Promise<void> {
+    const url = `${API_BASE}/saved-logs/${sessionId}`;
+    await fetch(url, { method: 'DELETE' });
   },
 
   async get(path: string): Promise<any> {

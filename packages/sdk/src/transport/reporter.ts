@@ -198,31 +198,32 @@ export class Reporter {
 
   /** PC 下发的 JS 代码在手机端执行，结果经 DataBus console 通道回传 */
   private runCode(code: string, bus: DataBus): void {
-    // 先回显执行的代码（类似 DevTools 的 > 提示）
+    // 回显用户输入（repl-input 类型，Web 端以蓝色背景区分）
     bus.emit('console', {
       timestamp: Date.now(),
-      level: 'log',
-      message: `▶ ${code}`,
-      args: [`▶ ${code}`],
+      level: 'repl-input',
+      message: code,
+      args: [code],
     });
 
     try {
       // eslint-disable-next-line no-eval
       const result = (0, eval)(code); // indirect eval：在全局作用域运行，不影响当前 scope
-      const display = result === undefined ? '← undefined' : `← ${serializeArgs([result])}`;
+      const display = result === undefined ? 'undefined' : serializeArgs([result]);
+      // 执行结果（repl-output 类型，Web 端以绿色标注）
       bus.emit('console', {
         timestamp: Date.now(),
-        level: 'log',
+        level: 'repl-output',
         message: display,
-        args: result === undefined ? ['← undefined'] : ['←', result],
+        args: result === undefined ? ['undefined'] : [result],
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       bus.emit('console', {
         timestamp: Date.now(),
         level: 'error',
-        message: `← Error: ${msg}`,
-        args: [`← Error: ${msg}`],
+        message: msg,
+        args: [msg],
       });
     }
   }
@@ -248,7 +249,7 @@ export class Reporter {
 
   enableRemote(): void {
     this.remoteEnabled = true;
-    this.platform.storage.setItem(`openlog_remote_${this.deviceInfo.projectId}`, 'true');
+    this.platform.storage.setItem(`codelog_remote_${this.deviceInfo.projectId}`, 'true');
     if (!this.transport || this.transport.getState() === 'disconnected') {
       this.connect();
     }
@@ -256,7 +257,7 @@ export class Reporter {
 
   disableRemote(): void {
     this.remoteEnabled = false;
-    this.platform.storage.setItem(`openlog_remote_${this.deviceInfo.projectId}`, 'false');
+    this.platform.storage.setItem(`codelog_remote_${this.deviceInfo.projectId}`, 'false');
     this.transport?.disconnect();
   }
 

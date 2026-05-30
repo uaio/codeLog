@@ -2,7 +2,7 @@
  * POST /api/ingest — 外部数据接入接口
  *
  * 任何系统（CI/CD、服务端日志、Native App、第三方工具）
- * 均可通过此接口向 openLog 推送数据，数据将：
+ * 均可通过此接口向 codeLog 推送数据，数据将：
  *  1. 存入对应 Store（供 PC 面板展示和 MCP 工具查询）
  *  2. 实时广播到所有已连接的 PC viewer
  *
@@ -143,6 +143,7 @@ function routeToStore(env: any, ctx: IngestContext): void {
         localStorage: data.localStorage ?? {},
         sessionStorage: data.sessionStorage ?? {},
         cookies: data.cookies ?? '',
+        cookieEntries: data.cookieEntries,
         localStorageSize: data.localStorageSize ?? 0,
         sessionStorageSize: data.sessionStorageSize ?? 0,
       });

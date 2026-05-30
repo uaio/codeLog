@@ -1,6 +1,6 @@
 # Storage Monitoring
 
-openLog captures real-time snapshots of browser storage, letting you inspect and modify data remotely.
+codeLog captures real-time snapshots of browser storage, letting you inspect and modify data remotely.
 
 ## What's Captured
 

@@ -1,11 +1,11 @@
-# @openlogs/sdk
+# @codelog/sdk
 
-> Mobile H5 SDK for openLog — real-time collection of console logs, network requests, storage, DOM, performance, errors, and screenshots.
+> Mobile H5 SDK for codeLog — real-time collection of console logs, network requests, storage, DOM, performance, errors, and screenshots.
 
 ## Installation
 
 ```bash
-npm install @openlogs/sdk
+npm install @codelog/sdk
 ```
 
 ## Quick Start
@@ -13,9 +13,9 @@ npm install @openlogs/sdk
 ### CDN (IIFE)
 
 ```html
-<script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
 <script>
-  OpenLog.init({
+  CodeLog.init({
     projectId: 'my-app',
     server: 'ws://192.168.x.x:38291',
     lang: 'en'
@@ -26,9 +26,9 @@ npm install @openlogs/sdk
 ### ES Module
 
 ```javascript
-import OpenLog from '@openlogs/sdk';
+import CodeLog from '@codelog/sdk';
 
-new OpenLog({
+new CodeLog({
   projectId: 'my-app',
   server: 'ws://192.168.x.x:38291',
   lang: 'en'
@@ -38,7 +38,7 @@ new OpenLog({
 ### Local-only Mode (No Server)
 
 ```javascript
-OpenLog.init({ projectId: 'my-app', lang: 'en' });
+CodeLog.init({ projectId: 'my-app', lang: 'en' });
 // Opens built-in Eruda debug panel on device
 ```
 
@@ -72,9 +72,9 @@ OpenLog.init({ projectId: 'my-app', lang: 'en' });
 ### Constructor
 
 ```typescript
-new OpenLog(options: OpenLogOptions)
+new CodeLog(options: CodeLogOptions)
 // or
-OpenLog.init(options: OpenLogOptions)
+CodeLog.init(options: CodeLogOptions)
 ```
 
 ### Methods
@@ -89,7 +89,7 @@ OpenLog.init(options: OpenLogOptions)
 ## Architecture
 
 ```
-OpenLog SDK
+CodeLog SDK
 ├── DataBus (unified event bus)
 │   ├── ErudaPlugin → On-device debug panel
 │   └── WebSocket Reporter → Server
@@ -101,11 +101,11 @@ OpenLog SDK
 
 ```bash
 # From monorepo root
-pnpm --filter @openlogs/sdk dev    # Watch mode
-pnpm --filter @openlogs/sdk build  # Production build
-pnpm --filter @openlogs/sdk test   # Run tests
+pnpm --filter @codelog/sdk dev    # Watch mode
+pnpm --filter @codelog/sdk build  # Production build
+pnpm --filter @codelog/sdk test   # Run tests
 ```
 
 ## License
 
-MIT © [openLog](https://github.com/uaio/openLog)
+MIT © [codeLog](https://github.com/uaio/codeLog)

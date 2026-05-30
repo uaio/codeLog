@@ -1,23 +1,23 @@
 {
-  "name": "@openlogs/server",
+  "name": "@codelog/server",
   "version": "0.2.1",
-  "description": "Node.js WebSocket + REST API server for openLog — real-time device communication hub",
+  "description": "Node.js WebSocket + REST API server for codeLog — real-time device communication hub",
   "keywords": [
-    "openlog",
+    "codelog",
     "server",
     "websocket",
     "rest-api",
     "mobile-debugging",
     "real-time"
   ],
-  "author": "openLog Contributors",
+  "author": "codeLog Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uaio/openLog.git",
+    "url": "https://github.com/uaio/codeLog.git",
     "directory": "packages/server"
   },
-  "homepage": "https://github.com/uaio/openLog/tree/main/packages/server",
+  "homepage": "https://github.com/uaio/codeLog/tree/main/packages/server",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -48,7 +48,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@openlogs/types": "workspace:*",
+    "@codelog/types": "workspace:*",
     "better-sqlite3": "^12.9.0",
     "cors": "^2.8.6",
     "express": "^4.18.0",

@@ -25,7 +25,13 @@ export class WebSocketTransport {
   private reconnectTimer: number | null = null;
 
   constructor(config: RemoteConfig, events: TransportEvents, platform: PlatformAdapter) {
-    this.serverUrl = config.server || '';
+    let url = config.server || '';
+    // Append API key as query parameter (WebSocket doesn't support custom headers in browsers)
+    if (config.secret && url) {
+      const sep = url.includes('?') ? '&' : '?';
+      url = `${url}${sep}apiKey=${encodeURIComponent(config.secret)}`;
+    }
+    this.serverUrl = url;
     this.events = events;
     this.messageQueue = new MessageQueue(100);
     this.platform = platform;

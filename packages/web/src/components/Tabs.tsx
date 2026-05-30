@@ -5,6 +5,7 @@ export interface Tab {
   label: string;
   icon: string;
   content: ReactNode;
+  badge?: number;
 }
 
 interface TabsProps {
@@ -30,6 +31,9 @@ export function Tabs({ tabs, activeTab, onChange }: TabsProps) {
           >
             <span style={styles.tabIcon}>{tab.icon}</span>
             <span style={styles.tabLabel}>{tab.label}</span>
+            {tab.badge != null && tab.badge > 0 && activeTab !== tab.id && (
+              <span style={styles.badge}>{tab.badge > 99 ? '99+' : tab.badge}</span>
+            )}
             {activeTab === tab.id && <span style={styles.tabIndicator} />}
           </button>
         ))}
@@ -51,6 +55,21 @@ const styles: Record<string, CSSProperties> = {
     borderBottom: '1px solid #e8e8e8',
     backgroundColor: '#fafafa',
     flexShrink: 0,
+  },
+  badge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '16px',
+    height: '16px',
+    padding: '0 4px',
+    borderRadius: '8px',
+    backgroundColor: '#ff4d4f',
+    color: '#fff',
+    fontSize: '10px',
+    fontWeight: 700,
+    lineHeight: 1,
+    marginLeft: '4px',
   },
   tab: {
     position: 'relative' as const,

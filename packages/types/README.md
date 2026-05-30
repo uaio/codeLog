@@ -1,22 +1,22 @@
-# @openlogs/types
+# @codelog/types
 
-> Shared TypeScript type definitions for the openLog ecosystem.
+> Shared TypeScript type definitions for the codeLog ecosystem.
 
 ## Overview
 
-This package defines the unified **Envelope** data format used across all openLog packages. It is the single source of truth for event types, protocol messages, and constants.
+This package defines the unified **Envelope** data format used across all codeLog packages. It is the single source of truth for event types, protocol messages, and constants.
 
 ## Installation
 
 ```bash
-npm install @openlogs/types
+npm install @codelog/types
 ```
 
 ## Usage
 
 ```typescript
-import type { Envelope, ConsoleEventData, NetworkEventData } from '@openlogs/types';
-import { EVENT_TYPES, PLATFORMS } from '@openlogs/types';
+import type { Envelope, ConsoleEventData, NetworkEventData } from '@codelog/types';
+import { EVENT_TYPES, PLATFORMS } from '@codelog/types';
 ```
 
 ## Key Exports
@@ -49,4 +49,4 @@ interface Envelope {
 
 ## License
 
-MIT © [openLog](https://github.com/uaio/openLog)
+MIT © [codeLog](https://github.com/uaio/codeLog)

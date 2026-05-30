@@ -18,7 +18,7 @@ export type ErrorReportCallback = (entry: {
 export class ErrorInterceptor {
   private platform: PlatformAdapter;
   private bus: DataBus;
-  private errorHandler: ((event: ErrorEvent) => void) | null = null;
+  private errorHandler: ((event: Event) => void) | null = null;
   private rejectionHandler: ((event: PromiseRejectionEvent) => void) | null = null;
   private started = false;
   /** 防止 callback 自身报错引发无限循环 */
@@ -35,32 +35,47 @@ export class ErrorInterceptor {
 
     // 使用 addEventListener('error') 而非替换 window.onerror
     // capture: true 确保能捕获到 iframe / 子资源加载错误
-    this.errorHandler = (event: ErrorEvent) => {
+    this.errorHandler = (event: Event) => {
       if (this.reporting) return;
-      const error = event.error;
+
+      // 资源加载失败（img/script/link 等）：target 是 HTMLElement，无 event.error
+      if (event.target instanceof HTMLElement) {
+        const el = event.target as HTMLImageElement & HTMLScriptElement & HTMLLinkElement;
+        const url = el.src || el.href || '';
+        const tag = el.tagName.toLowerCase();
+        const message = `[Resource Error] Failed to load <${tag}>${url ? `: ${url}` : ''}`;
+
+        this.safeReport({ timestamp: Date.now(), level: 'error', message });
+        this.bus.emit('error', { source: 'resource', message, url, tag });
+        return;
+      }
+
+      // JS 运行时错误
+      const errorEvent = event as ErrorEvent;
+      const error = errorEvent.error;
       const stack = error?.stack
         ? cleanStackTrace(error.stack)
-        : event.filename
-          ? `    at ${event.filename}:${event.lineno}:${event.colno}`
+        : errorEvent.filename
+          ? `    at ${errorEvent.filename}:${errorEvent.lineno}:${errorEvent.colno}`
           : undefined;
 
+      const errorName = error?.name ?? 'Error';
       const consoleEntry = {
         timestamp: Date.now(),
         level: 'error' as const,
-        message: `[Uncaught Error] ${event.message}`,
+        message: `[Uncaught ${errorName}] ${errorEvent.message}`,
         stack,
       };
 
       this.safeReport(consoleEntry);
 
-      // 独立 error 事件（含丰富上下文）
       this.bus.emit('error', {
         source: 'uncaught',
-        message: event.message,
+        message: errorEvent.message,
         stack,
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
+        filename: errorEvent.filename,
+        lineno: errorEvent.lineno,
+        colno: errorEvent.colno,
       });
     };
 

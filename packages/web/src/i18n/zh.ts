@@ -11,9 +11,11 @@ const zh: Locale = {
     settings: '设置',
     mock: 'Mock',
     dom: 'DOM',
+    system: '系统',
+    indexeddb: 'IndexedDB',
   },
   common: {
-    title: 'openLog Web 调试面板',
+    title: 'codeLog Web 调试面板',
     loading: '加载中...',
     noData: '暂无数据',
     refresh: '刷新',

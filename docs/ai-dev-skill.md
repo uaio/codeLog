@@ -1,7 +1,7 @@
-# openLog AI Development Skill — Node Verification SOP
+# codeLog AI Development Skill — Node Verification SOP
 
 Add the content below to your project's `CLAUDE.md` (or Cursor Rules / Copilot Instructions)
-to enable AI tools to automatically verify every feature node during development using openLog.
+to enable AI tools to automatically verify every feature node during development using codeLog.
 
 ---
 
@@ -14,10 +14,10 @@ Copy the **"Content for CLAUDE.md"** section below into your project's root `CLA
 ## Content for CLAUDE.md
 
 ```markdown
-## 🔬 Development Verification SOP (Powered by openLog)
+## 🔬 Development Verification SOP (Powered by codeLog)
 
 When developing H5 page features, you **must** verify each key node
-on a real device using openLog MCP tools after completing it.
+on a real device using codeLog MCP tools after completing it.
 **Do not skip verification and proceed to the next node.**
 
 ### Verification Tools
@@ -177,7 +177,7 @@ stop_monitor(logMonitorId)
          ↑               ↑
     In-process MCP watcher registry (cursor-based)
          ↓               ↓
-    openLog Server API (/logs?since=cursor)
+    codeLog Server API (/logs?since=cursor)
 ```
 
 ---

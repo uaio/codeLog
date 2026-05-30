@@ -73,7 +73,7 @@ export class DeviceSelector {
 
     // 没有设备
     if (devices.length === 0) {
-      throw new Error('没有连接的设备。请确保移动端已启动并连接到 openLog。');
+      throw new Error('没有连接的设备。请确保移动端已启动并连接到 codeLog。');
     }
 
     // 只有一个设备，自动选择

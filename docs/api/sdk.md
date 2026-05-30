@@ -3,13 +3,13 @@
 ## Installation
 
 ```bash
-npm install @openlogs/sdk
+npm install @codelog/sdk
 ```
 
 Or via CDN:
 
 ```html
-<script src="https://unpkg.com/@openlogs/sdk/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk/dist/codelog.iife.js"></script>
 ```
 
 ## Initialization
@@ -17,9 +17,9 @@ Or via CDN:
 ### ES Module
 
 ```typescript
-import { OpenLog } from '@openlogs/sdk';
+import { CodeLog } from '@codelog/sdk';
 
-const logger = new OpenLog({
+const logger = new CodeLog({
   projectId: 'my-app',
   server: 'ws://192.168.1.100:38291',
 });
@@ -29,7 +29,7 @@ const logger = new OpenLog({
 
 ```html
 <script>
-  OpenLog.init({
+  CodeLog.init({
     projectId: 'my-app',
     server: 'ws://192.168.1.100:38291',
   });
@@ -39,7 +39,7 @@ const logger = new OpenLog({
 ## Configuration Options
 
 ```typescript
-interface OpenLogOptions {
+interface CodeLogOptions {
   /** Required. Project identifier for device grouping */
   projectId: string;
 
@@ -250,12 +250,12 @@ logger.destroy();
 
 ## Static Method
 
-### `OpenLog.init(options)` (IIFE only)
+### `CodeLog.init(options)` (IIFE only)
 
-When using the CDN build, `OpenLog.init()` creates and returns the singleton instance:
+When using the CDN build, `CodeLog.init()` creates and returns the singleton instance:
 
 ```javascript
-const logger = OpenLog.init({ projectId: 'my-app' });
+const logger = CodeLog.init({ projectId: 'my-app' });
 ```
 
 ## Data Types

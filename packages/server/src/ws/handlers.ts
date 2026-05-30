@@ -8,6 +8,8 @@ import {
   PerformanceStore,
   ScreenshotStore,
   PerfRunStore,
+  SystemStore,
+  IndexedDBStore,
 } from '../store/index.js';
 
 export interface MessageContext {
@@ -20,6 +22,8 @@ export interface MessageContext {
   performanceStore: PerformanceStore;
   screenshotStore: ScreenshotStore;
   perfRunStore: PerfRunStore;
+  systemStore: SystemStore;
+  idbStore: IndexedDBStore;
   deviceIds: Map<WebSocket, string>;
 }
 
@@ -128,6 +132,29 @@ export const handlers: Record<string, MessageHandler> = {
   perf_run: (envelope, context) => {
     const { perfRunStore } = context;
     perfRunStore.add({ ...envelope.data, deviceId: envelope.device.deviceId });
+    broadcastEvent(envelope, context);
+  },
+
+  system: (envelope, context) => {
+    const { systemStore } = context;
+    const deviceId = envelope.device.deviceId;
+    systemStore.set(deviceId, {
+      deviceId,
+      tabId: envelope.tabId,
+      timestamp: envelope.ts,
+      ...envelope.data,
+    });
+    broadcastEvent(envelope, context);
+  },
+
+  indexeddb: (envelope, context) => {
+    const { idbStore } = context;
+    const deviceId = envelope.device.deviceId;
+    idbStore.push(deviceId, {
+      deviceId,
+      tabId: envelope.tabId,
+      ...envelope.data,
+    });
     broadcastEvent(envelope, context);
   },
 };

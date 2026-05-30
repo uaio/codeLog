@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { initOpenLog } from '../openlog';
+import { initCodeLog } from '../codelog';
 
 /**
  * 登录流程测试页
  *
- * 演示 @openlog[checkpoint] 完整使用方式：
- * AI 在关键节点埋入 console.log('@openlog[checkpoint] node: desc')
+ * 演示 @codelog[checkpoint] 完整使用方式：
+ * AI 在关键节点埋入 console.log('@codelog[checkpoint] node: desc')
  * 通过 get_checkpoints 工具验证流程是否按预期执行
  */
 
@@ -38,8 +38,8 @@ export default function LoginFlow() {
   const [logs, setLogs] = useState<string[]>([]);
 
   useEffect(() => {
-    initOpenLog().then(() => {
-      console.log('@openlog[checkpoint] page-ready: 登录页初始化完成', {
+    initCodeLog().then(() => {
+      console.log('@codelog[checkpoint] page-ready: 登录页初始化完成', {
         page: 'LoginFlow',
         ts: Date.now(),
       });
@@ -63,7 +63,7 @@ export default function LoginFlow() {
     setResult('idle');
     setErrorMsg('');
     setLogs([]);
-    console.log('@openlog[checkpoint] page-ready: 流程重置，登录页重新就绪', { reset: true });
+    console.log('@codelog[checkpoint] page-ready: 流程重置，登录页重新就绪', { reset: true });
     hitNode('page-ready');
     addLog('流程已重置');
   }
@@ -89,7 +89,7 @@ export default function LoginFlow() {
         throw new Error('密码长度不能少于 6 位');
       }
 
-      console.log('@openlog[checkpoint] input-validate: 表单验证通过', {
+      console.log('@codelog[checkpoint] input-validate: 表单验证通过', {
         username: form.username,
         passwordLength: form.password.length,
       });
@@ -100,7 +100,7 @@ export default function LoginFlow() {
       addLog('Step 2: 调用登录 API...');
       await sleep(200);
 
-      console.log('@openlog[checkpoint] api-call: 登录 API 请求发起', {
+      console.log('@codelog[checkpoint] api-call: 登录 API 请求发起', {
         url: '/api/auth/login',
         method: 'POST',
         body: { username: form.username },
@@ -114,7 +114,7 @@ export default function LoginFlow() {
       const user = await res.json();
 
       // ── Step 3: 处理成功响应 ───────────────────────────────────
-      console.log('@openlog[checkpoint] api-success: 登录 API 成功响应', {
+      console.log('@codelog[checkpoint] api-success: 登录 API 成功响应', {
         status: res.status,
         userId: user.id,
         username: user.username,
@@ -128,7 +128,7 @@ export default function LoginFlow() {
       localStorage.setItem('auth_token', token);
       localStorage.setItem('auth_user', JSON.stringify({ id: user.id, name: user.name }));
 
-      console.log('@openlog[checkpoint] token-save: Token 写入 localStorage', {
+      console.log('@codelog[checkpoint] token-save: Token 写入 localStorage', {
         tokenPrefix: token.slice(0, 20) + '...',
         keys: ['auth_token', 'auth_user'],
       });
@@ -137,7 +137,7 @@ export default function LoginFlow() {
 
       // ── Step 5: 跳转 ──────────────────────────────────────────
       await sleep(200);
-      console.log('@openlog[checkpoint] redirect: 登录完成，准备跳转到首页', {
+      console.log('@codelog[checkpoint] redirect: 登录完成，准备跳转到首页', {
         from: '/login',
         to: '/',
         userId: user.id,
@@ -147,7 +147,7 @@ export default function LoginFlow() {
 
       setResult('success');
     } catch (err: any) {
-      console.error('@openlog[checkpoint] 登录流程异常', err);
+      console.error('@codelog[checkpoint] 登录流程异常', err);
       setErrorMsg(err.message);
       setResult('fail');
       addLog(`❌ 流程异常：${err.message}`);
@@ -172,7 +172,7 @@ export default function LoginFlow() {
       <div className="page-header">
         <h2>🔐 登录流程</h2>
         <p>
-          完整演示 <code>@openlog[checkpoint]</code> 打点规范 — 用 AI 工具的{' '}
+          完整演示 <code>@codelog[checkpoint]</code> 打点规范 — 用 AI 工具的{' '}
           <code>get_checkpoints</code> 验证流程
         </p>
       </div>
@@ -291,11 +291,11 @@ export default function LoginFlow() {
         <h3>🤖 如何让 AI 验证此流程</h3>
         <div style={{ fontSize: 13, lineHeight: 1.8, color: '#555' }}>
           <p>
-            1. 确保 <code>/openlog:start</code> 已执行（WS 连接已建立）
+            1. 确保 <code>/codelog:start</code> 已执行（WS 连接已建立）
           </p>
           <p>2. 点击「正常登录流程」按钮</p>
           <p>
-            3. 在 Claude Code 中输入：<code>/openlog:logs</code> 查看实时日志
+            3. 在 Claude Code 中输入：<code>/codelog:logs</code> 查看实时日志
           </p>
           <p>
             4. 或让 AI 调用 MCP 工具：<code>get_checkpoints(feature="login")</code>

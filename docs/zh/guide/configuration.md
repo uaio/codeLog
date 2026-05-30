@@ -3,7 +3,7 @@
 ## SDK 选项
 
 ```typescript
-interface OpenLogConfig {
+interface CodeLogConfig {
   /** WebSocket 服务器地址 */
   server: string;
   /** 项目标识符，用于设备分组 */
@@ -31,12 +31,12 @@ interface OpenLogConfig {
 
 | 选项 | 环境变量 | 默认值 | 描述 |
 |------|---------|--------|------|
-| `--port` | `OPENLOG_PORT` | 38291 | 服务器端口 |
-| `--persist` | `OPENLOG_PERSIST` | false | 启用 SQLite 持久化 |
-| `--db-path` | `OPENLOG_DB_PATH` | `~/.openlog/data.db` | 数据库文件路径 |
-| `--retention-days` | `OPENLOG_RETENTION` | 1 | 数据保留天数 |
-| `--api-key` | `OPENLOG_API_KEY` | — | 访问 API 密钥 |
-| `--cors-origin` | `OPENLOG_CORS` | `*` | 允许的 CORS 来源 |
+| `--port` | `CODELOG_PORT` | 38291 | 服务器端口 |
+| `--persist` | `CODELOG_PERSIST` | false | 启用 SQLite 持久化 |
+| `--db-path` | `CODELOG_DB_PATH` | `~/.codelog/data.db` | 数据库文件路径 |
+| `--retention-days` | `CODELOG_RETENTION` | 1 | 数据保留天数 |
+| `--api-key` | `CODELOG_API_KEY` | — | 访问 API 密钥 |
+| `--cors-origin` | `CODELOG_CORS` | `*` | 允许的 CORS 来源 |
 
 ## 持久化
 
@@ -58,14 +58,14 @@ ws://localhost:38291?apiKey=<your-key>
 
 ## 国际化 (i18n)
 
-openLog 支持中英文，包括 SDK（Eruda 面板）和 PC Web 面板。
+codeLog 支持中英文，包括 SDK（Eruda 面板）和 PC Web 面板。
 
 ### SDK 语言
 
 初始化时设置 `lang` 选项：
 
 ```typescript
-new OpenLog({
+new CodeLog({
   projectId: 'my-app',
   lang: 'en',   // 'zh'（默认）或 'en'
 });
@@ -75,7 +75,7 @@ new OpenLog({
 
 Web 面板会自动检测浏览器语言。用户也可以通过面板顶部的语言切换按钮手动切换。
 
-语言偏好会保存到 `localStorage`（`openlog_lang`）。
+语言偏好会保存到 `localStorage`（`codelog_lang`）。
 
 ### 添加语言
 

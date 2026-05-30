@@ -1,20 +1,20 @@
 # Introduction
 
-openLog is a real-time mobile H5 debugging tool that helps developers monitor console logs, network requests, performance metrics, and more — directly from a web dashboard.
+codeLog is a real-time mobile H5 debugging tool that helps developers monitor console logs, network requests, performance metrics, and more — directly from a web dashboard.
 
 ## Architecture
 
 ```
 ┌─────────────┐     WebSocket      ┌──────────────┐     HTTP      ┌───────────┐
 │  SDK (H5)   │ ──────────────────▶│   Server     │◀────────────▶ │  Web UI   │
-│  @openlogs/sdk│                    │  @openlogs/server│             │           │
+│  @codelog/sdk│                    │  @codelog/server│             │           │
 └─────────────┘                    └──────────────┘              └───────────┘
                                           │
                                     MCP Protocol
                                           │
                                    ┌──────▼──────┐
                                    │  MCP Server  │
-                                   │  @openlogs/mcp│
+                                   │  @codelog/mcp│
                                    └─────────────┘
 ```
 
@@ -22,14 +22,14 @@ openLog is a real-time mobile H5 debugging tool that helps developers monitor co
 
 | Package | Description |
 |---------|-------------|
-| `@openlogs/types` | Shared TypeScript type definitions (single source of truth) |
-| `@openlogs/sdk` | Client SDK injected into H5 pages |
-| `@openlogs/server` | WebSocket + HTTP server for data collection |
-| `@openlogs/web` | PC debug panel (React) served by the server |
-| `@openlogs/mcp` | MCP server for AI-powered debugging |
-| `@openlogs/cli` | CLI tool to start the server (`npx @openlogs/cli`) and configure AI tools |
-| `@openlogs/eruda` | Bundled Eruda build used internally by the SDK (private) |
-| `@openlogs/demo` | Demo & test pages for development |
+| `@codelog/types` | Shared TypeScript type definitions (single source of truth) |
+| `@codelog/sdk` | Client SDK injected into H5 pages |
+| `@codelog/server` | WebSocket + HTTP server for data collection |
+| `@codelog/web` | PC debug panel (React) served by the server |
+| `@codelog/mcp` | MCP server for AI-powered debugging |
+| `@codelog/cli` | CLI tool to start the server (`npx @codelog/cli`) and configure AI tools |
+| `@codelog/eruda` | Bundled Eruda build used internally by the SDK (private) |
+| `@codelog/demo` | Demo & test pages for development |
 
 ## Features
 

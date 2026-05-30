@@ -1,8 +1,8 @@
 {
-  "name": "@openlogs/demo",
+  "name": "@codelog/demo",
   "version": "0.2.1",
   "private": true,
-  "description": "openLog demo & test pages",
+  "description": "codeLog demo & test pages",
   "scripts": {
     "dev": "vite --port 5274 --open",
     "build": "tsc && vite build",

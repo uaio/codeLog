@@ -1,13 +1,13 @@
 # SDK API Reference
 
-## `new OpenLog(config)`
+## `new CodeLog(config)`
 
-Initialize the openLog SDK.
+Initialize the codeLog SDK.
 
 ```typescript
-import OpenLog from '@openlogs/sdk';
+import CodeLog from '@codelog/sdk';
 
-const logger = new OpenLog({
+const logger = new CodeLog({
   server: 'ws://localhost:38291',
   projectId: 'my-app',
 });
@@ -16,7 +16,7 @@ const logger = new OpenLog({
 ### Returns
 
 ```typescript
-interface OpenLogInstance {
+interface CodeLogInstance {
   /** Destroy the instance and restore original console/fetch/XHR */
   destroy(): void;
 
@@ -33,7 +33,7 @@ interface OpenLogInstance {
 Internal event bus used by collectors. Available for advanced use:
 
 ```typescript
-import { DataBus } from '@openlogs/sdk/core/DataBus';
+import { DataBus } from '@codelog/sdk/core/DataBus';
 
 const bus = new DataBus();
 

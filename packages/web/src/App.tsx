@@ -10,6 +10,9 @@ import { PerfRunPanel } from './components/PerfRunPanel.js';
 import { MockPanel } from './components/MockPanel.js';
 import { HealthPanel } from './components/HealthPanel.js';
 import { AIAnalysisPanel } from './components/AIAnalysisPanel.js';
+import { SystemPanel } from './components/SystemPanel.js';
+import { IndexedDBPanel } from './components/IndexedDBPanel.js';
+import { OfflineLogsPanel } from './components/OfflineLogsPanel.js';
 import { TabFilter } from './components/TabFilter.js';
 import { Tabs, type Tab } from './components/Tabs.js';
 import { useI18n } from './i18n/index.js';
@@ -22,14 +25,49 @@ function App() {
   const [activeTab, setActiveTab] = useState('console');
   const [wsState, setWsState] = useState(websocketManager.getConnectionState());
   const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
+  const [badges, setBadges] = useState<Record<string, number>>({});
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareDevice, setCompareDevice] = useState<Device | null>(null);
   const { t } = useI18n();
 
   useEffect(() => {
     return websocketManager.onStateChange(setWsState);
   }, []);
 
+  // Subscribe to WebSocket messages to track unread counts per tab
+  useEffect(() => {
+    const tabForMessageType: Record<string, string> = {
+      log: 'console',
+      network: 'network',
+      storage: 'storage',
+      dom: 'dom',
+      performance: 'perf',
+      indexeddb: 'indexeddb',
+    };
+    const unsubscribe = websocketManager.subscribe((msg: any) => {
+      const msgType: string = msg?.type ?? '';
+      // Handle event envelope format
+      const effectiveType =
+        msgType === 'event' && msg?.data?.type ? String(msg.data.type) : msgType;
+      const tab = tabForMessageType[effectiveType];
+      if (tab) {
+        setBadges((prev) => ({
+          ...prev,
+          [tab]: (prev[tab] ?? 0) + 1,
+        }));
+      }
+    });
+    return unsubscribe;
+  }, []);
+
   const handleSelectDevice = (device: Device) => {
     setSelectedDevice(device);
+  };
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    // Clear badge for the tab being activated
+    setBadges((prev) => ({ ...prev, [tabId]: 0 }));
   };
 
   const tabs: Tab[] = [
@@ -37,6 +75,7 @@ function App() {
       id: 'console',
       label: t.tabs.console,
       icon: '📝',
+      badge: badges['console'],
       content: selectedDevice ? (
         <LogPanel deviceId={selectedDevice.deviceId} tabId={selectedTabId} />
       ) : (
@@ -50,18 +89,21 @@ function App() {
       id: 'network',
       label: t.tabs.network,
       icon: '🌐',
+      badge: badges['network'],
       content: <NetworkPanel deviceId={selectedDevice?.deviceId} tabId={selectedTabId} />,
     },
     {
       id: 'storage',
       label: t.tabs.storage,
       icon: '💾',
+      badge: badges['storage'],
       content: <StoragePanel deviceId={selectedDevice?.deviceId} />,
     },
     {
       id: 'element',
       label: t.tabs.dom,
       icon: '🌲',
+      badge: badges['dom'],
       content: <DOMPanel deviceId={selectedDevice?.deviceId} />,
     },
     {
@@ -95,6 +137,25 @@ function App() {
       content: <AIAnalysisPanel deviceId={selectedDevice?.deviceId} />,
     },
     {
+      id: 'indexeddb',
+      label: t.tabs.indexeddb,
+      icon: '🗄️',
+      badge: badges['indexeddb'],
+      content: <IndexedDBPanel deviceId={selectedDevice?.deviceId} />,
+    },
+    {
+      id: 'offline-logs',
+      label: '离线日志',
+      icon: '💾',
+      content: <OfflineLogsPanel />,
+    },
+    {
+      id: 'system',
+      label: t.tabs.system,
+      icon: '🖥️',
+      content: <SystemPanel deviceId={selectedDevice?.deviceId} />,
+    },
+    {
       id: 'settings',
       label: t.tabs.settings,
       icon: '⚙️',
@@ -114,6 +175,21 @@ function App() {
           </p>
         </div>
         <div style={styles.statusBadge}>
+          <button
+            style={{
+              ...styles.compareBtn,
+              backgroundColor: compareMode ? '#1890ff' : '#fff',
+              color: compareMode ? '#fff' : '#666',
+              borderColor: compareMode ? '#1890ff' : '#d9d9d9',
+            }}
+            title="Side-by-side device comparison"
+            onClick={() => {
+              setCompareMode((m) => !m);
+              if (compareMode) setCompareDevice(null);
+            }}
+          >
+            ⊞ Compare
+          </button>
           <span
             style={{
               ...styles.statusDot,
@@ -136,20 +212,59 @@ function App() {
       </div>
 
       <div style={styles.content}>
-        <div style={styles.sidebar}>
+        <div style={compareMode ? styles.sidebarCompare : styles.sidebar}>
+          {compareMode && <div style={styles.sidebarLabel}>Primary</div>}
           <DeviceList
             onSelectDevice={handleSelectDevice}
             selectedDeviceId={selectedDevice?.deviceId}
           />
+          {compareMode && (
+            <>
+              <div style={{ ...styles.sidebarLabel, marginTop: '16px', borderTop: '1px solid #e8e8e8', paddingTop: '12px' }}>
+                Compare
+              </div>
+              <DeviceList
+                onSelectDevice={setCompareDevice}
+                selectedDeviceId={compareDevice?.deviceId}
+              />
+            </>
+          )}
         </div>
 
-        <div style={styles.main}>
-          <TabFilter
-            deviceId={selectedDevice?.deviceId}
-            value={selectedTabId}
-            onChange={setSelectedTabId}
-          />
-          <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+        <div style={compareMode ? styles.mainCompare : styles.main}>
+          {/* Primary device panel */}
+          <div style={compareMode ? styles.comparePane : undefined}>
+            {compareMode && (
+              <div style={styles.compareDeviceBadge}>
+                {selectedDevice
+                  ? `📱 ${selectedDevice.ua.slice(0, 40)}…`
+                  : 'No device selected'}
+              </div>
+            )}
+            <TabFilter
+              deviceId={selectedDevice?.deviceId}
+              value={selectedTabId}
+              onChange={setSelectedTabId}
+            />
+            <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
+          </div>
+
+          {/* Compare device panel */}
+          {compareMode && (
+            <div style={styles.comparePane}>
+              <div style={styles.compareDeviceBadge}>
+                {compareDevice
+                  ? `📱 ${compareDevice.ua.slice(0, 40)}…`
+                  : 'Select a device to compare'}
+              </div>
+              <TabFilter
+                deviceId={compareDevice?.deviceId}
+                value={selectedTabId}
+                onChange={setSelectedTabId}
+              />
+              <Tabs tabs={buildCompareTabs(compareDevice?.deviceId, t, selectedTabId)} activeTab={activeTab} onChange={handleTabChange} />
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -239,6 +354,64 @@ const styles = {
     color: '#666',
     fontWeight: 500 as const,
   },
+  compareBtn: {
+    padding: '4px 10px',
+    borderRadius: '4px',
+    border: '1px solid #d9d9d9',
+    cursor: 'pointer',
+    fontSize: '12px',
+    fontWeight: 500 as const,
+    transition: 'background 0.15s',
+  },
+  sidebarCompare: {
+    width: '220px',
+    borderRight: '1px solid #e0e0e0',
+    overflow: 'auto',
+    flexShrink: 0,
+  },
+  sidebarLabel: {
+    fontSize: '11px',
+    fontWeight: 600 as const,
+    color: '#999',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+    padding: '8px 12px 4px',
+  },
+  mainCompare: {
+    flex: 1,
+    display: 'flex',
+    overflow: 'hidden',
+    gap: '4px',
+  },
+  comparePane: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    overflow: 'hidden',
+    border: '1px solid #e0e0e0',
+    borderRadius: '6px',
+    backgroundColor: '#fff',
+  },
+  compareDeviceBadge: {
+    padding: '6px 12px',
+    backgroundColor: '#fafafa',
+    borderBottom: '1px solid #f0f0f0',
+    fontSize: '11px',
+    color: '#666',
+    fontFamily: 'monospace',
+    flexShrink: 0,
+  },
 };
+
+function buildCompareTabs(deviceId: string | undefined, t: ReturnType<typeof useI18n>['t'], selectedTabId: string | null): Tab[] {
+  return [
+    { id: 'console', label: t.tabs.console, icon: '📝', content: <LogPanel deviceId={deviceId} tabId={selectedTabId} /> },
+    { id: 'network', label: t.tabs.network, icon: '🌐', content: <NetworkPanel deviceId={deviceId} tabId={selectedTabId} /> },
+    { id: 'storage', label: t.tabs.storage, icon: '💾', content: <StoragePanel deviceId={deviceId} /> },
+    { id: 'element', label: t.tabs.dom, icon: '🏗️', content: <DOMPanel deviceId={deviceId} /> },
+    { id: 'perf', label: t.tabs.perf, icon: '⚡', content: <PerformancePanel deviceId={deviceId} /> },
+    { id: 'system', label: t.tabs.system, icon: '🖥️', content: <SystemPanel deviceId={deviceId} /> },
+  ];
+}
 
 export default App;

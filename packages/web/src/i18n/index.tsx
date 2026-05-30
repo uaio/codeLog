@@ -21,7 +21,7 @@ const I18nContext = createContext<I18nContextValue>({
 });
 
 function detectLang(): Lang {
-  const stored = localStorage.getItem('openlog-lang');
+  const stored = localStorage.getItem('codelog-lang');
   if (stored === 'en' || stored === 'zh') return stored;
   const nav = navigator.language.toLowerCase();
   return nav.startsWith('zh') ? 'zh' : 'en';
@@ -32,7 +32,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const setLang = useCallback((newLang: Lang) => {
     setLangState(newLang);
-    localStorage.setItem('openlog-lang', newLang);
+    localStorage.setItem('codelog-lang', newLang);
   }, []);
 
   const value: I18nContextValue = {

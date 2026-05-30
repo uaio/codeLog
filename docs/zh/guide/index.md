@@ -1,20 +1,20 @@
 # 简介
 
-openLog 是一款实时移动端 H5 调试工具，帮助开发者通过 Web 仪表板直接监控控制台日志、网络请求、性能指标等数据。
+codeLog 是一款实时移动端 H5 调试工具，帮助开发者通过 Web 仪表板直接监控控制台日志、网络请求、性能指标等数据。
 
 ## 架构
 
 ```
 ┌─────────────┐     WebSocket      ┌──────────────┐     HTTP      ┌───────────┐
 │  SDK (H5)   │ ──────────────────▶│   Server     │◀────────────▶ │  Web UI   │
-│  @openlogs/sdk│                    │  @openlogs/server│             │           │
+│  @codelog/sdk│                    │  @codelog/server│             │           │
 └─────────────┘                    └──────────────┘              └───────────┘
                                           │
                                     MCP Protocol
                                           │
                                    ┌──────▼──────┐
                                    │  MCP Server  │
-                                   │  @openlogs/mcp│
+                                   │  @codelog/mcp│
                                    └─────────────┘
 ```
 
@@ -22,14 +22,14 @@ openLog 是一款实时移动端 H5 调试工具，帮助开发者通过 Web 仪
 
 | 包名 | 描述 |
 |------|------|
-| `@openlogs/types` | 共享 TypeScript 类型定义（单一事实来源） |
-| `@openlogs/sdk` | 注入到 H5 页面的客户端 SDK |
-| `@openlogs/server` | 用于数据采集的 WebSocket + HTTP 服务器 |
-| `@openlogs/web` | 由服务器托管的 PC 端调试面板 (React) |
-| `@openlogs/mcp` | 用于 AI 驱动调试的 MCP 服务器 |
-| `@openlogs/cli` | 启动服务器 (`npx @openlogs/cli`) 和配置 AI 工具的 CLI 工具 |
-| `@openlogs/eruda` | SDK 内部使用的 Eruda 构建包，用于本地面板 |
-| `@openlogs/demo` | 用于开发和测试的演示页面 |
+| `@codelog/types` | 共享 TypeScript 类型定义（单一事实来源） |
+| `@codelog/sdk` | 注入到 H5 页面的客户端 SDK |
+| `@codelog/server` | 用于数据采集的 WebSocket + HTTP 服务器 |
+| `@codelog/web` | 由服务器托管的 PC 端调试面板 (React) |
+| `@codelog/mcp` | 用于 AI 驱动调试的 MCP 服务器 |
+| `@codelog/cli` | 启动服务器 (`npx @codelog/cli`) 和配置 AI 工具的 CLI 工具 |
+| `@codelog/eruda` | SDK 内部使用的 Eruda 构建包，用于本地面板 |
+| `@codelog/demo` | 用于开发和测试的演示页面 |
 
 ## 功能特性
 

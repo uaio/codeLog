@@ -1,6 +1,6 @@
 # Performance Monitoring
 
-openLog provides comprehensive performance monitoring via Web Vitals and runtime metrics.
+codeLog provides comprehensive performance monitoring via Web Vitals and runtime metrics.
 
 ## Metrics Collected
 

@@ -1,9 +1,9 @@
 {
-  "name": "@openlogs/cli",
+  "name": "@codelog/cli",
   "version": "0.2.1",
-  "description": "CLI for openLog — start server, configure AI tools, one-command setup",
+  "description": "CLI for codeLog — start server, configure AI tools, one-command setup",
   "keywords": [
-    "openlog",
+    "codelog",
     "cli",
     "mobile-debugging",
     "mcp",
@@ -11,17 +11,17 @@
     "cursor",
     "devtools"
   ],
-  "author": "openLog Contributors",
+  "author": "codeLog Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uaio/openLog.git",
+    "url": "https://github.com/uaio/codeLog.git",
     "directory": "packages/cli"
   },
-  "homepage": "https://github.com/uaio/openLog/tree/main/packages/cli",
+  "homepage": "https://github.com/uaio/codeLog/tree/main/packages/cli",
   "type": "module",
   "bin": {
-    "openlog": "./bin/openlog.js"
+    "codelog": "./bin/codelog.js"
   },
   "files": [
     "bin",
@@ -40,8 +40,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@openlogs/mcp": "workspace:*",
-    "@openlogs/server": "workspace:*"
+    "@codelog/mcp": "workspace:*",
+    "@codelog/server": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

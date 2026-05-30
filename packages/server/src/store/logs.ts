@@ -4,7 +4,7 @@ export interface ConsoleLog {
   deviceId: string;
   tabId: string;
   timestamp: number;
-  level: 'log' | 'warn' | 'error' | 'info';
+  level: 'log' | 'warn' | 'error' | 'info' | 'debug' | 'repl-input' | 'repl-output';
   message: string;
   stack?: string;
 }
@@ -13,10 +13,44 @@ export class LogStore {
   private logs: Map<string, ConsoleLog[]> = new Map();
   private cleanupTimers: Map<string, NodeJS.Timeout> = new Map();
   private readonly maxLogsPerDevice = 1000;
+  /** TTL for log entries: 24 hours */
+  private readonly maxAgeMs = 24 * 60 * 60 * 1000;
+  private globalCleanupTimer: ReturnType<typeof setInterval> | null = null;
   private db?: Persistence;
 
   constructor(db?: Persistence) {
     this.db = db;
+  }
+
+  /** Start a periodic job that prunes log entries older than maxAgeMs (runs every hour). */
+  startPeriodicCleanup(intervalMs = 60 * 60 * 1000): void {
+    if (this.globalCleanupTimer) return;
+    this.globalCleanupTimer = setInterval(() => this.pruneOldLogs(), intervalMs);
+    // Allow Node.js to exit even if this timer is running
+    if (typeof (this.globalCleanupTimer as unknown as NodeJS.Timeout).unref === 'function') {
+      (this.globalCleanupTimer as unknown as NodeJS.Timeout).unref();
+    }
+  }
+
+  stopPeriodicCleanup(): void {
+    if (this.globalCleanupTimer) {
+      clearInterval(this.globalCleanupTimer);
+      this.globalCleanupTimer = null;
+    }
+  }
+
+  private pruneOldLogs(): void {
+    const cutoff = Date.now() - this.maxAgeMs;
+    for (const [deviceId, logs] of this.logs.entries()) {
+      const pruned = logs.filter((l) => l.timestamp > cutoff);
+      if (pruned.length !== logs.length) {
+        if (pruned.length === 0) {
+          this.logs.delete(deviceId);
+        } else {
+          this.logs.set(deviceId, pruned);
+        }
+      }
+    }
   }
 
   push(deviceId: string, log: ConsoleLog): void {

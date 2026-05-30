@@ -33,7 +33,7 @@ export class ErudaPlugin {
   attach(
     eruda: ErudaInstance,
     bus: DataBus,
-    openlog?: { startPerfRun(): void; stopPerfRun(): Promise<any> },
+    codelog?: { startPerfRun(): void; stopPerfRun(): Promise<any> },
   ): void {
     this.eruda = eruda;
     this.detach(); // 避免重复订阅
@@ -45,8 +45,8 @@ export class ErudaPlugin {
       }),
     );
 
-    if (openlog && typeof document !== 'undefined') {
-      this.injectPerfRunButton(openlog);
+    if (codelog && typeof document !== 'undefined') {
+      this.injectPerfRunButton(codelog);
     }
   }
 
@@ -75,7 +75,7 @@ export class ErudaPlugin {
     }
   }
 
-  private injectPerfRunButton(openlog: {
+  private injectPerfRunButton(codelog: {
     startPerfRun(): void;
     stopPerfRun(): Promise<any>;
   }): void {
@@ -95,11 +95,11 @@ export class ErudaPlugin {
         if (running) {
           running = false;
           btn.textContent = '🏁跑分';
-          await openlog.stopPerfRun();
+          await codelog.stopPerfRun();
         } else {
           running = true;
           btn.textContent = '⏹停止';
-          openlog.startPerfRun();
+          codelog.startPerfRun();
         }
       });
       toolbar.appendChild(btn);

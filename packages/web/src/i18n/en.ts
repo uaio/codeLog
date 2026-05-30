@@ -11,9 +11,11 @@ const en: Locale = {
     settings: 'Settings',
     mock: 'Mock',
     dom: 'DOM',
+    system: 'System',
+    indexeddb: 'IndexedDB',
   },
   common: {
-    title: 'openLog Web Viewer',
+    title: 'codeLog Web Viewer',
     loading: 'Loading...',
     noData: 'No data',
     refresh: 'Refresh',

@@ -1,5 +1,5 @@
 /**
- * OpenLog MCP WebSocket Client
+ * CodeLog MCP WebSocket Client
  *
  * 以 viewer 身份连接 Server，与 PC 面板完全对等：
  * - 实时接收 ServerEventPush（SDK 上行数据）
@@ -19,7 +19,7 @@ interface EventBuffer {
   error: any[];
 }
 
-class OpenLogWsClient {
+class CodeLogWsClient {
   private ws: WebSocket | null = null;
   private serverUrl = 'ws://localhost:38291';
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -200,4 +200,4 @@ class OpenLogWsClient {
   }
 }
 
-export const wsClient = new OpenLogWsClient();
+export const wsClient = new CodeLogWsClient();

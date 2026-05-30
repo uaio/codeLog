@@ -1,9 +1,9 @@
 {
-  "name": "@openlogs/mcp",
+  "name": "@codelog/mcp",
   "version": "0.2.1",
-  "description": "MCP (Model Context Protocol) server for openLog — 30+ AI-callable debugging tools",
+  "description": "MCP (Model Context Protocol) server for codeLog — 30+ AI-callable debugging tools",
   "keywords": [
-    "openlog",
+    "codelog",
     "mcp",
     "ai",
     "claude",
@@ -11,19 +11,19 @@
     "model-context-protocol",
     "debugging"
   ],
-  "author": "openLog Contributors",
+  "author": "codeLog Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uaio/openLog.git",
+    "url": "https://github.com/uaio/codeLog.git",
     "directory": "packages/mcp"
   },
-  "homepage": "https://github.com/uaio/openLog/tree/main/packages/mcp",
+  "homepage": "https://github.com/uaio/codeLog/tree/main/packages/mcp",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "openlog-mcp": "./bin/openlog-mcp"
+    "codelog-mcp": "./bin/codelog-mcp"
   },
   "exports": {
     ".": {
@@ -46,8 +46,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@openlogs/server": "workspace:*",
-    "@openlogs/types": "workspace:*",
+    "@codelog/server": "workspace:*",
+    "@codelog/types": "workspace:*",
     "open": "^10.0.0",
     "ws": "^8.16.0"
   },

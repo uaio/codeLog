@@ -2,10 +2,10 @@
 
 ## 安装和运行
 
-启动 openLog 最快的方式：
+启动 codeLog 最快的方式：
 
 ```bash
-npx @openlogs/cli
+npx @codelog/cli
 ```
 
 这将在 38291 端口启动服务器并打开 Web 仪表板。
@@ -17,9 +17,9 @@ npx @openlogs/cli
 ### 通过 CDN (IIFE)
 
 ```html
-<script src="https://unpkg.com/@openlogs/sdk/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk/dist/codelog.iife.js"></script>
 <script>
-  OpenLog.init({
+  CodeLog.init({
     server: 'ws://localhost:38291',
     projectId: 'my-app',
   });
@@ -29,13 +29,13 @@ npx @openlogs/cli
 ### 通过 npm
 
 ```bash
-npm install @openlogs/sdk
+npm install @codelog/sdk
 ```
 
 ```typescript
-import OpenLog from '@openlogs/sdk';
+import CodeLog from '@codelog/sdk';
 
-new OpenLog({
+new CodeLog({
   server: 'ws://localhost:38291',
   projectId: 'my-app',
 });
@@ -44,13 +44,13 @@ new OpenLog({
 ## CLI 选项
 
 ```bash
-npx @openlogs/cli [options]
+npx @codelog/cli [options]
 
 Options:
   -p, --port <number>       服务器端口（默认：38291）
   --no-open                 不自动打开浏览器
   --persist                 启用 SQLite 持久化
-  --db-path <path>          数据库文件路径（默认：~/.openlog/data.db）
+  --db-path <path>          数据库文件路径（默认：~/.codelog/data.db）
   --retention-days <days>   数据保留天数（默认：1）
   --api-key <key>           需要访问 API 密钥
   --cors-origin <origin>    允许的 CORS 来源（逗号分隔）

@@ -1,6 +1,8 @@
 import { createWebSocketServer } from '../ws/server.js';
 import { createRoutes } from '../api/routes.js';
 import { Persistence } from '../store/persistence.js';
+import { SavedLogStore } from '../store/savedLogs.js';
+import { createAuthMiddleware } from '../middleware/auth.js';
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
@@ -22,25 +24,17 @@ export interface CLIOptions {
 export async function start(options: CLIOptions = {}) {
   const port = options.port || 38291;
   const host = options.host; // 用户指定的公网地址（域名或 IP）
-  const corsOrigin = options.corsOrigin || process.env.OPENLOG_CORS_ORIGIN;
-  const apiKey = options.apiKey || process.env.OPENLOG_API_KEY;
+  const corsOrigin = options.corsOrigin || process.env.CODELOG_CORS_ORIGIN;
+  const apiKey = options.apiKey || process.env.CODELOG_API_KEY;
 
   const app = express();
   const server = http.createServer(app);
 
   app.use(cors(corsOrigin ? { origin: corsOrigin.split(',').map((s) => s.trim()) } : undefined));
 
-  // Optional API key authentication middleware
+  // Optional API key authentication middleware (enhanced with rate limiting)
   if (apiKey) {
-    app.use((req, res, next) => {
-      // Skip auth for static files
-      if (!req.path.startsWith('/api/')) return next();
-      const provided = req.headers['x-api-key'] || req.query['apiKey'];
-      if (provided !== apiKey) {
-        return res.status(401).json({ error: 'Unauthorized: invalid API key' });
-      }
-      next();
-    });
+    app.use(createAuthMiddleware(apiKey));
   }
 
   // Optional persistence layer
@@ -62,7 +56,15 @@ export async function start(options: CLIOptions = {}) {
     screenshotStore,
     perfRunStore,
     mockStore,
+    systemStore,
+    idbStore,
   } = createWebSocketServer(server, { apiKey, persistence });
+
+  // Start hourly TTL cleanup for log entries older than 24 hours
+  logStore.startPeriodicCleanup();
+
+  const savedLogStore = new SavedLogStore();
+
   app.use(express.json({ limit: '5mb' })); // screenshots can be large, but cap at 5MB
   app.use(
     createRoutes(
@@ -75,6 +77,9 @@ export async function start(options: CLIOptions = {}) {
       screenshotStore,
       perfRunStore,
       mockStore,
+      systemStore,
+      idbStore,
+      savedLogStore,
     ),
   );
 
@@ -108,6 +113,9 @@ export async function start(options: CLIOptions = {}) {
     console.log(`\n收到 ${signal} 信号，正在关闭服务器...`);
 
     try {
+      // Stop log cleanup timer
+      logStore.stopPeriodicCleanup();
+
       // 关闭持久化层
       persistence?.close();
 
@@ -188,7 +196,7 @@ export async function start(options: CLIOptions = {}) {
 
       console.log(`
 ┌─────────────────────────────────────────────────────┐
-│              openLog  已启动 🚀                      │
+│              codeLog  已启动 🚀                      │
 ├─────────────────────────────────────────────────────┤
 │  PC 监控面板                                         │
 │    本机:   ${localUrl}
@@ -203,10 +211,10 @@ ${
 ├─────────────────────────────────────────────────────┤
 │  SDK 接入（复制以下代码到 H5 页面）                   │
 │                                                     │
-│  <script src="https://unpkg.com/@openlogs/sdk@latest  │
-│    /dist/openlog.iife.js"></script>                 │
+│  <script src="https://unpkg.com/@codelog/sdk@latest  │
+│    /dist/codelog.iife.js"></script>                 │
 │  <script>                                           │
-│    OpenLog.init({                                   │
+│    CodeLog.init({                                   │
 │      projectId: 'my-app',                           │
 │      server: '${primaryWs}',
 │      lang: 'zh'                                     │
@@ -220,9 +228,9 @@ ${
 }
 ├─────────────────────────────────────────────────────┤
 │  MCP 配置（AI 工具接入）                             │
-│    运行: npx @openlogs/cli init  自动写入 MCP 配置     │
+│    运行: npx @codelog/cli init  自动写入 MCP 配置     │
 └─────────────────────────────────────────────────────┘
-  按 Ctrl+C 停止   端口: ${port}   (切换端口: npx @openlogs/cli -p <port>)
+  按 Ctrl+C 停止   端口: ${port}   (切换端口: npx @codelog/cli -p <port>)
 `);
 
       resolve();

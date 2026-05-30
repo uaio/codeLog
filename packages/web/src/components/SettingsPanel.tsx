@@ -5,7 +5,7 @@ interface SettingsPanelProps {
   deviceId?: string;
 }
 
-const SETTINGS_KEY = 'openlog-settings';
+const SETTINGS_KEY = 'codelog-settings';
 
 interface Settings {
   showTimestamp: boolean;
@@ -37,7 +37,7 @@ export function SettingsPanel({ deviceId }: SettingsPanelProps) {
   useEffect(() => {
     saveSettings(settings);
     // Dispatch a custom event so other panels can react
-    window.dispatchEvent(new CustomEvent('openlog-settings-change', { detail: settings }));
+    window.dispatchEvent(new CustomEvent('codelog-settings-change', { detail: settings }));
   }, [settings]);
 
   const toggle = (key: keyof Settings) => {
@@ -115,12 +115,12 @@ export function SettingsPanel({ deviceId }: SettingsPanelProps) {
             <div style={styles.infoItem}>
               <span style={styles.infoLabel}>GitHub:</span>
               <a
-                href="https://github.com/uaio/openLog"
+                href="https://github.com/uaio/codeLog"
                 style={styles.link}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                github.com/uaio/openLog
+                github.com/uaio/codeLog
               </a>
             </div>
           </div>

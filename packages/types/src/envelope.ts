@@ -1,5 +1,5 @@
 /**
- * openLog 统一数据标准
+ * codeLog 统一数据标准
  * @version 1.0
  *
  * 所有平台（Web H5、React Native、Flutter、小程序）的 SDK 上报数据
@@ -48,7 +48,7 @@ export interface DeviceContext {
  * 所有 SDK 上报数据的统一包装格式。
  * 使用 TypeScript discriminated union：type 字段决定 payload 的具体类型。
  */
-export type OpenLogEnvelope<T extends EventType = EventType> = {
+export type CodeLogEnvelope<T extends EventType = EventType> = {
   /** Schema 版本，当前 "1"，消费方可据此做兼容处理 */
   v: '1';
   /** 数据来源平台 */
@@ -68,17 +68,17 @@ export type OpenLogEnvelope<T extends EventType = EventType> = {
 /**
  * 任意类型的 Envelope（用于泛型消费，如存储、转发）
  */
-export type AnyEnvelope = OpenLogEnvelope<EventType>;
+export type AnyEnvelope = CodeLogEnvelope<EventType>;
 
 // ─── 工具类型 ──────────────────────────────────────────────────────────────
 
 /** 从 Envelope 提取特定类型 */
-export type EnvelopeOf<T extends EventType> = OpenLogEnvelope<T>;
+export type EnvelopeOf<T extends EventType> = CodeLogEnvelope<T>;
 
 /** 判断是否是某类 Envelope（类型守卫） */
 export function isEnvelope<T extends EventType>(
   env: AnyEnvelope,
   type: T,
-): env is OpenLogEnvelope<T> {
+): env is CodeLogEnvelope<T> {
   return env.type === type;
 }

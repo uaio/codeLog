@@ -31,17 +31,17 @@ function getAllIpv4(): { name: string; address: string }[] {
 function getMcpEntry(port: number) {
   return {
     command: 'npx',
-    args: ['-y', '@openlogs/mcp'],
+    args: ['-y', '@codelog/mcp'],
     env: {
-      OPENLOG_API_BASE_URL: `http://localhost:${port}`,
+      CODELOG_API_BASE_URL: `http://localhost:${port}`,
     },
   };
 }
 
 const CLAUDE_COMMANDS: Record<string, string> = {
-  'start.md': `# 启动 openLog 监控
+  'start.md': `# 启动 codeLog 监控
 
-调用 \`start_openlog\` MCP 工具启动 openLog Server 并建立 WebSocket 长连接。
+调用 \`start_codelog\` MCP 工具启动 codeLog Server 并建立 WebSocket 长连接。
 
 启动成功后：
 1. 打印服务地址和所有可用的 IPv4 地址（方便手机连接）
@@ -51,14 +51,14 @@ const CLAUDE_COMMANDS: Record<string, string> = {
 如果服务已经在运行，跳过启动直接检查设备连接状态。
 `,
 
-  'stop.md': `# 停止 openLog 监控
+  'stop.md': `# 停止 codeLog 监控
 
-调用 \`stop_openlog\` MCP 工具断开 WebSocket 连接并关闭 openLog Server。
+调用 \`stop_codelog\` MCP 工具断开 WebSocket 连接并关闭 codeLog Server。
 
 停止前先打印当前连接的设备数量，停止后确认服务已关闭。
 `,
 
-  'status.md': `# openLog 连接状态
+  'status.md': `# codeLog 连接状态
 
 调用 \`health_check\` MCP 工具，然后调用 \`list_devices\` 工具。
 
@@ -74,7 +74,7 @@ const CLAUDE_COMMANDS: Record<string, string> = {
 调用 \`list_devices\` 获取当前在线设备，然后：
 
 **优先查看 checkpoint 日志（验证开发节点）：**
-调用 \`get_checkpoints\` 获取所有 @openlog[checkpoint] 埋点日志，按节点名称分组展示，说明哪些节点已执行、哪些缺失。
+调用 \`get_checkpoints\` 获取所有 @codelog[checkpoint] 埋点日志，按节点名称分组展示，说明哪些节点已执行、哪些缺失。
 
 **查看全部日志：**
 调用 \`get_console_logs\` 获取最近 50 条日志。
@@ -85,16 +85,16 @@ const CLAUDE_COMMANDS: Record<string, string> = {
 - 如果有节点缺失或有 JS 报错，自动分析可能原因
 `,
 
-  'clean.md': `# 清除 @openlog 调试日志
+  'clean.md': `# 清除 @codelog 调试日志
 
-验证通过后，从代码中删除所有 @openlog 开发期日志。
+验证通过后，从代码中删除所有 @codelog 开发期日志。
 
 执行步骤：
-1. 在项目代码目录（src/ 或用户指定目录）中搜索所有包含 \`@openlog\` 的文件
-2. 逐文件删除所有包含 \`@openlog\` 的 console.log 行
+1. 在项目代码目录（src/ 或用户指定目录）中搜索所有包含 \`@codelog\` 的文件
+2. 逐文件删除所有包含 \`@codelog\` 的 console.log 行
 3. 列出清除的文件和行数，确认没有遗漏
 
-注意：只删除 console.log 中带 @openlog 前缀的行，不要删除普通业务逻辑代码。
+注意：只删除 console.log 中带 @codelog 前缀的行，不要删除普通业务逻辑代码。
 `,
 
   'screenshot.md': `# 截取当前页面截图
@@ -107,38 +107,38 @@ const CLAUDE_COMMANDS: Record<string, string> = {
 截图完成后展示图片，并简要描述页面当前状态（标题、可见元素、是否有错误提示等）。
 `,
 
-  'setup.md': `# 一键设置 openLog 监控环境
+  'setup.md': `# 一键设置 codeLog 监控环境
 
 从零开始，自动完成所有准备工作：检测项目 → 注入 SDK → 启动服务 → 确认设备连接。
 
 执行步骤：
 
-1. 调用 \`start_openlog\` 启动监控服务（它会自动调用 ensure_sdk 检测项目）
+1. 调用 \`start_codelog\` 启动监控服务（它会自动调用 ensure_sdk 检测项目）
 2. 检查返回的 \`sdkStatus\`：
    - 如果 \`sdkStatus.detected\` 为 true：SDK 已就绪，跳到步骤 4
    - 如果 \`sdkStatus.detected\` 为 false：根据 \`sdkStatus.framework\` 执行注入：
      - HTML 项目：调用 \`ensure_sdk(mode="inject")\` 自动注入 CDN script 标签
-     - npm 项目（React/Vue/Next.js 等）：执行 \`npm install @openlogs/sdk\`，然后将 \`sdkStatus.injectionCode\` 中的代码插入到 \`sdkStatus.entryFile\` 指向的入口文件中
+     - npm 项目（React/Vue/Next.js 等）：执行 \`npm install @codelog/sdk\`，然后将 \`sdkStatus.injectionCode\` 中的代码插入到 \`sdkStatus.entryFile\` 指向的入口文件中
 3. 向用户展示 \`sdkStatus.serverAddresses\` 中的局域网地址，提示用户在手机浏览器中打开 H5 页面
 4. 等待 10 秒后调用 \`list_devices\` 检查设备是否已连接
-   - 有设备在线：输出设备信息，提示"openLog 已就绪，可以开始开发"
+   - 有设备在线：输出设备信息，提示"codeLog 已就绪，可以开始开发"
    - 无设备在线：提示用户确认手机和电脑在同一局域网，并刷新 H5 页面
 
 注意：
-- 注入的 SDK 代码和 @openlog 日志都是开发期工具，开发完成后必须清除（使用 /openlog:clean）
-- 如果用户的项目是 npm 项目，建议将 openlog 加到 devDependencies
+- 注入的 SDK 代码和 @codelog 日志都是开发期工具，开发完成后必须清除（使用 /codelog:clean）
+- 如果用户的项目是 npm 项目，建议将 codelog 加到 devDependencies
 `,
 };
 
 function writeClaudeCommands(): void {
-  const commandsDir = join(homedir(), '.claude', 'commands', 'openlog');
+  const commandsDir = join(homedir(), '.claude', 'commands', 'codelog');
   mkdirSync(commandsDir, { recursive: true });
   for (const [filename, content] of Object.entries(CLAUDE_COMMANDS)) {
     writeFileSync(join(commandsDir, filename), content, 'utf-8');
   }
-  console.log(`  ✅ 已写入 ~/.claude/commands/openlog/ (7 个命令)`);
+  console.log(`  ✅ 已写入 ~/.claude/commands/codelog/ (7 个命令)`);
   console.log(
-    `     /openlog:start  /openlog:stop  /openlog:status  /openlog:logs  /openlog:screenshot  /openlog:clean  /openlog:setup`,
+    `     /codelog:start  /codelog:stop  /codelog:status  /codelog:logs  /codelog:screenshot  /codelog:clean  /codelog:setup`,
   );
 }
 
@@ -152,7 +152,7 @@ const AI_TOOLS: AIToolConfig[] = [
       const configFile = join(process.cwd(), '.claude.json');
       const config = existsSync(configFile) ? JSON.parse(readFileSync(configFile, 'utf-8')) : {};
       config.mcpServers = config.mcpServers ?? {};
-      config.mcpServers.openlog = mcpEntry;
+      config.mcpServers.codelog = mcpEntry;
       writeFileSync(configFile, JSON.stringify(config, null, 2));
       console.log(`  ✅ 已写入 .claude.json`);
       writeClaudeCommands();
@@ -168,7 +168,7 @@ const AI_TOOLS: AIToolConfig[] = [
       mkdirSync(configDir, { recursive: true });
       const config = existsSync(configFile) ? JSON.parse(readFileSync(configFile, 'utf-8')) : {};
       config.mcpServers = config.mcpServers ?? {};
-      config.mcpServers.openlog = mcpEntry;
+      config.mcpServers.codelog = mcpEntry;
       writeFileSync(configFile, JSON.stringify(config, null, 2));
       console.log(`  ✅ 已写入 .cursor/mcp.json`);
     },
@@ -186,7 +186,7 @@ const AI_TOOLS: AIToolConfig[] = [
       mkdirSync(join(home, '.codeium', 'windsurf'), { recursive: true });
       const config = existsSync(configFile) ? JSON.parse(readFileSync(configFile, 'utf-8')) : {};
       config.mcpServers = config.mcpServers ?? {};
-      config.mcpServers.openlog = mcpEntry;
+      config.mcpServers.codelog = mcpEntry;
       writeFileSync(configFile, JSON.stringify(config, null, 2));
       console.log(`  ✅ 已写入 ~/.codeium/windsurf/mcp_config.json`);
     },
@@ -194,11 +194,11 @@ const AI_TOOLS: AIToolConfig[] = [
 ];
 
 export async function init(options: InitOptions = {}) {
-  const port = parseInt(process.env.OPENLOG_PORT ?? '38291', 10);
+  const port = parseInt(process.env.CODELOG_PORT ?? '38291', 10);
   const networkIp = getNetworkIp();
   const mcpEntry = getMcpEntry(port);
 
-  console.log('\n🔍 openLog init — 自动配置 MCP\n');
+  console.log('\n🔍 codeLog init — 自动配置 MCP\n');
 
   // 确定要配置哪些工具
   let targets: AIToolConfig[] = [];
@@ -242,7 +242,7 @@ export async function init(options: InitOptions = {}) {
   // 输出 SDK snippet
   console.log(`
 ─────────────────────────────────────────────────
-✅ MCP 配置完成！重启 AI 工具后即可使用 openlog MCP。
+✅ MCP 配置完成！重启 AI 工具后即可使用 codelog MCP。
 
 📱 移动端 SDK 接入（粘贴到你的 H5 页面）：
 
@@ -250,9 +250,9 @@ export async function init(options: InitOptions = {}) {
 ${networkIpLines}
 
   <!-- CDN + 连接远程监控（server 替换为上方手机可达的地址）-->
-  <script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+  <script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
   <script>
-    OpenLog.init({
+    CodeLog.init({
       projectId: 'my-app',
       server: 'ws://${primaryIp}:${port}',
       lang: 'zh'
@@ -261,16 +261,16 @@ ${networkIpLines}
 
   <!-- 纯本地（仅 Eruda，无需服务器） -->
   <script>
-    OpenLog.init({ projectId: 'my-app', lang: 'zh' })
+    CodeLog.init({ projectId: 'my-app', lang: 'zh' })
   </script>
 
   <!-- 选项 C：npm -->
-  import OpenLog from '@openlogs/sdk'
-  new OpenLog({ projectId: 'my-app', server: 'ws://${primaryIp}:${port}', lang: 'zh' })
+  import CodeLog from '@codelog/sdk'
+  new CodeLog({ projectId: 'my-app', server: 'ws://${primaryIp}:${port}', lang: 'zh' })
 
 🖥️  启动 PC 监控面板：
-  npx @openlogs/cli             打开 http://localhost:${port}
-  npx @openlogs/cli -p 8080     自定义端口
+  npx @codelog/cli             打开 http://localhost:${port}
+  npx @codelog/cli -p 8080     自定义端口
 ─────────────────────────────────────────────────
 `);
 }
@@ -288,7 +288,7 @@ function printManualConfig(mcpEntry: object, port: number) {
   console.log(`手动配置 MCP（将以下内容加入你的 AI 工具 MCP 配置文件）：
 
   "mcpServers": {
-    "openlog": ${JSON.stringify(mcpEntry, null, 6).replace(/\n/g, '\n  ')}
+    "codelog": ${JSON.stringify(mcpEntry, null, 6).replace(/\n/g, '\n  ')}
   }
 
 支持的配置文件位置：
@@ -297,15 +297,15 @@ function printManualConfig(mcpEntry: object, port: number) {
   Windsurf     →  ~/.codeium/windsurf/mcp_config.json
 
 指定工具：
-  npx @openlogs/cli init --for=claude
-  npx @openlogs/cli init --for=cursor
-  npx @openlogs/cli init --for=windsurf
+  npx @codelog/cli init --for=claude
+  npx @codelog/cli init --for=cursor
+  npx @codelog/cli init --for=windsurf
 
 可用局域网地址（手机与电脑不在同一 WiFi？选对应网卡）：
 ${networkIpLines}
 
 SDK 接入（粘贴到 H5 页面，server 替换为手机可达的地址）：
-  <script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
-  <script>OpenLog.init({ projectId: 'my-app', server: 'ws://${primaryIp}:${port}', lang: 'zh' })</script>
+  <script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
+  <script>CodeLog.init({ projectId: 'my-app', server: 'ws://${primaryIp}:${port}', lang: 'zh' })</script>
 `);
 }

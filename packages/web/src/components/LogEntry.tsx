@@ -1,10 +1,18 @@
-import type { ConsoleLog } from '../types/index.js';
+import { useState } from 'react';
+import type { ConsoleLog, SerializedValue } from '../types/index.js';
+import { JsonTreeView } from './JsonTreeView.js';
 
 interface LogEntryProps {
   log: ConsoleLog;
 }
 
+function isComplex(v: SerializedValue): boolean {
+  return v.t === 'arr' || v.t === 'obj' || v.t === 'map' || v.t === 'set';
+}
+
 export function LogEntry({ log }: LogEntryProps) {
+  const [treeOpen, setTreeOpen] = useState(false);
+  const hasRichArgs = (log.serializedArgs ?? []).some(isComplex);
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('zh-CN', {
@@ -23,6 +31,10 @@ export function LogEntry({ log }: LogEntryProps) {
         return '⚠️';
       case 'info':
         return 'ℹ️';
+      case 'repl-input':
+        return '▶';
+      case 'repl-output':
+        return '←';
       default:
         return '📝';
     }
@@ -36,6 +48,10 @@ export function LogEntry({ log }: LogEntryProps) {
         return '#faad14';
       case 'info':
         return '#597ef7';
+      case 'repl-input':
+        return '#1890ff';
+      case 'repl-output':
+        return '#52c41a';
       default:
         return '#52c41a';
     }
@@ -43,26 +59,52 @@ export function LogEntry({ log }: LogEntryProps) {
 
   const isGlobalError =
     log.level === 'error' &&
-    (log.message.startsWith('[Uncaught Error]') ||
-      log.message.startsWith('[Unhandled Promise Rejection]'));
+    (log.message.startsWith('[Uncaught ') ||
+      log.message.startsWith('[Unhandled Promise Rejection]') ||
+      log.message.startsWith('[Resource Error]'));
+
+  const isReplInput = log.level === 'repl-input';
+  const isReplOutput = log.level === 'repl-output';
 
   return (
     <div
       style={{
         ...styles.entry,
         borderLeftColor: getLevelColor(log.level),
-        backgroundColor: isGlobalError ? '#fff2f0' : '#fff',
+        backgroundColor: isGlobalError
+          ? '#fff2f0'
+          : isReplInput
+            ? '#e6f7ff'
+            : isReplOutput
+              ? '#f6ffed'
+              : '#fff',
       }}
     >
       <div style={styles.header}>
-        <span style={styles.icon}>{isGlobalError ? '💥' : getLevelIcon(log.level)}</span>
+        <span style={{ ...styles.icon, fontFamily: isReplInput || isReplOutput ? 'monospace' : undefined }}>
+          {isGlobalError ? '💥' : getLevelIcon(log.level)}
+        </span>
         <span style={styles.timestamp}>{formatTime(log.timestamp)}</span>
         <span style={{ ...styles.levelTag, color: getLevelColor(log.level) }}>
-          {log.level.toUpperCase()}
+          {isReplInput ? 'INPUT' : isReplOutput ? 'RESULT' : log.level.toUpperCase()}
         </span>
         {isGlobalError && <span style={styles.globalErrorTag}>GLOBAL</span>}
       </div>
-      <div style={styles.message}>{log.message}</div>
+      <div style={{ ...styles.message, fontFamily: isReplInput || isReplOutput ? 'monospace' : undefined }}>
+        {log.message}
+      </div>
+      {hasRichArgs && (
+        <div style={styles.treeToggle} onClick={() => setTreeOpen((o) => !o)}>
+          {treeOpen ? '▾' : '▸'} {treeOpen ? 'Collapse' : 'Expand objects'}
+        </div>
+      )}
+      {hasRichArgs && treeOpen && (
+        <div style={styles.treeWrap}>
+          {(log.serializedArgs ?? []).map((arg, i) => (
+            <JsonTreeView key={i} value={arg} depth={0} defaultExpanded={true} />
+          ))}
+        </div>
+      )}
       {log.stack && (
         <details style={styles.stackDetails}>
           <summary style={styles.stackSummary}>查看堆栈</summary>
@@ -147,5 +189,19 @@ const styles = {
     fontSize: '11px',
     overflowX: 'auto' as const,
     border: '1px solid #e8e8e8',
+  },
+  treeToggle: {
+    marginTop: '4px',
+    fontSize: '11px',
+    color: '#1890ff',
+    cursor: 'pointer',
+    userSelect: 'none' as const,
+  },
+  treeWrap: {
+    marginTop: '6px',
+    padding: '8px',
+    backgroundColor: '#1a1a2e',
+    borderRadius: '4px',
+    border: '1px solid #333',
   },
 };

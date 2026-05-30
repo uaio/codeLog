@@ -134,7 +134,11 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
   const filteredLogs = useMemo(
     () =>
       logs.filter((log) => {
-        const levelMatch = filterLevel === 'all' || log.level === filterLevel;
+        const levelMatch =
+          filterLevel === 'all' ||
+          (filterLevel === 'repl-input'
+            ? log.level === 'repl-input' || log.level === 'repl-output'
+            : log.level === filterLevel);
         const textMatch =
           !searchText || log.message.toLowerCase().includes(searchText.toLowerCase());
         return levelMatch && textMatch;
@@ -284,16 +288,17 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
       {/* 筛选工具栏 */}
       <div style={styles.toolbar}>
         <div style={styles.levelButtons}>
-          {(['all', 'log', 'warn', 'error', 'info'] as const).map((level) => (
+          {(['all', 'log', 'warn', 'error', 'info', 'repl-input'] as const).map((level) => (
             <button
               key={level}
               onClick={() => setFilterLevel(level)}
               style={{
                 ...styles.levelButton,
                 ...(filterLevel === level ? styles.levelButtonActive : {}),
+                ...(level === 'repl-input' ? { color: '#1890ff' } : {}),
               }}
             >
-              {level === 'all' ? t.logPanel.all : level.toUpperCase()}
+              {level === 'all' ? t.logPanel.all : level === 'repl-input' ? 'REPL' : level.toUpperCase()}
             </button>
           ))}
         </div>

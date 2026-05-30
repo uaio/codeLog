@@ -36,8 +36,8 @@ import {
   listMonitors,
   focusDevice,
   initDevSession,
-  startOpenlog,
-  stopOpenlog,
+  startCodelog,
+  stopCodelog,
   getCheckpoints,
   ensureSdk,
 } from './tools/index.js';
@@ -124,7 +124,7 @@ function setupGlobalErrorHandlers(server: Server): void {
 export async function startMCPServer(config?: EmbeddedServerConfig): Promise<void> {
   const server = new Server(
     {
-      name: 'openlog-mcp',
+      name: 'codelog-mcp',
       version: '0.1.0',
     },
     {
@@ -287,14 +287,14 @@ export async function startMCPServer(config?: EmbeddedServerConfig): Promise<voi
           inputSchema: initDevSession.inputSchema,
         },
         {
-          name: startOpenlog.name,
-          description: startOpenlog.description,
-          inputSchema: startOpenlog.inputSchema,
+          name: startCodelog.name,
+          description: startCodelog.description,
+          inputSchema: startCodelog.inputSchema,
         },
         {
-          name: stopOpenlog.name,
-          description: stopOpenlog.description,
-          inputSchema: stopOpenlog.inputSchema,
+          name: stopCodelog.name,
+          description: stopCodelog.description,
+          inputSchema: stopCodelog.inputSchema,
         },
         {
           name: getCheckpoints.name,
@@ -315,32 +315,32 @@ export async function startMCPServer(config?: EmbeddedServerConfig): Promise<voi
     return {
       prompts: [
         {
-          name: 'openlog_dev_workflow',
-          description: 'openLog H5 开发自动验证工作流 SOP。开始开发 H5 功能时自动参考此流程。',
+          name: 'codelog_dev_workflow',
+          description: 'codeLog H5 开发自动验证工作流 SOP。开始开发 H5 功能时自动参考此流程。',
         },
       ],
     };
   });
 
   server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-    if (request.params.name === 'openlog_dev_workflow') {
+    if (request.params.name === 'codelog_dev_workflow') {
       return {
         description:
-          'openLog H5 development workflow — auto-detection + checkpoint verification SOP',
+          'codeLog H5 development workflow — auto-detection + checkpoint verification SOP',
         messages: [
           {
             role: 'user' as const,
             content: {
               type: 'text' as const,
-              text: `# openLog — AI Real-Device Debugging Workflow
+              text: `# codeLog — AI Real-Device Debugging Workflow
 
-You have access to a real device monitoring system (openLog). Use it to verify code on real phones, diagnose errors, and analyze app state — all without needing to see the screen.
+You have access to a real device monitoring system (codeLog). Use it to verify code on real phones, diagnose errors, and analyze app state — all without needing to see the screen.
 
 ---
 
 ## Setup (run once per session)
 
-1. Call \`start_openlog\` — starts server + auto-detects SDK status
+1. Call \`start_codelog\` — starts server + auto-detects SDK status
 2. If SDK not detected: inject it (see ensure_sdk output for framework-specific code)
 3. Call \`list_devices\` — confirm device is connected
 4. If multiple devices: call \`focus_device(deviceId)\` to lock target
@@ -354,9 +354,9 @@ If no device appears: tell user to open the page on their phone (same WiFi as th
 **When**: You're building a feature and need to confirm it actually works on a real phone.
 
 ### Workflow:
-1. **Write code** with \`@openlog[checkpoint]\` logs at key nodes:
+1. **Write code** with \`@codelog[checkpoint]\` logs at key nodes:
 \`\`\`js
-console.log('@openlog[checkpoint] featureName: step', { data })
+console.log('@codelog[checkpoint] featureName: step', { data })
 \`\`\`
 Place checkpoints at: user actions, before/after async calls, state changes, error catches.
 
@@ -369,7 +369,7 @@ Place checkpoints at: user actions, before/after async calls, state changes, err
 
 4. **On failure**: call \`get_console_logs(level: "error")\` to find errors, fix, re-verify
 
-5. **After passing**: remove ALL \`@openlog\` log lines from code (mandatory — they are dev-only)
+5. **After passing**: remove ALL \`@codelog\` log lines from code (mandatory — they are dev-only)
 
 ---
 
@@ -424,15 +424,15 @@ stop_monitor(monitorId)       → cleanup
 ## Checkpoint Format Reference
 
 \`\`\`js
-console.log('@openlog[checkpoint] login: clicked submit', { username })
-console.log('@openlog[checkpoint] login: API request sent')
-console.log('@openlog[checkpoint] login: response received', { status: 200 })
-console.log('@openlog[checkpoint] login: token saved', { hasToken: true })
-console.log('@openlog[checkpoint] login: navigated to home')
+console.log('@codelog[checkpoint] login: clicked submit', { username })
+console.log('@codelog[checkpoint] login: API request sent')
+console.log('@codelog[checkpoint] login: response received', { status: 200 })
+console.log('@codelog[checkpoint] login: token saved', { hasToken: true })
+console.log('@codelog[checkpoint] login: navigated to home')
 \`\`\`
 
 Rules:
-- Prefix: \`@openlog[checkpoint]\` (openLog recognizes this specifically)
+- Prefix: \`@codelog[checkpoint]\` (codeLog recognizes this specifically)
 - Format: \`featureName: step description\`
 - Always remove after verification — these MUST NOT ship to production
 
@@ -440,7 +440,7 @@ Rules:
 
 ## Key Reminders
 
-- **@openlog logs are dev tools** — always clean up after verification passes
+- **@codelog logs are dev tools** — always clean up after verification passes
 - **Device must be on same WiFi** — if list_devices is empty, remind user
 - **All tools accept optional deviceId** — omit it to auto-select (or use focus_device)
 - **execute_js is powerful** — use it to read DOM, trigger clicks, check JS state remotely
@@ -739,13 +739,13 @@ Rules:
           return { content: [{ type: 'text', text: JSON.stringify(r, null, 2) }] };
         }
 
-        case 'start_openlog': {
-          const r = await startOpenlog.execute(args as { port?: number; openBrowser?: boolean });
+        case 'start_codelog': {
+          const r = await startCodelog.execute(args as { port?: number; openBrowser?: boolean });
           return { content: [{ type: 'text', text: JSON.stringify(r, null, 2) }] };
         }
 
-        case 'stop_openlog': {
-          const r = await stopOpenlog.execute(args as Record<string, never>);
+        case 'stop_codelog': {
+          const r = await stopCodelog.execute(args as Record<string, never>);
           return { content: [{ type: 'text', text: JSON.stringify(r, null, 2) }] };
         }
 
@@ -782,5 +782,5 @@ Rules:
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  console.error('openLog MCP Server running on stdio — use /openlog:start to begin monitoring');
+  console.error('codeLog MCP Server running on stdio — use /codelog:start to begin monitoring');
 }

@@ -1,6 +1,6 @@
 # 性能监控
 
-openLog 通过 Web Vitals 和运行时指标提供全面的性能监控。
+codeLog 通过 Web Vitals 和运行时指标提供全面的性能监控。
 
 ## 采集的指标
 

@@ -86,7 +86,7 @@ function findEntryFile(projectDir: string, framework: EnsureSdkResult['framework
       );
       break;
     case 'nuxt':
-      candidates.push('app.vue', 'layouts/default.vue', 'plugins/openlog.ts', 'plugins/openlog.js');
+      candidates.push('app.vue', 'layouts/default.vue', 'plugins/codelog.ts', 'plugins/codelog.js');
       break;
     case 'svelte':
       candidates.push('src/main.ts', 'src/main.js', 'src/routes/+layout.svelte');
@@ -117,15 +117,15 @@ function checkSdkPresent(projectDir: string, entryFile: string | null): boolean 
   if (existsSync(pkgPath)) {
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
     const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
-    if (allDeps['@openlogs/sdk']) return true;
+    if (allDeps['@codelog/sdk']) return true;
   }
 
-  // Check entry file for OpenLog references
+  // Check entry file for CodeLog references
   if (entryFile) {
     const fullPath = join(projectDir, entryFile);
     if (existsSync(fullPath)) {
       const content = readFileSync(fullPath, 'utf-8');
-      if (content.includes('OpenLog') || content.includes('openlog')) return true;
+      if (content.includes('CodeLog') || content.includes('codelog')) return true;
     }
   }
 
@@ -135,7 +135,7 @@ function checkSdkPresent(projectDir: string, entryFile: string | null): boolean 
     const fullPath = join(projectDir, h);
     if (existsSync(fullPath)) {
       const content = readFileSync(fullPath, 'utf-8');
-      if (content.includes('openlog')) return true;
+      if (content.includes('codelog')) return true;
     }
   }
 
@@ -143,9 +143,9 @@ function checkSdkPresent(projectDir: string, entryFile: string | null): boolean 
 }
 
 function generateCdnSnippet(wsAddress: string): string {
-  return `<script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+  return `<script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
 <script>
-  OpenLog.init({
+  CodeLog.init({
     projectId: '${getProjectId()}',
     server: '${wsAddress}',
     lang: 'zh'
@@ -154,9 +154,9 @@ function generateCdnSnippet(wsAddress: string): string {
 }
 
 function generateNpmSnippet(wsAddress: string): string {
-  return `import OpenLog from '@openlogs/sdk'
+  return `import CodeLog from '@codelog/sdk'
 
-OpenLog.init({
+CodeLog.init({
   projectId: '${getProjectId()}',
   server: '${wsAddress}',
   lang: 'zh'
@@ -193,7 +193,7 @@ function injectIntoHtml(projectDir: string, entryFile: string, wsAddress: string
 
 export const ensureSdk = {
   name: 'ensure_sdk',
-  description: `Detect whether the user's project has the openLog SDK integrated. If not, provide injection code or auto-inject it based on the project framework (HTML/React/Vue/Next.js/etc). Call this before any debugging/monitoring operation to ensure the SDK is ready.`,
+  description: `Detect whether the user's project has the codeLog SDK integrated. If not, provide injection code or auto-inject it based on the project framework (HTML/React/Vue/Next.js/etc). Call this before any debugging/monitoring operation to ensure the SDK is ready.`,
   inputSchema: {
     type: 'object' as const,
     properties: {
@@ -239,7 +239,7 @@ export const ensureSdk = {
         entryFile,
         injected: false,
         injectionCode: '',
-        instructions: 'openLog SDK is already integrated in this project. Ready to use.',
+        instructions: 'codeLog SDK is already integrated in this project. Ready to use.',
         serverAddresses,
       };
     }
@@ -273,7 +273,7 @@ export const ensureSdk = {
         injected,
         injectionCode,
         instructions: injected
-          ? `✅ openLog SDK has been injected into ${entryFile}. Reload the page on your mobile device to connect.`
+          ? `✅ codeLog SDK has been injected into ${entryFile}. Reload the page on your mobile device to connect.`
           : buildInstructions(framework, entryFile, wsAddress, false),
         serverAddresses,
       };
@@ -300,7 +300,7 @@ function buildInstructions(
 ): string {
   const lines: string[] = [];
 
-  lines.push(`openLog SDK is NOT detected in this project (framework: ${framework}).`);
+  lines.push(`codeLog SDK is NOT detected in this project (framework: ${framework}).`);
 
   switch (framework) {
     case 'html':
@@ -316,7 +316,7 @@ function buildInstructions(
     case 'svelte':
     case 'angular':
       lines.push(`\nStep 1: Install the SDK`);
-      lines.push(`  npm install @openlogs/sdk`);
+      lines.push(`  npm install @codelog/sdk`);
       lines.push(`\nStep 2: Add the following to ${entryFile || 'your entry file'}:`);
       lines.push(generateNpmSnippet(wsAddress));
       if (isAuto)
@@ -325,21 +325,21 @@ function buildInstructions(
 
     case 'next':
       lines.push(`\nStep 1: Install the SDK`);
-      lines.push(`  npm install @openlogs/sdk`);
+      lines.push(`  npm install @codelog/sdk`);
       lines.push(
         `\nStep 2: For Next.js, add the SDK in your root layout (${entryFile || 'app/layout.tsx'}):`,
       );
       lines.push(
-        `  - Import dynamically: const OpenLog = dynamic(() => import('@openlogs/sdk'), { ssr: false })`,
+        `  - Import dynamically: const CodeLog = dynamic(() => import('@codelog/sdk'), { ssr: false })`,
       );
-      lines.push(`  - Or use a client component wrapper to call OpenLog.init()`);
+      lines.push(`  - Or use a client component wrapper to call CodeLog.init()`);
       lines.push(generateNpmSnippet(wsAddress));
       break;
 
     case 'nuxt':
       lines.push(`\nStep 1: Install the SDK`);
-      lines.push(`  npm install @openlogs/sdk`);
-      lines.push(`\nStep 2: Create a Nuxt plugin at plugins/openlog.client.ts:`);
+      lines.push(`  npm install @codelog/sdk`);
+      lines.push(`\nStep 2: Create a Nuxt plugin at plugins/codelog.client.ts:`);
       lines.push(
         `  export default defineNuxtPlugin(() => {\n    ${generateNpmSnippet(wsAddress).replace(/\n/g, '\n    ')}\n  })`,
       );
@@ -349,7 +349,7 @@ function buildInstructions(
       lines.push(`\nOption A (CDN — simplest):`);
       lines.push(generateCdnSnippet(wsAddress));
       lines.push(`\nOption B (npm):`);
-      lines.push(`  npm install @openlogs/sdk`);
+      lines.push(`  npm install @codelog/sdk`);
       lines.push(generateNpmSnippet(wsAddress));
   }
 

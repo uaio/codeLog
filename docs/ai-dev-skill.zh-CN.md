@@ -1,7 +1,7 @@
-# openLog AI 开发 Skill — 节点验证 SOP
+# codeLog AI 开发 Skill — 节点验证 SOP
 
 将此文件内容放入项目的 `CLAUDE.md`（或 Cursor Rules / Copilot Instructions），
-即可让 AI 工具在开发过程中自动使用 openLog 验证每个功能节点。
+即可让 AI 工具在开发过程中自动使用 codeLog 验证每个功能节点。
 
 ---
 
@@ -14,10 +14,10 @@
 ## 粘贴到 CLAUDE.md 的内容
 
 ```markdown
-## 🔬 开发验证 SOP（由 openLog 提供）
+## 🔬 开发验证 SOP（由 codeLog 提供）
 
 你在开发 H5 页面功能时，**必须** 在每个关键节点完成后，
-通过 openLog MCP 工具在真机上验证该节点是否正常工作。
+通过 codeLog MCP 工具在真机上验证该节点是否正常工作。
 **不要跳过验证直接继续下一节点。**
 
 ### 验证工具
@@ -176,7 +176,7 @@ stop_monitor(logMonitorId)
          ↑               ↑
     MCP 进程内 watcher 注册表（游标推进）
          ↓               ↓
-    openLog Server API（/logs?since=cursor）
+    codeLog Server API（/logs?since=cursor）
 ```
 
 ---

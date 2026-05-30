@@ -1,3 +1,14 @@
+/** Cookie 完整属性条目 */
+export interface CookieEntry {
+  name: string;
+  value: string;
+  path?: string;
+  domain?: string;
+  expires?: string;
+  secure?: boolean;
+  sameSite?: 'strict' | 'lax' | 'none';
+}
+
 /** 存储快照 */
 export interface StorageSnapshot {
   deviceId: string;
@@ -6,6 +17,8 @@ export interface StorageSnapshot {
   localStorage: Record<string, string>;
   sessionStorage: Record<string, string>;
   cookies: string;
+  /** Cookie 完整属性列表（cookieStore API 支持时才有值） */
+  cookieEntries?: CookieEntry[];
   localStorageSize: number;
   sessionStorageSize: number;
 }

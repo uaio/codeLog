@@ -13,3 +13,6 @@ export { ScreenshotStore, type ScreenshotSnapshot } from './screenshot.js';
 export { PerfRunStore, type PerfRunSession as PerfRunSessionData } from './perfRun.js';
 export { MockStore, type MockRule } from './mocks.js';
 export { Persistence, type PersistenceOptions } from './persistence.js';
+export { SystemStore, type SystemInfo, type SystemConnectionInfo, type SystemBatteryInfo } from './system.js';
+export { IndexedDBStore, type IDBOperationEntry } from './indexeddb.js';
+export { SavedLogStore, type SavedLogSession, type SavedLogEntry } from './savedLogs.js';

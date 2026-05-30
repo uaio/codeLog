@@ -1,6 +1,6 @@
-# @openlogs/web
+# @codelog/web
 
-> PC debug panel for openLog — React-based real-time monitoring dashboard.
+> PC debug panel for codeLog — React-based real-time monitoring dashboard.
 
 This package provides the web-based debugging panel that displays real-time data from connected mobile devices.
 
@@ -37,12 +37,12 @@ src/
 
 ```bash
 # From monorepo root
-pnpm --filter @openlogs/web dev      # Vite dev server
-pnpm --filter @openlogs/web build    # Production build
-pnpm --filter @openlogs/web preview  # Preview production build
+pnpm --filter @codelog/web dev      # Vite dev server
+pnpm --filter @codelog/web build    # Production build
+pnpm --filter @codelog/web preview  # Preview production build
 ```
 
-> **Note:** This package is not published to npm. The CLI (`@openlogs/cli`) bundles the built output into its `public/` directory for distribution.
+> **Note:** This package is not published to npm. The CLI (`@codelog/cli`) bundles the built output into its `public/` directory for distribution.
 
 ## Tech Stack
 
@@ -53,4 +53,4 @@ pnpm --filter @openlogs/web preview  # Preview production build
 
 ## License
 
-MIT © [openLog](https://github.com/uaio/openLog)
+MIT © [codeLog](https://github.com/uaio/codeLog)

@@ -11,6 +11,8 @@ import {
   ScreenshotStore,
   PerfRunStore,
   MockStore,
+  SystemStore,
+  IndexedDBStore,
   Persistence,
 } from '../store/index.js';
 import {
@@ -40,6 +42,8 @@ export function createWebSocketServer(
   const screenshotStore = new ScreenshotStore();
   const perfRunStore = new PerfRunStore(db);
   const mockStore = new MockStore();
+  const systemStore = new SystemStore();
+  const idbStore = new IndexedDBStore();
   const deviceIds = new Map<WebSocket, string>();
 
   const wss = new WebSocketServer({
@@ -156,6 +160,8 @@ export function createWebSocketServer(
             performanceStore,
             screenshotStore,
             perfRunStore,
+            systemStore,
+            idbStore,
             deviceIds,
           };
           handler(message, context);
@@ -178,6 +184,8 @@ export function createWebSocketServer(
           screenshotStore.cleanup(deviceId);
           perfRunStore.clear(deviceId);
           mockStore.cleanup(deviceId);
+          systemStore.delete(deviceId);
+          idbStore.deleteDevice(deviceId);
           deviceIds.delete(ws);
         }
       }
@@ -195,6 +203,8 @@ export function createWebSocketServer(
     screenshotStore,
     perfRunStore,
     mockStore,
+    systemStore,
+    idbStore,
   };
 }
 

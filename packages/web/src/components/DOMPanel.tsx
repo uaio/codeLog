@@ -91,6 +91,7 @@ function DOMNodeView({ node, depth = 0 }: DOMNodeViewProps) {
 export function DOMPanel({ deviceId }: DOMPanelProps) {
   const { snapshot, loading, refresh } = useDOM(deviceId);
   const { t } = useI18n();
+  const [viewMode, setViewMode] = useState<'tree' | 'source'>('tree');
 
   if (!deviceId) {
     return (
@@ -133,6 +134,22 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
         </div>
       )}
 
+      {/* View mode tabs */}
+      <div style={styles.viewTabs}>
+        <button
+          style={{ ...styles.viewTab, ...(viewMode === 'tree' ? styles.viewTabActive : {}) }}
+          onClick={() => setViewMode('tree')}
+        >
+          🌲 Elements
+        </button>
+        <button
+          style={{ ...styles.viewTab, ...(viewMode === 'source' ? styles.viewTabActive : {}) }}
+          onClick={() => setViewMode('source')}
+        >
+          {'</>'}  HTML Source
+        </button>
+      </div>
+
       {/* DOM Tree */}
       <div style={styles.tree}>
         {loading && <div style={styles.loadingWrap}>⏳ {t.common.loading}</div>}
@@ -142,7 +159,12 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
             <span>{t.domPanel.waitingHint}</span>
           </div>
         )}
-        {!loading && snapshot && <DOMNodeView node={snapshot.dom} depth={0} />}
+        {!loading && snapshot && viewMode === 'tree' && <DOMNodeView node={snapshot.dom} depth={0} />}
+        {!loading && snapshot && viewMode === 'source' && (
+          <pre style={styles.htmlSource}>
+            {snapshot.htmlSnapshot ?? '(HTML snapshot not available — upgrade SDK)'}
+          </pre>
+        )}
       </div>
     </div>
   );
@@ -197,6 +219,36 @@ const styles: Record<string, CSSProperties> = {
   },
   urlLabel: { fontSize: '11px', color: '#666', fontFamily: 'monospace' },
   urlValue: { fontSize: '11px', color: '#9cdcfe', fontFamily: 'monospace', wordBreak: 'break-all' },
+  viewTabs: {
+    display: 'flex',
+    borderBottom: '1px solid #333',
+    backgroundColor: '#252526',
+    flexShrink: 0,
+  },
+  viewTab: {
+    padding: '6px 14px',
+    fontSize: '12px',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#888',
+    cursor: 'pointer',
+    borderBottom: '2px solid transparent',
+  },
+  viewTabActive: {
+    color: '#ccc',
+    borderBottom: '2px solid #007acc',
+  },
+  htmlSource: {
+    margin: 0,
+    padding: '8px',
+    color: '#ce9178',
+    fontFamily: '"SF Mono", Monaco, Consolas, monospace',
+    fontSize: '11px',
+    lineHeight: '1.6',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-all',
+    overflow: 'auto',
+  },
   tree: {
     flex: 1,
     overflow: 'auto',

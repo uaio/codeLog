@@ -153,23 +153,44 @@ export class NetworkInterceptor {
         .then(async (response) => {
           const duration = Date.now() - startTime;
 
-          // 尝试读取响应体
-          let responseBody: string | undefined;
-          try {
-            // 克隆响应以便读取 body 而不影响原始响应
-            const clonedResponse = response.clone();
-            const text = await clonedResponse.text();
-            responseBody = truncateToSize(text, self.config.maxResponseBodySize);
-          } catch {
-            // 响应体可能已被读取或不可读
-          }
-
-          // 获取响应头
+          // 获取响应头（需先获取，用于判断 Content-Type）
           let responseHeaders: Record<string, string> | undefined;
           try {
             responseHeaders = headersToObject(response.headers);
           } catch {
             // 忽略
+          }
+
+          // 按 Content-Type 选择响应体读取方式，避免二进制内容变乱码
+          let responseBody: string | undefined;
+          try {
+            const clonedResponse = response.clone();
+            const ct = responseHeaders?.['content-type'] ?? '';
+            if (ct.includes('application/json')) {
+              const text = await clonedResponse.text();
+              responseBody = truncateToSize(text, self.config.maxResponseBodySize);
+            } else if (ct.includes('text/')) {
+              const text = await clonedResponse.text();
+              responseBody = truncateToSize(text, self.config.maxResponseBodySize);
+            } else if (ct) {
+              // 二进制响应：转 base64 摘要（仅取前 maxResponseBodySize 字节）
+              const blob = await clonedResponse.blob();
+              if (blob.size <= self.config.maxResponseBodySize) {
+                const buf = await blob.arrayBuffer();
+                const bytes = new Uint8Array(buf);
+                let binary = '';
+                bytes.forEach((b) => { binary += String.fromCharCode(b); });
+                responseBody = `[binary: ${blob.type}, ${blob.size}B] ` +
+                  btoa(binary).slice(0, 200);
+              } else {
+                responseBody = `[binary: ${blob.type}, ${blob.size}B, EXCEED_SIZE]`;
+              }
+            } else {
+              const text = await clonedResponse.text();
+              responseBody = truncateToSize(text, self.config.maxResponseBodySize);
+            }
+          } catch {
+            // 响应体可能已被读取或不可读
           }
 
           self.onReport({
@@ -315,12 +336,30 @@ export class NetworkInterceptor {
           // 忽略
         }
 
-        // 获取响应体
+        // 按 responseType 读取响应体，避免 blob/arraybuffer 时 responseText 为空
         let responseBody: string | undefined;
         try {
-          const responseText = this.responseText;
-          if (responseText) {
-            responseBody = truncateToSize(responseText, self.config.maxResponseBodySize);
+          const rt = this.responseType;
+          if (!rt || rt === 'text' || rt === 'json') {
+            const text = rt === 'json'
+              ? JSON.stringify(this.response)
+              : this.responseText;
+            if (text) {
+              responseBody = truncateToSize(text, self.config.maxResponseBodySize);
+            }
+          } else if (rt === 'arraybuffer' && this.response instanceof ArrayBuffer) {
+            const bytes = new Uint8Array(this.response);
+            if (bytes.byteLength <= self.config.maxResponseBodySize) {
+              let binary = '';
+              bytes.forEach((b) => { binary += String.fromCharCode(b); });
+              responseBody = `[arraybuffer: ${bytes.byteLength}B] ` + btoa(binary).slice(0, 200);
+            } else {
+              responseBody = `[arraybuffer: ${bytes.byteLength}B, EXCEED_SIZE]`;
+            }
+          } else if (rt === 'blob' && this.response instanceof Blob) {
+            responseBody = `[blob: ${this.response.type}, ${this.response.size}B${this.response.size > self.config.maxResponseBodySize ? ', EXCEED_SIZE' : ''}]`;
+          } else if (rt === 'document') {
+            responseBody = `[document]`;
           }
         } catch {
           // 响应体可能不可读
@@ -339,6 +378,7 @@ export class NetworkInterceptor {
           responseBody,
           duration,
           type: 'xhr',
+          withCredentials: this.withCredentials,
         });
       };
 

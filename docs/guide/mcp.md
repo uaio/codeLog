@@ -1,11 +1,11 @@
 # MCP Integration
 
-openLog includes a Model Context Protocol (MCP) server that enables AI assistants to interact with debugging data.
+codeLog includes a Model Context Protocol (MCP) server that enables AI assistants to interact with debugging data.
 
 ## Setup
 
 ```bash
-npx @openlogs/mcp
+npx @codelog/mcp
 ```
 
 Or add to your MCP client configuration:
@@ -13,9 +13,9 @@ Or add to your MCP client configuration:
 ```json
 {
   "mcpServers": {
-    "openlog": {
+    "codelog": {
       "command": "npx",
-      "args": ["@openlogs/mcp"]
+      "args": ["@codelog/mcp"]
     }
   }
 }
@@ -101,8 +101,8 @@ Or add to your MCP client configuration:
 | `init_dev_session` | Initialize a development session |
 | `get_checkpoints` | Get all checkpoint markers |
 | `verify_checkpoint` | Verify a specific checkpoint |
-| `start_openlog` | Start the openLog server |
-| `stop_openlog` | Stop the openLog server |
+| `start_codelog` | Start the codeLog server |
+| `stop_codelog` | Stop the codeLog server |
 
 ## Example Prompts
 
@@ -112,14 +112,14 @@ With an AI assistant connected via MCP:
 - "What network requests are failing?"
 - "Analyze the performance of the current page"
 - "What's stored in localStorage?"
-- "Help me set up openLog in my React project"
+- "Help me set up codeLog in my React project"
 
 ## SDK Auto-Injection
 
-The `ensure_sdk` tool can automatically detect your project framework and add the openLog SDK:
+The `ensure_sdk` tool can automatically detect your project framework and add the codeLog SDK:
 
 ```
-> Use the ensure_sdk tool to add openLog to my project
+> Use the ensure_sdk tool to add codeLog to my project
 ```
 
 It supports: React, Vue, Next.js, vanilla HTML, and more.

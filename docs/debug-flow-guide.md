@@ -1,6 +1,6 @@
-# openLog Complete Debug Flow Guide (Beginner-Friendly)
+# codeLog Complete Debug Flow Guide (Beginner-Friendly)
 
-> openLog offers three usage modes, from simplest to most advanced. You can use just one, or combine them.
+> codeLog offers three usage modes, from simplest to most advanced. You can use just one, or combine them.
 
 ---
 
@@ -10,7 +10,7 @@
 ┌───────────────┬──────────────────────┬────────────────────┬───────────────────────────────┐
 │               │  Mode A: SDK Only    │  Mode B: SDK + PC  │  Mode C: SDK + Claude Code    │
 ├───────────────┼──────────────────────┼────────────────────┼───────────────────────────────┤
-│  Setup needed │  One <script> tag    │  npx @openlogs/cli  │  npx @openlogs/cli init        │
+│  Setup needed │  One <script> tag    │  npx @codelog/cli  │  npx @codelog/cli init        │
 │  Debug panel  │  Eruda on phone      │  PC browser panel  │  Claude Code reads data       │
 │  Network req  │  None                │  Same LAN          │  Same LAN                     │
 │  Best for     │  Quick log checking  │  Remote monitoring  │  AI auto-verification         │
@@ -31,9 +31,9 @@ A debug floating button appears at the bottom-left of the phone page. Tap it to 
 Add this to your H5 page's `<head>` or at the end of `<body>`:
 
 ```html
-<script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
 <script>
-  OpenLog.init({ projectId: 'my-app', lang: 'en' })
+  CodeLog.init({ projectId: 'my-app', lang: 'en' })
 </script>
 ```
 
@@ -68,14 +68,14 @@ All logs, network requests, storage, and performance data from the phone **sync 
 #### Step 1: Start the Server on Your PC (Zero Install)
 
 ```bash
-npx @openlogs/cli
+npx @codelog/cli
 ```
 
 After startup, the terminal prints:
 
 ```
 ┌─────────────────────────────────────────┐
-│         openLog  Started 🚀              │
+│         codeLog  Started 🚀              │
 ├─────────────────────────────────────────┤
 │  PC Monitoring Panel                     │
 │    Local:   http://localhost:38291       │
@@ -84,9 +84,9 @@ After startup, the terminal prints:
 │                 SDK server: 'ws://192.168.1.5:38291' │
 ├─────────────────────────────────────────┤
 │  SDK Integration:                        │
-│  <script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+│  <script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
 │  <script>                                │
-│    OpenLog.init({                        │
+│    CodeLog.init({                        │
 │      projectId: 'my-app',               │
 │      server: 'ws://192.168.1.5:38291',  │
 │      lang: 'en'                          │
@@ -102,9 +102,9 @@ After startup, the terminal prints:
 Paste the code from the terminal into your H5 page:
 
 ```html
-<script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
 <script>
-  OpenLog.init({
+  CodeLog.init({
     projectId: 'my-app',
     server: 'ws://192.168.1.5:38291',   // ← Replace with the address shown in your terminal
     lang: 'en'
@@ -116,11 +116,11 @@ Paste the code from the terminal into your H5 page:
 
 > You can also use npm:
 > ```bash
-> npm install @openlogs/sdk
+> npm install @codelog/sdk
 > ```
 > ```javascript
-> import OpenLog from '@openlogs/sdk'
-> new OpenLog({ projectId: 'my-app', server: 'ws://192.168.1.5:38291', lang: 'en' })
+> import CodeLog from '@codelog/sdk'
+> new CodeLog({ projectId: 'my-app', server: 'ws://192.168.1.5:38291', lang: 'en' })
 > ```
 
 #### Step 3: Open the PC Panel
@@ -130,7 +130,7 @@ Visit `http://localhost:38291` (or the address shown in terminal) in your browse
 ### Usage Flow
 
 ```
-1. PC: npx @openlogs/cli                → Server starts
+1. PC: npx @codelog/cli                → Server starts
 2. H5 page: paste SDK code             → SDK connects to server
 3. Phone: open H5 page                 → Device appears in PC panel sidebar
 4. PC: select device                   → See real-time logs/network/storage/performance
@@ -159,7 +159,7 @@ Visit `http://localhost:38291` (or the address shown in terminal) in your browse
 A: Make sure they're on the same LAN. The terminal prints all network interface addresses — pick the one your phone can reach.
 
 **Q: Change port?**
-A: `npx @openlogs/cli -p 8080`
+A: `npx @codelog/cli -p 8080`
 
 ---
 
@@ -174,7 +174,7 @@ Claude Code reads your phone's logs, network requests, and screenshots directly 
 #### Step 1: Configure MCP (One-time setup)
 
 ```bash
-npx @openlogs/cli init
+npx @codelog/cli init
 ```
 
 This command will:
@@ -182,7 +182,7 @@ This command will:
 - **Auto-write** the MCP configuration file
 - For Claude Code, also installs 7 **slash commands**
 
-> You can also specify: `npx @openlogs/cli init --for=claude`
+> You can also specify: `npx @codelog/cli init --for=claude`
 
 **Then restart Claude Code.**
 
@@ -191,11 +191,11 @@ This command will:
 Simply type:
 
 ```
-/openlog:setup
+/codelog:setup
 ```
 
 This command automatically handles everything:
-1. Starts the openLog monitoring server
+1. Starts the codeLog monitoring server
 2. Detects if your project has the SDK integrated
 3. If not → auto-injects (HTML projects get CDN injection; npm projects get install + code insertion)
 4. Waits for device connection
@@ -207,27 +207,27 @@ This command automatically handles everything:
 
 | Command | What It Does |
 |---------|-------------|
-| `/openlog:setup` | **One-click zero-to-ready** (detect → inject → start → confirm connection) |
-| `/openlog:start` | Start monitoring server |
-| `/openlog:stop` | Stop monitoring server |
-| `/openlog:status` | Check device connection status |
-| `/openlog:logs` | View logs + checkpoint verification chain |
-| `/openlog:screenshot` | Capture current phone screen |
-| `/openlog:clean` | Remove all @openlog debug logs from code |
+| `/codelog:setup` | **One-click zero-to-ready** (detect → inject → start → confirm connection) |
+| `/codelog:start` | Start monitoring server |
+| `/codelog:stop` | Stop monitoring server |
+| `/codelog:status` | Check device connection status |
+| `/codelog:logs` | View logs + checkpoint verification chain |
+| `/codelog:screenshot` | Capture current phone screen |
+| `/codelog:clean` | Remove all @codelog debug logs from code |
 
 ### AI Development & Debug Flow
 
 ```
 You                       Claude Code                   Phone
 │                              │                          │
-│  /openlog:setup              │                          │
+│  /codelog:setup              │                          │
 │ ───────────────────────────► │ ensure_sdk → inject SDK  │
-│                              │ start_openlog → start    │
+│                              │ start_codelog → start    │
 │                              │────── WS connection ────►│
 │                              │                          │
 │  "Build me a login feature"  │                          │
 │ ───────────────────────────► │ writes code              │
-│                              │ + inserts @openlog logs  │
+│                              │ + inserts @codelog logs  │
 │ ◄─────────────────────────── │                          │
 │                              │                          │
 │  (walk through login on phone)│                    SDK reports
@@ -242,8 +242,8 @@ You                       Claude Code                   Phone
 │                              │ + get_network_requests()  │
 │ ◄─────────────────────────── │ found API returning 401   │
 │                              │                          │
-│  /openlog:clean              │                          │
-│ ───────────────────────────► │ removes all @openlog logs │
+│  /codelog:clean              │                          │
+│ ───────────────────────────► │ removes all @codelog logs │
 ```
 
 ### Core Tools Claude Can Call
@@ -252,7 +252,7 @@ You                       Claude Code                   Phone
 - `get_console_logs` — View logs (filter by level: error/warn/log)
 - `get_network_requests` — View network requests (URL/status/timing/body)
 - `get_storage` — View localStorage / sessionStorage / Cookies
-- `get_checkpoints` — View @openlog[checkpoint] verification nodes
+- `get_checkpoints` — View @codelog[checkpoint] verification nodes
 - `take_screenshot` — Capture screenshot
 - `health_check` — Page health score
 
@@ -281,12 +281,12 @@ Claude: calls get_console_logs(level: "error")
 **Scenario 2: Logic Verification**
 ```
 You: "Build me a login feature"
-Claude: writes code + inserts @openlog[checkpoint] logs at key nodes
+Claude: writes code + inserts @codelog[checkpoint] logs at key nodes
 You: walk through login flow on phone
 Claude: calls get_checkpoints(feature: "login")
        → finds "token saved" node exists but hasToken: false
        → identifies localStorage.setItem wrote empty value
-       → fixes code → re-verifies → passes → cleans up @openlog logs
+       → fixes code → re-verifies → passes → cleans up @codelog logs
 ```
 
 **Scenario 3: Performance Issues**
@@ -315,10 +315,10 @@ Claude: calls health_check() → health score 45/100
 
 ## Important Notes
 
-1. **openLog is a development tool — don't ship to production**
+1. **codeLog is a development tool — don't ship to production**
    - CDN `<script>` tag: remove after debugging
    - npm install: exclude from production builds, or guard with env variables
-   - `@openlog[checkpoint]` logs: use `/openlog:clean` to auto-remove
+   - `@codelog[checkpoint]` logs: use `/codelog:clean` to auto-remove
 
 2. **Phone and PC must be on the same LAN** (Modes B/C)
    - Connecting to the same WiFi is simplest
@@ -329,4 +329,4 @@ Claude: calls health_check() → health score 45/100
    - Same server, same data on both sides
 
 4. **Default port is 38291**
-   - Port taken? `npx @openlogs/cli -p 8080` to use a different one
+   - Port taken? `npx @codelog/cli -p 8080` to use a different one

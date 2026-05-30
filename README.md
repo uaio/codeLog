@@ -1,6 +1,6 @@
 **English** | [中文](./README.zh-CN.md)
 
-# openLog
+# codeLog
 
 > The first frontend H5 monitoring tool built for AI Agents — real-time collection, PC visualization, AI-queryable, open integration.
 
@@ -9,20 +9,20 @@
 - Can't tell if API calls fired or if params are correct
 - AI wrote your code, but you can't verify it actually works on a real device
 
-**openLog solves this.** Embed one line of code in your H5 page — everything happening on the phone (logs, requests, storage, performance) syncs to your PC in real-time, and also syncs to AI Agents, letting AI verify every line of code it writes on real devices.
+**codeLog solves this.** Embed one line of code in your H5 page — everything happening on the phone (logs, requests, storage, performance) syncs to your PC in real-time, and also syncs to AI Agents, letting AI verify every line of code it writes on real devices.
 
-openLog has three usage modes — pick what fits, they're independent:
+codeLog has three usage modes — pick what fits, they're independent:
 
 | Mode | Best For | How to Use |
 |------|----------|------------|
 | **SDK Only** | Local debugging, no network needed | Add SDK, Eruda panel opens on device |
-| **SDK + PC Panel** | Remote monitoring, team collaboration | `npx @openlogs/cli` to start server |
-| **SDK + Claude Code** | AI-assisted development, auto-verification | Then run `npx @openlogs/cli init` for MCP config |
+| **SDK + PC Panel** | Remote monitoring, team collaboration | `npx @codelog/cli` to start server |
+| **SDK + Claude Code** | AI-assisted development, auto-verification | Then run `npx @codelog/cli init` for MCP config |
 
 > 📖 **[Complete Debug Flow Guide](./docs/debug-flow-guide.md)** — Step-by-step setup and usage for each mode.
 > 🤖 **[AI Development Skill (SOP)](./docs/ai-dev-skill.md)** — Node verification SOP for CLAUDE.md / Cursor Rules.
 
-**openLog is also an open data platform**: any system (CI/CD, backend, Native apps, third-party tools) can push data via standard APIs for PC panel display and AI tool querying.
+**codeLog is also an open data platform**: any system (CI/CD, backend, Native apps, third-party tools) can push data via standard APIs for PC panel display and AI tool querying.
 
 ---
 
@@ -62,8 +62,8 @@ highlight_element     zen_mode              network_throttle
 add_mock              remove_mock           clear_mocks
 health_check          ai_analyze            start_perf_run
 stop_perf_run         get_perf_report       verify_checkpoint
-get_checkpoints       ensure_sdk            start_openlog
-stop_openlog          start_monitor         poll_monitor
+get_checkpoints       ensure_sdk            start_codelog
+stop_codelog          start_monitor         poll_monitor
 stop_monitor          list_monitors
 ```
 
@@ -74,44 +74,44 @@ stop_monitor          list_monitors
 ### 1. Start the Server (Zero Install)
 
 ```bash
-npx @openlogs/cli
+npx @codelog/cli
 # Terminal prints all LAN IPs and SDK snippet — just copy and use
-# Custom port: npx @openlogs/cli -p 8080
-# Public/cloud deployment: npx @openlogs/cli --host myapp.example.com
+# Custom port: npx @codelog/cli -p 8080
+# Public/cloud deployment: npx @codelog/cli --host myapp.example.com
 ```
 
 ### 2. Configure AI Tools (Auto-detection)
 
 ```bash
-npx @openlogs/cli init
+npx @codelog/cli init
 # Auto-detects installed AI tools (Claude Code / Cursor / Windsurf)
 # Writes MCP config + Claude Code slash commands in one step
 
 # Specify tool:
-npx @openlogs/cli init --for=claude
-npx @openlogs/cli init --for=cursor
-npx @openlogs/cli init --for=windsurf
+npx @codelog/cli init --for=claude
+npx @codelog/cli init --for=cursor
+npx @codelog/cli init --for=windsurf
 ```
 
-For Claude Code, `init` also writes `~/.claude/commands/openlog/` — available immediately:
+For Claude Code, `init` also writes `~/.claude/commands/codelog/` — available immediately:
 
 | Slash Command | Function |
 |---|---|
-| `/openlog:setup` | **One-click zero-to-ready** (detect SDK → inject → start → confirm) |
-| `/openlog:start` | Start monitoring + establish WS connection |
-| `/openlog:stop` | Stop monitoring |
-| `/openlog:status` | Check device connection status |
-| `/openlog:logs` | View logs + checkpoint trace |
-| `/openlog:screenshot` | Capture current page screenshot |
-| `/openlog:clean` | Remove all `@openlog` debug logs from code |
+| `/codelog:setup` | **One-click zero-to-ready** (detect SDK → inject → start → confirm) |
+| `/codelog:start` | Start monitoring + establish WS connection |
+| `/codelog:stop` | Stop monitoring |
+| `/codelog:status` | Check device connection status |
+| `/codelog:logs` | View logs + checkpoint trace |
+| `/codelog:screenshot` | Capture current page screenshot |
+| `/codelog:clean` | Remove all `@codelog` debug logs from code |
 
 ### 3. Integrate the Mobile SDK
 
 ```html
 <!-- CDN (recommended) — server prints this snippet on startup -->
-<script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
 <script>
-  OpenLog.init({
+  CodeLog.init({
     projectId: 'my-app',
     server: 'ws://192.168.x.x:38291',  // Correct IP is printed on server start
     lang: 'en'
@@ -120,18 +120,18 @@ For Claude Code, `init` also writes `~/.claude/commands/openlog/` — available 
 
 <!-- Local-only mode (no server needed, Eruda panel only) -->
 <script>
-  OpenLog.init({ projectId: 'my-app', lang: 'en' })
+  CodeLog.init({ projectId: 'my-app', lang: 'en' })
 </script>
 ```
 
 ```bash
 # npm install
-npm install @openlogs/sdk
+npm install @codelog/sdk
 ```
 
 ```javascript
-import OpenLog from '@openlogs/sdk'
-new OpenLog({ projectId: 'my-app', server: 'ws://192.168.x.x:38291', lang: 'en' })
+import CodeLog from '@codelog/sdk'
+new CodeLog({ projectId: 'my-app', server: 'ws://192.168.x.x:38291', lang: 'en' })
 ```
 
 ### 4. Open the PC Panel
@@ -142,17 +142,17 @@ Open `http://localhost:38291` in your browser, select a device from the sidebar.
 
 ## 🤖 AI Development Workflow
 
-This is openLog's core scenario: AI tools verify each development milestone using real device data while building H5 features.
+This is codeLog's core scenario: AI tools verify each development milestone using real device data while building H5 features.
 
 ### Complete Flow
 
 **Step 1: Start Monitoring**
 
 ```
-/openlog:start
+/codelog:start
 ```
 
-Claude calls `start_openlog` → server starts → WS connection established → PC panel auto-opens.
+Claude calls `start_codelog` → server starts → WS connection established → PC panel auto-opens.
 
 If multiple devices are connected, Claude calls `list_devices` to show you the list, then `focus_device(deviceId)` to lock onto the target device. All subsequent operations automatically target that device.
 
@@ -160,32 +160,32 @@ If multiple devices are connected, Claude calls `list_devices` to show you the l
 
 **Step 2: Develop + Instrument (AI does this automatically)**
 
-AI automatically inserts `@openlog[checkpoint]` logs at key code nodes:
+AI automatically inserts `@codelog[checkpoint]` logs at key code nodes:
 
 ```javascript
 async function handleLogin(username, password) {
-  console.log('@openlog[checkpoint] login: start', { username })
+  console.log('@codelog[checkpoint] login: start', { username })
   try {
-    console.log('@openlog[checkpoint] login: sending request')
+    console.log('@codelog[checkpoint] login: sending request')
     const res = await api.login(username, password)
-    console.log('@openlog[checkpoint] login: success', { status: res.status })
+    console.log('@codelog[checkpoint] login: success', { status: res.status })
     localStorage.setItem('token', res.data.token)
-    console.log('@openlog[checkpoint] login: token saved', { hasToken: true })
+    console.log('@codelog[checkpoint] login: token saved', { hasToken: true })
     router.push('/home')
-    console.log('@openlog[checkpoint] login: navigated to home')
+    console.log('@codelog[checkpoint] login: navigated to home')
   } catch (e) {
-    console.log('@openlog[checkpoint] login: failed', { error: e.message })
+    console.log('@codelog[checkpoint] login: failed', { error: e.message })
   }
 }
 ```
 
 **Checkpoint format convention:**
 ```
-console.log('@openlog[checkpoint] featureName: stepDescription', { optionalData })
-                ^^^^^^^^ openLog unified identifier
+console.log('@codelog[checkpoint] featureName: stepDescription', { optionalData })
+                ^^^^^^^^ codeLog unified identifier
 ```
 
-`@openlog` is the unified prefix for all openLog development-time logs, enabling easy querying and cleanup.
+`@codelog` is the unified prefix for all codeLog development-time logs, enabling easy querying and cleanup.
 
 ---
 
@@ -194,7 +194,7 @@ console.log('@openlog[checkpoint] featureName: stepDescription', { optionalData 
 User walks through the flow on their phone, then:
 
 ```
-/openlog:logs
+/codelog:logs
 ```
 
 Or tell Claude: "I finished the login flow, verify it for me"
@@ -222,22 +222,22 @@ Attached data:
 
 ---
 
-**Step 5: Clean up @openlog logs (required after verification)**
+**Step 5: Clean up @codelog logs (required after verification)**
 
 ```
-/openlog:clean
+/codelog:clean
 ```
 
-Claude searches and removes all `@openlog`-prefixed console.log lines from your code.
+Claude searches and removes all `@codelog`-prefixed console.log lines from your code.
 
-**`@openlog` logs are development tools — they must not ship to production.**
+**`@codelog` logs are development tools — they must not ship to production.**
 
 ---
 
 **Step 6: Stop Monitoring**
 
 ```
-/openlog:stop
+/codelog:stop
 ```
 
 ---
@@ -247,23 +247,23 @@ Claude searches and removes all `@openlog`-prefixed console.log lines from your 
 ```
 You                      Claude Code (AI)              Real Phone
 │                              │                           │
-│  /openlog:start              │                           │
-│ ────────────────────────────►│ start_openlog()           │
+│  /codelog:start              │                           │
+│ ────────────────────────────►│ start_codelog()           │
 │                              │──── WS connection ────────►│
 │                              │                           │
 │  "Build me a login feature"  │                           │
-│ ────────────────────────────►│ writes code + @openlog    │
+│ ────────────────────────────►│ writes code + @codelog    │
 │ ◄────────────────────────────│                           │
 │                              │                           │
 │  (walk through login on phone)│                     SDK reports
 │                              │◄──────────────────────────│
 │                              │                           │
-│  "verify it" / /openlog:logs │                           │
+│  "verify it" / /codelog:logs │                           │
 │ ────────────────────────────►│ get_checkpoints()         │
 │ ◄────────────────────────────│ ✅ all 5 nodes hit        │
 │                              │                           │
-│  /openlog:clean              │                           │
-│ ────────────────────────────►│ removes @openlog logs     │
+│  /codelog:clean              │                           │
+│ ────────────────────────────►│ removes @codelog logs     │
 ```
 
 ---
@@ -275,9 +275,9 @@ You                      Claude Code (AI)              Real Phone
 No server needed — the lightest option. SDK initializes and opens the built-in Eruda debug panel directly on the phone.
 
 ```html
-<script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
 <script>
-  OpenLog.init({ projectId: 'my-app', lang: 'en' })
+  CodeLog.init({ projectId: 'my-app', lang: 'en' })
   // Debug entry appears at bottom-left of the page
 </script>
 ```
@@ -291,8 +291,8 @@ Best for: quick debugging, no network available, purely local development.
 Start the server, phone data streams to the PC visualization panel in real-time. Supports multiple devices simultaneously.
 
 ```bash
-npx @openlogs/cli          # Start, auto-prints LAN IPs and SDK code
-npx @openlogs/cli -p 8080  # Custom port
+npx @codelog/cli          # Start, auto-prints LAN IPs and SDK code
+npx @codelog/cli -p 8080  # Custom port
 ```
 
 Open `http://localhost:38291` in your PC browser, select a device to start monitoring.
@@ -306,10 +306,10 @@ Best for: remote debugging, API integration testing, performance analysis, team 
 On top of Mode A, configure MCP so Claude Code connects to the real-time data stream. AI can auto-detect and inject SDK, verify development milestones, analyze errors, and execute remote operations. **No need to open the PC panel** — Claude IS your debug panel.
 
 ```bash
-npx @openlogs/cli init     # Auto-detect and configure Claude Code / Cursor / Windsurf
+npx @codelog/cli init     # Auto-detect and configure Claude Code / Cursor / Windsurf
 ```
 
-After restarting your AI tool, type `/openlog:start` in Claude Code to begin AI-assisted development.
+After restarting your AI tool, type `/codelog:start` in Claude Code to begin AI-assisted development.
 
 Best for: AI Agent development, automatic milestone verification, AI-driven debugging loops.
 
@@ -318,14 +318,14 @@ Best for: AI Agent development, automatic milestone verification, AI-driven debu
 ## 🏗️ Architecture
 
 ```
-openLog/
+codeLog/
 ├── packages/
-│   ├── types/      # Unified data standard (@openlogs/types) ← single source of truth
+│   ├── types/      # Unified data standard (@codelog/types) ← single source of truth
 │   ├── sdk/        # Mobile SDK (data collection + Eruda integration)
 │   ├── server/     # Node.js server (WebSocket + REST API)
 │   ├── web/        # PC debug panel (React)
 │   ├── mcp/        # MCP Server (AI toolset)
-│   ├── cli/        # CLI tool (@openlogs/cli) — npx entry, server lifecycle & AI tool config
+│   ├── cli/        # CLI tool (@codelog/cli) — npx entry, server lifecycle & AI tool config
 │   ├── eruda/      # Bundled Eruda build (used internally by SDK for local panel)
 │   └── demo/       # Demo & test pages for development
 ```
@@ -348,7 +348,7 @@ External Systems (CI/CD / Backend / Native / Third-party)
 
 ---
 
-## 📐 Data Integration Standard (OpenLog Envelope)
+## 📐 Data Integration Standard (CodeLog Envelope)
 
 All data — whether from the mobile SDK, external systems, or future Native platforms — follows the unified **Envelope format**.
 
@@ -457,7 +457,7 @@ Full type definitions at [`packages/types/src/events/index.ts`](./packages/types
 
 ## 🔌 External Data Integration (POST /api/ingest)
 
-Any system can push data to openLog via REST API — data appears in the PC panel and MCP tools in real-time.
+Any system can push data to codeLog via REST API — data appears in the PC panel and MCP tools in real-time.
 
 ```
 POST http://localhost:38291/api/ingest
@@ -483,7 +483,7 @@ curl -X POST http://localhost:38291/api/ingest \
 | Scenario | Description |
 |----------|-------------|
 | **CI/CD Pipeline** | Push test failures, build errors in real-time for AI analysis |
-| **Backend Logs** | Push API exceptions to openLog, correlate with frontend data |
+| **Backend Logs** | Push API exceptions to codeLog, correlate with frontend data |
 | **Native Apps** | React Native / Flutter integration, reuse the same monitoring stack |
 | **Custom Collection** | Analytics, A/B test results via `custom` event type |
 
@@ -531,12 +531,12 @@ const report = await logger.stopPerfRun();
 
 ### Near-term (Implemented)
 - [x] Web H5 SDK + PC monitoring panel + MCP toolset
-- [x] `@openlogs/types` unified data standard (Envelope v1)
+- [x] `@codelog/types` unified data standard (Envelope v1)
 - [x] `POST /api/ingest` external data ingestion API
-- [x] `npx @openlogs/cli init` one-click AI tool configuration + Claude Code slash commands
-- [x] `@openlog[checkpoint]` development-time instrumentation + `get_checkpoints` verification
-- [x] `/openlog:clean` auto-cleanup of debug logs after verification
-- [x] `start_openlog` / `stop_openlog` explicit lifecycle management
+- [x] `npx @codelog/cli init` one-click AI tool configuration + Claude Code slash commands
+- [x] `@codelog[checkpoint]` development-time instrumentation + `get_checkpoints` verification
+- [x] `/codelog:clean` auto-cleanup of debug logs after verification
+- [x] `start_codelog` / `stop_codelog` explicit lifecycle management
 - [x] MCP Prompt auto-loads development SOP (works on connect, no CLAUDE.md needed)
 - [x] API Key authentication (`--api-key` flag)
 - [x] SQLite persistence (`--persist` flag, configurable retention)
@@ -565,15 +565,15 @@ pnpm test       # Run tests (requires build first)
 pnpm dev        # Dev mode (watch)
 
 # Run tests for a specific package:
-pnpm --filter @openlogs/server test
-pnpm --filter @openlogs/mcp test
-pnpm --filter @openlogs/cli test
-pnpm --filter @openlogs/sdk test
+pnpm --filter @codelog/server test
+pnpm --filter @codelog/mcp test
+pnpm --filter @codelog/cli test
+pnpm --filter @codelog/sdk test
 ```
 
 ---
 
 ## 📄 License
 
-MIT © [openLog](https://github.com/uaio/openLog)
+MIT © [codeLog](https://github.com/uaio/codeLog)
 

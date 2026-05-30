@@ -1,6 +1,6 @@
-# Contributing to openLog
+# Contributing to codeLog
 
-Thank you for your interest in contributing to openLog! This guide will help you get started.
+Thank you for your interest in contributing to codeLog! This guide will help you get started.
 
 ## Development Setup
 
@@ -13,8 +13,8 @@ Thank you for your interest in contributing to openLog! This guide will help you
 
 ```bash
 # Clone the repository
-git clone https://github.com/uaio/openLog.git
-cd openLog
+git clone https://github.com/uaio/codeLog.git
+cd codeLog
 
 # Install dependencies
 pnpm install
@@ -33,12 +33,12 @@ pnpm dev
 
 ```
 packages/
-├── types/      # Shared TypeScript types (@openlogs/types)
-├── sdk/        # Mobile SDK (@openlogs/sdk)
-├── server/     # Node.js WebSocket + REST server (@openlogs/server)
-├── web/        # PC debug panel (React, @openlogs/web)
-├── mcp/        # MCP AI toolset (@openlogs/mcp)
-├── cli/        # CLI entry point (@openlogs/cli)
+├── types/      # Shared TypeScript types (@codelog/types)
+├── sdk/        # Mobile SDK (@codelog/sdk)
+├── server/     # Node.js WebSocket + REST server (@codelog/server)
+├── web/        # PC debug panel (React, @codelog/web)
+├── mcp/        # MCP AI toolset (@codelog/mcp)
+├── cli/        # CLI entry point (@codelog/cli)
 ├── eruda/      # Forked Eruda for on-device panel
 └── demo/       # Demo app for testing
 ```
@@ -47,12 +47,12 @@ packages/
 
 ### Local Development (Full Stack)
 
-To run and test the complete openLog stack locally:
+To run and test the complete codeLog stack locally:
 
 **Terminal 1 — Start the server:**
 ```bash
 pnpm build                          # Build all packages first
-node packages/cli/bin/openlog.js    # Start server (default port 9898)
+node packages/cli/bin/codelog.js    # Start server (default port 9898)
 
 # Useful flags:
 #   -p 3000          Custom port
@@ -68,9 +68,9 @@ pnpm demo    # Starts at http://localhost:5274
 **Terminal 3 — (Optional) Watch mode for active development:**
 ```bash
 # Watch a specific package:
-pnpm --filter @openlogs/server dev   # Recompile server on change
-pnpm --filter @openlogs/sdk dev      # Recompile SDK on change
-pnpm --filter @openlogs/web dev      # Web panel with HMR
+pnpm --filter @codelog/server dev   # Recompile server on change
+pnpm --filter @codelog/sdk dev      # Recompile SDK on change
+pnpm --filter @codelog/web dev      # Web panel with HMR
 ```
 
 ### Verification Steps
@@ -79,17 +79,17 @@ pnpm --filter @openlogs/web dev      # Web panel with HMR
 2. Open the demo page at `http://localhost:5274`
 3. The demo device should appear in the PC panel's device list
 4. Interact with the demo page — logs, network requests, and performance data stream in real-time
-5. Test MCP tools by running `npx @openlogs/mcp` in a separate terminal
+5. Test MCP tools by running `npx @codelog/mcp` in a separate terminal
 
 ### Package-specific Development
 
 | Package | Dev Command | Notes |
 |---------|-------------|-------|
-| `@openlogs/server` | `pnpm --filter @openlogs/server dev` | TypeScript watch mode |
-| `@openlogs/sdk` | `pnpm --filter @openlogs/sdk dev` | Vite build watch |
-| `@openlogs/web` | `pnpm --filter @openlogs/web dev` | Vite HMR (port 5173) |
-| `@openlogs/cli` | `pnpm --filter @openlogs/cli dev` | TypeScript watch mode |
-| `@openlogs/mcp` | Rebuild after changes | No watch mode |
+| `@codelog/server` | `pnpm --filter @codelog/server dev` | TypeScript watch mode |
+| `@codelog/sdk` | `pnpm --filter @codelog/sdk dev` | Vite build watch |
+| `@codelog/web` | `pnpm --filter @codelog/web dev` | Vite HMR (port 5173) |
+| `@codelog/cli` | `pnpm --filter @codelog/cli dev` | TypeScript watch mode |
+| `@codelog/mcp` | Rebuild after changes | No watch mode |
 | `docs` | `pnpm docs:dev` | VitePress dev server |
 
 ### Running the Full Build
@@ -146,10 +146,10 @@ Scope should be the package name: `sdk`, `server`, `mcp`, `cli`, `web`, `types`.
 pnpm test
 
 # Run tests for a specific package
-pnpm --filter @openlogs/server test
-pnpm --filter @openlogs/mcp test
-pnpm --filter @openlogs/cli test
-pnpm --filter @openlogs/sdk test
+pnpm --filter @codelog/server test
+pnpm --filter @codelog/mcp test
+pnpm --filter @codelog/cli test
+pnpm --filter @codelog/sdk test
 ```
 
 ## Code Style

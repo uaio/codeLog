@@ -15,8 +15,11 @@ export interface NetworkRequest {
   responseHeaders?: Record<string, string>;
   responseBody?: string;
   duration?: number;
-  type: 'xhr' | 'fetch';
+  type: 'xhr' | 'fetch' | 'ws' | 'sse' | 'beacon';
   error?: string;
+  wsDirection?: 'send' | 'receive';
+  wsEventType?: 'open' | 'close' | 'error' | 'message';
+  messageCount?: number;
 }
 
 export interface NetworkQueryOptions {

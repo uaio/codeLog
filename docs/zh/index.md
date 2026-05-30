@@ -1,7 +1,7 @@
 ---
 layout: home
 hero:
-  name: openLog
+  name: codeLog
   text: 面向 AI Agent 的前端 H5 监控工具
   tagline: 实时数据采集、PC 端可视化、AI 可查询 — 嵌入一行代码，随时随地调试
   actions:
@@ -10,7 +10,7 @@ hero:
       link: /guide/
     - theme: alt
       text: 在 GitHub 上查看
-      link: https://github.com/uaio/openLog
+      link: https://github.com/uaio/codeLog
 features:
   - icon: 📝
     title: 控制台日志

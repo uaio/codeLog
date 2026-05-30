@@ -2,10 +2,10 @@
 
 ## Install and Run
 
-The fastest way to start openLog:
+The fastest way to start codeLog:
 
 ```bash
-npx @openlogs/cli
+npx @codelog/cli
 ```
 
 This starts the server on port 38291 and opens the web dashboard.
@@ -17,9 +17,9 @@ Add the SDK to your H5 page:
 ### Via CDN (IIFE)
 
 ```html
-<script src="https://unpkg.com/@openlogs/sdk/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk/dist/codelog.iife.js"></script>
 <script>
-  OpenLog.init({
+  CodeLog.init({
     server: 'ws://localhost:38291',
     projectId: 'my-app',
   });
@@ -29,13 +29,13 @@ Add the SDK to your H5 page:
 ### Via npm
 
 ```bash
-npm install @openlogs/sdk
+npm install @codelog/sdk
 ```
 
 ```typescript
-import OpenLog from '@openlogs/sdk';
+import CodeLog from '@codelog/sdk';
 
-new OpenLog({
+new CodeLog({
   server: 'ws://localhost:38291',
   projectId: 'my-app',
 });
@@ -44,13 +44,13 @@ new OpenLog({
 ## CLI Options
 
 ```bash
-npx @openlogs/cli [options]
+npx @codelog/cli [options]
 
 Options:
   -p, --port <number>       Server port (default: 38291)
   --no-open                 Don't auto-open browser
   --persist                 Enable SQLite persistence
-  --db-path <path>          Database file path (default: ~/.openlog/data.db)
+  --db-path <path>          Database file path (default: ~/.codelog/data.db)
   --retention-days <days>   Data retention in days (default: 1)
   --api-key <key>           Require API key for access
   --cors-origin <origin>    Allowed CORS origins (comma-separated)

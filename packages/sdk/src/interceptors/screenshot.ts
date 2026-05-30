@@ -36,7 +36,7 @@ export class ScreenshotCollector {
         title: document.title,
       });
     } catch (err) {
-      console.warn('[openLog] Screenshot failed:', err);
+      console.warn('[codeLog] Screenshot failed:', err);
     }
   }
 }

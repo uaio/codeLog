@@ -1,18 +1,18 @@
 {
-  "name": "openlog",
+  "name": "codelog",
   "version": "0.2.1",
   "private": true,
   "packageManager": "pnpm@10.25.0",
   "description": "Open log console for mobile debugging",
-  "author": "openLog Contributors",
+  "author": "codeLog Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uaio/openLog.git"
+    "url": "https://github.com/uaio/codeLog.git"
   },
-  "homepage": "https://github.com/uaio/openLog",
+  "homepage": "https://github.com/uaio/codeLog",
   "bugs": {
-    "url": "https://github.com/uaio/openLog/issues"
+    "url": "https://github.com/uaio/codeLog/issues"
   },
   "scripts": {
     "dev": "turbo run dev",
@@ -22,8 +22,8 @@
     "format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx}\"",
     "test": "turbo run test",
     "clean": "turbo run clean",
-    "start": "node packages/server/bin/openlog",
-    "demo": "pnpm --filter @openlogs/demo dev",
+    "start": "node packages/server/bin/codelog",
+    "demo": "pnpm --filter @codelog/demo dev",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"

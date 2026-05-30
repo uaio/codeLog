@@ -3,19 +3,19 @@
 ## Installation
 
 ```bash
-npm install -g @openlogs/cli
+npm install -g @codelog/cli
 # or use directly
-npx @openlogs/cli
+npx @codelog/cli
 ```
 
 ## Commands
 
-### `openlog` (default)
+### `codelog` (default)
 
-Start the openLog server with web dashboard.
+Start the codeLog server with web dashboard.
 
 ```bash
-openlog [options]
+codelog [options]
 ```
 
 ### Options
@@ -25,7 +25,7 @@ openlog [options]
 | `--port` | `-p` | `38291` | Server port |
 | `--no-open` | | | Don't auto-open browser |
 | `--persist` | | `false` | Enable SQLite persistence |
-| `--db-path` | | `~/.openlog/data.db` | Database file location |
+| `--db-path` | | `~/.codelog/data.db` | Database file location |
 | `--retention-days` | | `1` | Data retention period (days) |
 | `--api-key` | | — | Require API key authentication |
 | `--cors-origin` | | `*` | Allowed CORS origins |
@@ -34,28 +34,28 @@ openlog [options]
 
 ```bash
 # Start with defaults
-openlog
+codelog
 
 # Custom port, no browser
-openlog -p 3000 --no-open
+codelog -p 3000 --no-open
 
 # With persistence
-openlog --persist --retention-days 7
+codelog --persist --retention-days 7
 
 # With API key protection
-openlog --api-key my-secret-key
+codelog --api-key my-secret-key
 
 # Production-like setup
-openlog --persist --api-key $OPENLOG_KEY --cors-origin https://myapp.com
+codelog --persist --api-key $CODELOG_KEY --cors-origin https://myapp.com
 ```
 
 ## Environment Variables
 
 All CLI options can also be set via environment variables:
 
-- `OPENLOG_PORT` — Server port
-- `OPENLOG_PERSIST` — Enable persistence (`true`/`false`)
-- `OPENLOG_DB_PATH` — Database file path
-- `OPENLOG_RETENTION` — Retention days
-- `OPENLOG_API_KEY` — API key
-- `OPENLOG_CORS` — CORS origins
+- `CODELOG_PORT` — Server port
+- `CODELOG_PERSIST` — Enable persistence (`true`/`false`)
+- `CODELOG_DB_PATH` — Database file path
+- `CODELOG_RETENTION` — Retention days
+- `CODELOG_API_KEY` — API key
+- `CODELOG_CORS` — CORS origins

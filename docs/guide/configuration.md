@@ -3,7 +3,7 @@
 ## SDK Options
 
 ```typescript
-interface OpenLogConfig {
+interface CodeLogConfig {
   /** WebSocket server URL */
   server: string;
 
@@ -39,12 +39,12 @@ The server can be configured via CLI flags or environment variables:
 
 | Option | Env Variable | Default | Description |
 |--------|-------------|---------|-------------|
-| `--port` | `OPENLOG_PORT` | 38291 | Server port |
-| `--persist` | `OPENLOG_PERSIST` | false | Enable SQLite persistence |
-| `--db-path` | `OPENLOG_DB_PATH` | `~/.openlog/data.db` | Database file path |
-| `--retention-days` | `OPENLOG_RETENTION` | 1 | Days to retain data |
-| `--api-key` | `OPENLOG_API_KEY` | — | API key for authentication |
-| `--cors-origin` | `OPENLOG_CORS` | `*` | Allowed CORS origins |
+| `--port` | `CODELOG_PORT` | 38291 | Server port |
+| `--persist` | `CODELOG_PERSIST` | false | Enable SQLite persistence |
+| `--db-path` | `CODELOG_DB_PATH` | `~/.codelog/data.db` | Database file path |
+| `--retention-days` | `CODELOG_RETENTION` | 1 | Days to retain data |
+| `--api-key` | `CODELOG_API_KEY` | — | API key for authentication |
+| `--cors-origin` | `CODELOG_CORS` | `*` | Allowed CORS origins |
 
 ## Persistence
 
@@ -66,14 +66,14 @@ ws://localhost:38291?apiKey=<your-key>
 
 ## Internationalization (i18n)
 
-openLog supports English and Chinese for both the SDK (Eruda panel) and the PC web panel.
+codeLog supports English and Chinese for both the SDK (Eruda panel) and the PC web panel.
 
 ### SDK Language
 
 Set the `lang` option when initializing:
 
 ```typescript
-new OpenLog({
+new CodeLog({
   projectId: 'my-app',
   lang: 'en',   // 'zh' (default) or 'en'
 });
@@ -83,7 +83,7 @@ new OpenLog({
 
 The web panel auto-detects the browser's language. Users can also switch manually via the language toggle in the panel header.
 
-Language preference is persisted to `localStorage` (`openlog_lang`).
+Language preference is persisted to `localStorage` (`codelog_lang`).
 
 ### Adding a Language
 

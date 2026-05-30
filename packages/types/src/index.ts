@@ -1,7 +1,7 @@
 /**
- * @openlogs/types — openLog 统一数据标准
+ * @codelog/types — codeLog 统一数据标准
  *
- * 这是 openLog 生态的唯一类型来源（Single Source of Truth）。
+ * 这是 codeLog 生态的唯一类型来源（Single Source of Truth）。
  * 所有包（sdk、server、web、mcp）均引用此包，不再各自定义类型。
  *
  * 版本兼容策略：
@@ -12,7 +12,7 @@
 
 // ─── Envelope & Platform ──────────────────────────────────────────────────────
 export type {
-  OpenLogEnvelope,
+  CodeLogEnvelope,
   AnyEnvelope,
   EnvelopeOf,
   Platform,

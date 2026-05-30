@@ -6,7 +6,7 @@ import { join, dirname } from 'path';
 
 const execFileAsync = promisify(execFile);
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CLI_PATH = join(__dirname, '..', 'bin', 'openlog.js');
+const CLI_PATH = join(__dirname, '..', 'bin', 'codelog.js');
 
 function run(...args: string[]) {
   return execFileAsync('node', [CLI_PATH, ...args]);
@@ -19,7 +19,7 @@ function runExpectFail(...args: string[]) {
 describe('CLI --help', () => {
   it('--help prints usage info and exits 0', async () => {
     const { stdout } = await run('--help');
-    expect(stdout).toContain('openLog');
+    expect(stdout).toContain('codeLog');
     expect(stdout).toContain('用法');
     expect(stdout).toContain('--port');
     expect(stdout).toContain('--help');
@@ -28,7 +28,7 @@ describe('CLI --help', () => {
 
   it('-h is alias for --help', async () => {
     const { stdout } = await run('-h');
-    expect(stdout).toContain('openLog');
+    expect(stdout).toContain('codeLog');
     expect(stdout).toContain('用法');
   });
 

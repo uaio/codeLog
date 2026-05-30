@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import {
   DeviceStore,
   LogStore,
+  type ConsoleLog,
   NetworkStore,
   StorageStore,
   DOMStore,
@@ -9,6 +10,8 @@ import {
   ScreenshotStore,
   PerfRunStore,
   MockStore,
+  SystemStore,
+  IndexedDBStore,
 } from '../store/index.js';
 import { sendToDevice } from '../ws/handlers.js';
 
@@ -22,6 +25,8 @@ export function createDeviceRoutes(
   screenshotStore: ScreenshotStore,
   perfRunStore: PerfRunStore,
   mockStore: MockStore,
+  systemStore: SystemStore,
+  idbStore: IndexedDBStore,
 ) {
   return {
     listDevices: (req: Request, res: Response) => {
@@ -46,11 +51,11 @@ export function createDeviceRoutes(
       }
 
       // 验证 level 参数（白名单检查）
-      const validLevels = ['log', 'warn', 'error', 'info'];
+      const validLevels = ['log', 'warn', 'error', 'info', 'debug', 'repl-input', 'repl-output'];
       const level = req.query.level as string;
       const validatedLevel =
         level && validLevels.includes(level)
-          ? (level as 'log' | 'warn' | 'error' | 'info')
+          ? (level as ConsoleLog['level'])
           : undefined;
 
       const logs = logStore.get(deviceId, limit, validatedLevel);
@@ -366,6 +371,19 @@ export function createDeviceRoutes(
         vitalRatings,
         status: score >= 80 ? 'healthy' : score >= 50 ? 'warning' : 'critical',
       });
+    },
+
+    getSystemInfo: (req: Request, res: Response) => {
+      const { deviceId } = req.params;
+      const info = systemStore.get(deviceId);
+      if (!info) return res.status(404).json({ error: 'System info not available for this device' });
+      return res.json(info);
+    },
+
+    getIndexedDB: (req: Request, res: Response) => {
+      const { deviceId } = req.params;
+      const entries = idbStore.getAll(deviceId);
+      return res.json(entries);
     },
   };
 }

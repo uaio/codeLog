@@ -3,7 +3,7 @@ import { sharedDeviceSelector as deviceSelector } from '../lib/device-selector.j
 
 export const zenMode = {
   name: 'zen_mode',
-  description: `控制手机端 openLog 的禅模式。
+  description: `控制手机端 codeLog 的禅模式。
 开启（enabled=true）：停止 FPS/PerformanceObserver/Network/Storage 监听，只保留 console+error，
 避免 SDK 自身干扰性能测试。
 关闭（enabled=false）：恢复所有采集。`,

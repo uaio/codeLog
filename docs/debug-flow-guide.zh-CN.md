@@ -1,6 +1,6 @@
-# openLog 完整调试流程指南（小白版）
+# codeLog 完整调试流程指南（小白版）
 
-> openLog 有三种使用方式，由简到繁。你可以只用其中一种，也可以组合使用。
+> codeLog 有三种使用方式，由简到繁。你可以只用其中一种，也可以组合使用。
 
 ---
 
@@ -10,7 +10,7 @@
 ┌───────────────┬──────────────────────┬────────────────────┬───────────────────────────────┐
 │               │  模式 A: 仅 SDK      │  模式 B: SDK + PC  │  模式 C: SDK + Claude Code    │
 ├───────────────┼──────────────────────┼────────────────────┼───────────────────────────────┤
-│  需要安装     │  一行 <script>       │  npx @openlogs/cli       │  npx @openlogs/cli init             │
+│  需要安装     │  一行 <script>       │  npx @codelog/cli       │  npx @codelog/cli init             │
 │  调试面板     │  手机上 Eruda 浮球    │  电脑浏览器 PC 面板 │  Claude Code 直接读取数据      │
 │  网络要求     │  无                  │  手机电脑同局域网   │  同左                         │
 │  适合场景     │  快速看日志/报错      │  远程监控/团队协作   │  AI 自动验证/排错             │
@@ -31,9 +31,9 @@
 在你的 H5 页面 `<head>` 或 `<body>` 末尾加一行：
 
 ```html
-<script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
 <script>
-  OpenLog.init({ projectId: 'my-app', lang: 'zh' })
+  CodeLog.init({ projectId: 'my-app', lang: 'zh' })
 </script>
 ```
 
@@ -68,14 +68,14 @@
 #### 第一步：电脑上启动服务（零安装）
 
 ```bash
-npx @openlogs/cli
+npx @codelog/cli
 ```
 
 启动后终端会打印：
 
 ```
 ┌─────────────────────────────────────────┐
-│         openLog  已启动 🚀               │
+│         codeLog  已启动 🚀               │
 ├─────────────────────────────────────────┤
 │  PC 监控面板                             │
 │    本机:   http://localhost:38291        │
@@ -84,9 +84,9 @@ npx @openlogs/cli
 │                 SDK server: 'ws://192.168.1.5:38291' │
 ├─────────────────────────────────────────┤
 │  SDK 接入：                              │
-│  <script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+│  <script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
 │  <script>                                │
-│    OpenLog.init({                        │
+│    CodeLog.init({                        │
 │      projectId: 'my-app',               │
 │      server: 'ws://192.168.1.5:38291',  │
 │      lang: 'zh'                          │
@@ -102,9 +102,9 @@ npx @openlogs/cli
 把终端打印的代码粘贴到你的 H5 页面：
 
 ```html
-<script src="https://unpkg.com/@openlogs/sdk@latest/dist/openlog.iife.js"></script>
+<script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
 <script>
-  OpenLog.init({
+  CodeLog.init({
     projectId: 'my-app',
     server: 'ws://192.168.1.5:38291',   // ← 换成你终端显示的地址
     lang: 'zh'
@@ -116,11 +116,11 @@ npx @openlogs/cli
 
 > 也可以用 npm 方式：
 > ```bash
-> npm install @openlogs/sdk
+> npm install @codelog/sdk
 > ```
 > ```javascript
-> import OpenLog from '@openlogs/sdk'
-> new OpenLog({ projectId: 'my-app', server: 'ws://192.168.1.5:38291', lang: 'zh' })
+> import CodeLog from '@codelog/sdk'
+> new CodeLog({ projectId: 'my-app', server: 'ws://192.168.1.5:38291', lang: 'zh' })
 > ```
 
 #### 第三步：电脑打开 PC 面板
@@ -130,7 +130,7 @@ npx @openlogs/cli
 ### 使用流程
 
 ```
-1. 电脑：npx @openlogs/cli                    → 服务启动
+1. 电脑：npx @codelog/cli                    → 服务启动
 2. H5 页面：粘贴 SDK 代码                → SDK 连接服务
 3. 手机：打开 H5 页面                    → 设备出现在 PC 面板左侧
 4. 电脑：选中设备                        → 看到实时日志/网络/存储/性能
@@ -159,7 +159,7 @@ npx @openlogs/cli
 A: 确保它们在同一局域网。终端打印了所有网卡地址，选手机能访问到的那个。
 
 **Q: 换端口？**
-A: `npx @openlogs/cli -p 8080`
+A: `npx @codelog/cli -p 8080`
 
 ---
 
@@ -174,7 +174,7 @@ Claude Code 通过 MCP 直接读取手机上的日志、网络请求、截图，
 #### 第一步：配置 MCP（一次性，以后不用再做）
 
 ```bash
-npx @openlogs/cli init
+npx @codelog/cli init
 ```
 
 这条命令会：
@@ -182,7 +182,7 @@ npx @openlogs/cli init
 - **自动写入** MCP 配置文件
 - 如果是 Claude Code，还会安装 7 个 **slash commands**
 
-> 也可以指定：`npx @openlogs/cli init --for=claude`
+> 也可以指定：`npx @codelog/cli init --for=claude`
 
 **然后重启 Claude Code。**
 
@@ -191,11 +191,11 @@ npx @openlogs/cli init
 直接输入：
 
 ```
-/openlog:setup
+/codelog:setup
 ```
 
 这条命令会自动完成所有事情：
-1. 启动 openLog 监控服务
+1. 启动 codeLog 监控服务
 2. 检测你的项目是否已接入 SDK
 3. 如果没有 → 自动注入（HTML 项目直接注入 CDN；npm 项目帮你 install + 插入代码）
 4. 等待设备连接
@@ -207,27 +207,27 @@ npx @openlogs/cli init
 
 | 命令 | 干什么 |
 |------|--------|
-| `/openlog:setup` | **一键从零到就绪**（检测→注入→启动→确认连接） |
-| `/openlog:start` | 启动监控服务 |
-| `/openlog:stop` | 停止监控服务 |
-| `/openlog:status` | 查看设备连接状态 |
-| `/openlog:logs` | 查看日志 + checkpoint 验证链路 |
-| `/openlog:screenshot` | 截取手机当前页面 |
-| `/openlog:clean` | 清除代码中所有 @openlog 调试日志 |
+| `/codelog:setup` | **一键从零到就绪**（检测→注入→启动→确认连接） |
+| `/codelog:start` | 启动监控服务 |
+| `/codelog:stop` | 停止监控服务 |
+| `/codelog:status` | 查看设备连接状态 |
+| `/codelog:logs` | 查看日志 + checkpoint 验证链路 |
+| `/codelog:screenshot` | 截取手机当前页面 |
+| `/codelog:clean` | 清除代码中所有 @codelog 调试日志 |
 
 ### AI 开发调试流程
 
 ```
 你                        Claude Code                   手机
 │                              │                          │
-│  /openlog:setup              │                          │
+│  /codelog:setup              │                          │
 │ ───────────────────────────► │ ensure_sdk → 注入 SDK    │
-│                              │ start_openlog → 启动服务  │
+│                              │ start_codelog → 启动服务  │
 │                              │────── WS 连接 ──────────►│
 │                              │                          │
 │  "帮我写登录功能"             │                          │
 │ ───────────────────────────► │ 写代码                   │
-│                              │ + 埋入 @openlog 验证日志  │
+│                              │ + 埋入 @codelog 验证日志  │
 │ ◄─────────────────────────── │                          │
 │                              │                          │
 │  (手机上走登录流程)            │                     SDK 上报
@@ -242,8 +242,8 @@ npx @openlogs/cli init
 │                              │ + get_network_requests()  │
 │ ◄─────────────────────────── │ 定位到 API 返回 401       │
 │                              │                          │
-│  /openlog:clean              │                          │
-│ ───────────────────────────► │ 删除所有 @openlog 日志    │
+│  /codelog:clean              │                          │
+│ ───────────────────────────► │ 删除所有 @codelog 日志    │
 ```
 
 ### Claude 可以调用的核心工具
@@ -252,7 +252,7 @@ npx @openlogs/cli init
 - `get_console_logs` — 查日志（可按 level 过滤：error/warn/log）
 - `get_network_requests` — 查网络请求（URL/状态码/耗时/请求体/响应体）
 - `get_storage` — 查 localStorage / sessionStorage / Cookie
-- `get_checkpoints` — 查 @openlog[checkpoint] 验证节点
+- `get_checkpoints` — 查 @codelog[checkpoint] 验证节点
 - `take_screenshot` — 截图
 - `health_check` — 页面健康评分
 
@@ -281,12 +281,12 @@ Claude: 调 get_console_logs(level: "error")
 **场景 2：逻辑验证**
 ```
 你: "帮我写一个登录功能"
-Claude: 写代码 + 在关键节点埋入 @openlog[checkpoint] 日志
+Claude: 写代码 + 在关键节点埋入 @codelog[checkpoint] 日志
 你: 在手机上走一遍登录流程
 Claude: 调 get_checkpoints(feature: "login")
        → 发现 "token 已保存" 节点存在但 hasToken: false
        → 定位到 localStorage.setItem 写入了空值
-       → 修复代码 → 重新验证 → 通过 → 清除 @openlog 日志
+       → 修复代码 → 重新验证 → 通过 → 清除 @codelog 日志
 ```
 
 **场景 3：性能问题**
@@ -315,10 +315,10 @@ Claude: 调 health_check() → 健康分 45/100
 
 ## 注意事项
 
-1. **openLog 是开发工具，不要带到生产环境**
+1. **codeLog 是开发工具，不要带到生产环境**
    - CDN `<script>` 标签：调试完删掉
    - npm 安装：生产打包时排除，或用环境变量 guard
-   - `@openlog[checkpoint]` 日志：用 `/openlog:clean` 自动清除
+   - `@codelog[checkpoint]` 日志：用 `/codelog:clean` 自动清除
 
 2. **手机和电脑必须在同一局域网**（模式 B/C）
    - 连同一个 WiFi 最简单
@@ -329,4 +329,4 @@ Claude: 调 health_check() → 健康分 45/100
    - 服务是同一个，两边看到的数据一样
 
 4. **端口默认 38291**
-   - 被占用？`npx @openlogs/cli -p 8080` 换一个
+   - 被占用？`npx @codelog/cli -p 8080` 换一个

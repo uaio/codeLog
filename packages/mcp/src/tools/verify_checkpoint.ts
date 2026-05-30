@@ -265,7 +265,7 @@ export const verifyCheckpoint = {
       for (const jsAssert of expects.js ?? []) {
         try {
           // 用 execute 触发，然后读最新日志判断返回值
-          const marker = `__openlog_assert_${Date.now()}`;
+          const marker = `__codelog_assert_${Date.now()}`;
           await fetch(`${API_BASE_URL}/api/devices/${deviceId}/execute`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

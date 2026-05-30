@@ -87,7 +87,7 @@ export class PerformanceCollector {
         onINP((m) => report('INP', m.value, m.rating));
       } catch {}
     } catch (e) {
-      console.warn('[openLog] web-vitals unavailable', e);
+      console.warn('[codeLog] web-vitals unavailable', e);
     }
   }
 
