@@ -13,6 +13,7 @@ import { AIAnalysisPanel } from './components/AIAnalysisPanel.js';
 import { SystemPanel } from './components/SystemPanel.js';
 import { IndexedDBPanel } from './components/IndexedDBPanel.js';
 import { OfflineLogsPanel } from './components/OfflineLogsPanel.js';
+import { ErrorPanel } from './components/ErrorPanel.js';
 import { TabFilter } from './components/TabFilter.js';
 import { Tabs, type Tab } from './components/Tabs.js';
 import { useI18n } from './i18n/index.js';
@@ -44,6 +45,7 @@ function App() {
       performance: 'perf',
       indexeddb: 'indexeddb',
     };
+    const errorPrefixes = ['[Uncaught Error]', '[Unhandled Promise Rejection]', '[Resource Error]'];
     const unsubscribe = websocketManager.subscribe((msg: any) => {
       const msgType: string = msg?.type ?? '';
       // Handle event envelope format
@@ -55,6 +57,16 @@ function App() {
           ...prev,
           [tab]: (prev[tab] ?? 0) + 1,
         }));
+      }
+      // Track error-level console logs for the error tab badge
+      if (effectiveType === 'log' && msg?.data) {
+        const logData = msg.data;
+        const isError =
+          logData.level === 'error' ||
+          errorPrefixes.some((p: string) => String(logData.message ?? '').startsWith(p));
+        if (isError) {
+          setBadges((prev) => ({ ...prev, errors: (prev['errors'] ?? 0) + 1 }));
+        }
       }
     });
     return unsubscribe;
@@ -91,6 +103,13 @@ function App() {
       icon: '🌐',
       badge: badges['network'],
       content: <NetworkPanel deviceId={selectedDevice?.deviceId} tabId={selectedTabId} />,
+    },
+    {
+      id: 'errors',
+      label: '错误',
+      icon: '🐛',
+      badge: badges['errors'],
+      content: <ErrorPanel deviceId={selectedDevice?.deviceId} />,
     },
     {
       id: 'storage',

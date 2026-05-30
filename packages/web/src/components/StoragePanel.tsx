@@ -19,6 +19,75 @@ function formatTime(ts: number): string {
   return new Date(ts).toLocaleTimeString();
 }
 
+function EditableRow({
+  rowKey,
+  value,
+  onSave,
+  onDelete,
+}: {
+  rowKey: string;
+  value: string;
+  onSave: (v: string) => void;
+  onDelete: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editVal, setEditVal] = useState(value);
+
+  const commit = () => {
+    if (editVal !== value) onSave(editVal);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <tr style={styles.tr}>
+        <td style={{ ...styles.td, ...styles.keyCell }}>{rowKey}</td>
+        <td style={{ ...styles.td, ...styles.valueCell }}>
+          <textarea
+            autoFocus
+            value={editVal}
+            onChange={(e) => setEditVal(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commit(); }
+              if (e.key === 'Escape') { setEditing(false); setEditVal(value); }
+            }}
+            style={{
+              width: '100%',
+              fontFamily: 'monospace',
+              fontSize: '12px',
+              padding: '4px',
+              border: '1px solid #1890ff',
+              borderRadius: '3px',
+              resize: 'vertical',
+              minHeight: '40px',
+            }}
+          />
+        </td>
+        <td style={{ ...styles.td, textAlign: 'center', padding: '0 4px' }}>
+          <button title="删除" onClick={onDelete} style={styles.deleteBtn}>🗑</button>
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <tr style={styles.tr}>
+      <td style={{ ...styles.td, ...styles.keyCell }}>{rowKey}</td>
+      <td
+        style={{ ...styles.td, ...styles.valueCell, cursor: 'text' }}
+        title="点击编辑"
+        onClick={() => { setEditVal(value); setEditing(true); }}
+      >
+        <span style={styles.valueText}>{value}</span>
+      </td>
+      <td style={{ ...styles.td, textAlign: 'center', padding: '0 4px' }}>
+        <button title="删除" onClick={onDelete} style={styles.deleteBtn}>🗑</button>
+      </td>
+    </tr>
+  );
+}
+
 export function StoragePanel({ deviceId }: StoragePanelProps) {
   const { snapshot, loading, refresh } = useStorage(deviceId);
   const [activeTab, setActiveTab] = useState<StorageTab>('localStorage');
@@ -63,6 +132,16 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
     if (!deviceId) return;
     try {
       await api.post(`/api/devices/${deviceId}/storage/delete`, { key, storageType });
+      setTimeout(refresh, 300);
+    } catch {
+      /* ignore */
+    }
+  }, [deviceId, storageType, refresh]);
+
+  const handleEditKey = useCallback(async (key: string, value: string) => {
+    if (!deviceId) return;
+    try {
+      await api.post(`/api/devices/${deviceId}/storage/set`, { key, value, storageType });
       setTimeout(refresh, 300);
     } catch {
       /* ignore */
@@ -126,21 +205,13 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
           </thead>
           <tbody>
             {entries.map(([key, value]) => (
-              <tr key={key} style={styles.tr}>
-                <td style={{ ...styles.td, ...styles.keyCell }}>{key}</td>
-                <td style={{ ...styles.td, ...styles.valueCell }}>
-                  <span style={styles.valueText}>{value}</span>
-                </td>
-                <td style={{ ...styles.td, textAlign: 'center', padding: '0 4px' }}>
-                  <button
-                    title="删除"
-                    onClick={() => handleDeleteKey(key)}
-                    style={styles.deleteBtn}
-                  >
-                    🗑
-                  </button>
-                </td>
-              </tr>
+              <EditableRow
+                key={key}
+                rowKey={key}
+                value={value}
+                onSave={(v) => handleEditKey(key, v)}
+                onDelete={() => handleDeleteKey(key)}
+              />
             ))}
           </tbody>
         </table>
