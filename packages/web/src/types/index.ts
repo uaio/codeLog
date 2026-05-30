@@ -34,12 +34,14 @@ export interface ConsoleLog {
   deviceId: string;
   tabId: string;
   timestamp: number;
-  level: 'log' | 'warn' | 'error' | 'info' | 'debug' | 'repl-input' | 'repl-output';
+  level: 'log' | 'warn' | 'error' | 'info' | 'debug' | 'repl-input' | 'repl-output' | 'table' | 'group' | 'group-collapsed' | 'group-end' | 'assert' | 'count' | 'time-log';
   message: string;
   stack?: string;
   serializedArgs?: SerializedValue[];
   cssStyles?: string[];
   styledParts?: Array<{ text: string; style?: string }>;
+  tableData?: Array<Record<string, unknown>>;
+  indent?: number;
 }
 
 export interface NetworkRequest {
@@ -61,6 +63,16 @@ export interface NetworkRequest {
   wsDirection?: 'send' | 'receive';
   wsEventType?: 'open' | 'close' | 'error' | 'message';
   messageCount?: number;
+  responseSize?: number;
+  timingPhases?: {
+    dns?: number;
+    tcp?: number;
+    ssl?: number;
+    request?: number;
+    response?: number;
+    total?: number;
+  };
+  initiator?: string;
 }
 
 export interface CookieEntry {

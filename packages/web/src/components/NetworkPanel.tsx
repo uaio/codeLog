@@ -34,6 +34,13 @@ function formatDuration(ms?: number): string {
   return `${(ms / 1000).toFixed(2)}s`;
 }
 
+function formatSize(bytes?: number): string {
+  if (bytes === undefined || bytes === 0) return '-';
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
+
 function formatUrl(url: string): string {
   try {
     const u = new URL(url);
@@ -44,7 +51,7 @@ function formatUrl(url: string): string {
 }
 
 function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose: () => void }) {
-  const [tab, setTab] = useState<'headers' | 'request' | 'response'>('headers');
+  const [tab, setTab] = useState<'headers' | 'request' | 'response' | 'timing'>('headers');
   const [curlCopied, setCurlCopied] = useState(false);
   const { t } = useI18n();
 
@@ -116,6 +123,9 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
           {t.networkPanel.duration}: <b>{formatDuration(request.duration)}</b>
         </span>
         <span>
+          Size: <b>{formatSize(request.responseSize)}</b>
+        </span>
+        <span>
           {t.networkPanel.type}: {request.type.toUpperCase()}
         </span>
         {request.error && (
@@ -125,8 +135,40 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
         )}
       </div>
 
+      {/* Timing phases breakdown */}
+      {request.timingPhases && (
+        <div style={detailStyles.timingBar}>
+          {(['dns', 'tcp', 'ssl', 'request', 'response'] as const).map((phase) => {
+            const ms = request.timingPhases?.[phase];
+            if (!ms || ms <= 0) return null;
+            const total = request.timingPhases?.total ?? request.duration ?? 1;
+            const pct = Math.max(2, (ms / total) * 100);
+            const colors: Record<string, string> = { dns: '#722ed1', tcp: '#1890ff', ssl: '#13c2c2', request: '#52c41a', response: '#fa8c16' };
+            return (
+              <span
+                key={phase}
+                title={`${phase}: ${ms.toFixed(1)}ms`}
+                style={{ display: 'inline-block', width: `${pct}%`, backgroundColor: colors[phase], height: 8, borderRadius: 2, marginRight: 1 }}
+              />
+            );
+          })}
+          <div style={detailStyles.timingLegend}>
+            {(['dns', 'tcp', 'ssl', 'request', 'response'] as const).map((phase) => {
+              const ms = request.timingPhases?.[phase];
+              if (!ms || ms <= 0) return null;
+              const colors: Record<string, string> = { dns: '#722ed1', tcp: '#1890ff', ssl: '#13c2c2', request: '#52c41a', response: '#fa8c16' };
+              return (
+                <span key={phase} style={{ color: colors[phase], marginRight: 8, fontSize: 11 }}>
+                  {phase}: {ms.toFixed(1)}ms
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div style={detailStyles.tabs}>
-        {(['headers', 'request', 'response'] as const).map((tabKey) => (
+        {(['headers', 'request', 'response', 'timing'] as const).map((tabKey) => (
           <button
             key={tabKey}
             onClick={() => setTab(tabKey)}
@@ -139,7 +181,9 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
               ? t.networkPanel.headers
               : tabKey === 'request'
                 ? t.networkPanel.requestBody
-                : t.networkPanel.responseBody}
+                : tabKey === 'response'
+                  ? t.networkPanel.responseBody
+                  : 'Timing'}
           </button>
         ))}
       </div>
@@ -177,6 +221,57 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
         )}
         {tab === 'response' && (
           <pre style={detailStyles.pre}>{request.responseBody || '(empty)'}</pre>
+        )}
+        {tab === 'timing' && (
+          <div style={{ padding: 12, fontSize: 12 }}>
+            {request.timingPhases ? (
+              <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #e8e8e8' }}>阶段</th>
+                    <th style={{ textAlign: 'right', padding: '4px 8px', borderBottom: '1px solid #e8e8e8' }}>时间 (ms)</th>
+                    <th style={{ padding: '4px 8px', borderBottom: '1px solid #e8e8e8' }}>占比</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(['dns', 'tcp', 'ssl', 'request', 'response'] as const).map((phase) => {
+                    const ms = request.timingPhases?.[phase];
+                    if (ms === undefined) return null;
+                    const total = request.timingPhases?.total ?? request.duration ?? 1;
+                    const pct = total > 0 ? Math.min(100, (ms / total) * 100) : 0;
+                    const colors: Record<string, string> = { dns: '#722ed1', tcp: '#1890ff', ssl: '#13c2c2', request: '#52c41a', response: '#fa8c16' };
+                    const labels: Record<string, string> = { dns: 'DNS Lookup', tcp: 'TCP Connect', ssl: 'SSL/TLS', request: 'Request Sent', response: 'Content Download' };
+                    return (
+                      <tr key={phase}>
+                        <td style={{ padding: '4px 8px', color: colors[phase] }}>{labels[phase]}</td>
+                        <td style={{ textAlign: 'right', padding: '4px 8px', fontFamily: 'monospace' }}>{ms.toFixed(2)}</td>
+                        <td style={{ padding: '4px 8px' }}>
+                          <div style={{ height: 8, backgroundColor: '#f5f5f5', borderRadius: 4, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${pct}%`, backgroundColor: colors[phase], borderRadius: 4 }} />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {request.timingPhases.total !== undefined && (
+                    <tr style={{ borderTop: '1px solid #e8e8e8', fontWeight: 'bold' }}>
+                      <td style={{ padding: '4px 8px' }}>Total</td>
+                      <td style={{ textAlign: 'right', padding: '4px 8px', fontFamily: 'monospace' }}>{request.timingPhases.total.toFixed(2)}</td>
+                      <td />
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              <div style={{ color: '#999' }}>No timing data (PerformanceResourceTiming unavailable)</div>
+            )}
+            {request.initiator && (
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontWeight: 'bold', marginBottom: 6 }}>请求发起位置</div>
+                <pre style={{ ...detailStyles.pre, fontSize: 11, maxHeight: 120 }}>{request.initiator}</pre>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -312,6 +407,7 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
                   <span style={styles.url} title={req.url}>
                     {formatUrl(req.url)}
                   </span>
+                  <span style={styles.size}>{formatSize(req.responseSize)}</span>
                   <span style={styles.duration}>{formatDuration(req.duration)}</span>
                   <span style={styles.type}>{req.type}</span>
                   {waterfallScale && (
@@ -444,6 +540,13 @@ const styles: Record<string, CSSProperties> = {
     flexShrink: 0,
     textAlign: 'right',
     color: '#666',
+    fontSize: 11,
+  },
+  size: {
+    width: 52,
+    flexShrink: 0,
+    textAlign: 'right',
+    color: '#888',
     fontSize: 11,
   },
   type: {
@@ -584,5 +687,16 @@ const detailStyles: Record<string, CSSProperties> = {
     borderRadius: 4,
     maxHeight: 400,
     overflow: 'auto',
+  },
+  timingBar: {
+    padding: '6px 12px',
+    borderBottom: '1px solid #f0f0f0',
+  },
+  timingLegend: {
+    marginTop: 4,
+    fontSize: 11,
+    color: '#666',
+    display: 'flex',
+    flexWrap: 'wrap',
   },
 };

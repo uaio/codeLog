@@ -100,8 +100,18 @@ export class Reporter {
           }
           if (data.type === 'delete_storage') {
             try {
-              const store = data.storageType === 'session' ? sessionStorage : localStorage;
-              store.removeItem(data.key);
+              if (data.storageType === 'cookie') {
+                // Delete cookie by setting expiry to the past
+                // Try all common paths to maximize deletion
+                const paths = ['/', '/'];
+                const cookieName = encodeURIComponent(data.key);
+                for (const path of paths) {
+                  document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}`;
+                }
+              } else {
+                const store = data.storageType === 'session' ? sessionStorage : localStorage;
+                store.removeItem(data.key);
+              }
             } catch {
               /* ignore */
             }

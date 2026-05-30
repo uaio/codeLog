@@ -138,6 +138,16 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
     }
   }, [deviceId, storageType, refresh]);
 
+  const handleDeleteCookie = useCallback(async (cookieName: string) => {
+    if (!deviceId) return;
+    try {
+      await api.post(`/api/devices/${deviceId}/storage/delete`, { key: cookieName, storageType: 'cookie' });
+      setTimeout(refresh, 600);
+    } catch {
+      /* ignore */
+    }
+  }, [deviceId, refresh]);
+
   const handleEditKey = useCallback(async (key: string, value: string) => {
     if (!deviceId) return;
     try {
@@ -240,6 +250,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
                 <th style={{ ...styles.th, width: '18%' }}>Expires</th>
                 <th style={{ ...styles.th, width: '8%' }}>Secure</th>
                 <th style={{ ...styles.th, width: '10%' }}>SameSite</th>
+                <th style={{ ...styles.th, width: '40px' }}></th>
               </tr>
             </thead>
             <tbody>
@@ -260,6 +271,15 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
                     {c.secure ? <span style={{ color: '#52c41a' }}>✓</span> : ''}
                   </td>
                   <td style={{ ...styles.td, ...styles.metaCell }}>{c.sameSite ?? ''}</td>
+                  <td style={{ ...styles.td, textAlign: 'center' }}>
+                    <button
+                      onClick={() => handleDeleteCookie(c.name)}
+                      title={`删除 ${c.name}`}
+                      style={styles.deleteBtn}
+                    >
+                      🗑
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -296,6 +316,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
             <tr>
               <th style={{ ...styles.th, width: '35%' }}>Name</th>
               <th style={styles.th}>Value</th>
+              <th style={{ ...styles.th, width: '40px' }}></th>
             </tr>
           </thead>
           <tbody>
@@ -304,6 +325,15 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
                 <td style={{ ...styles.td, ...styles.keyCell }}>{key}</td>
                 <td style={{ ...styles.td, ...styles.valueCell }}>
                   <span style={styles.valueText}>{value}</span>
+                </td>
+                <td style={{ ...styles.td, textAlign: 'center' }}>
+                  <button
+                    onClick={() => handleDeleteCookie(key)}
+                    title={`删除 ${key}`}
+                    style={styles.deleteBtn}
+                  >
+                    🗑
+                  </button>
                 </td>
               </tr>
             ))}

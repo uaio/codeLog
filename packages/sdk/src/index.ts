@@ -439,6 +439,9 @@ export class CodeLog {
     };
 
     const self = this;
+    let groupDepth = 0;
+    const timerMap = new Map<string, number>();
+    const countMap = new Map<string, number>();
 
     // 创建通用的 console 拦截处理函数
     const createInterceptor = (
@@ -471,6 +474,7 @@ export class CodeLog {
             message,
             args: processedArgs,
             serializedArgs,
+            indent: groupDepth,
             ...(cssStyles.length > 0 ? { cssStyles } : {}),
             ...(styledParts ? { styledParts } : {}),
             ...(captureStack ? { stack: cleanStackTrace(new Error().stack) } : {}),
@@ -491,6 +495,180 @@ export class CodeLog {
     console.info = createInterceptor('info', this.originalConsole.info);
     console.debug = createInterceptor('debug', this.originalConsole.debug);
     console.trace = createInterceptor('warn', this.originalConsole.trace, true);
+
+    // ── console.table ──────────────────────────────────────────────────────────
+    const originalTable = console.table;
+    console.table = function (data?: unknown, _columns?: string[]) {
+      try {
+        // Normalize tabular data: array of objects or plain object
+        let tableData: Array<Record<string, unknown>> = [];
+        if (Array.isArray(data)) {
+          tableData = data.map((row, i) =>
+            (row !== null && typeof row === 'object')
+              ? { '(index)': i, ...(row as Record<string, unknown>) }
+              : { '(index)': i, Value: row },
+          );
+        } else if (data !== null && typeof data === 'object') {
+          tableData = Object.entries(data as Record<string, unknown>).map(([k, v]) => ({
+            '(index)': k,
+            Value: v,
+          }));
+        }
+        self.dataBus.emit('console', {
+          timestamp: Date.now(),
+          level: 'table',
+          message: serializeArgs([data]),
+          args: [data],
+          indent: groupDepth,
+          tableData,
+        });
+      } catch {
+        // ignore
+      }
+      originalTable?.apply(console, [data]);
+    };
+
+    // ── console.group / groupCollapsed / groupEnd ──────────────────────────────
+    const originalGroup = console.group;
+    const originalGroupCollapsed = console.groupCollapsed;
+    const originalGroupEnd = console.groupEnd;
+
+    console.group = function (...args: unknown[]) {
+      try {
+        self.dataBus.emit('console', {
+          timestamp: Date.now(),
+          level: 'group',
+          message: args.length ? serializeArgs(args) : 'console.group',
+          args,
+          indent: groupDepth,
+        });
+        groupDepth++;
+      } catch { /* ignore */ }
+      originalGroup?.apply(console, args);
+    };
+
+    console.groupCollapsed = function (...args: unknown[]) {
+      try {
+        self.dataBus.emit('console', {
+          timestamp: Date.now(),
+          level: 'group-collapsed',
+          message: args.length ? serializeArgs(args) : 'console.groupCollapsed',
+          args,
+          indent: groupDepth,
+        });
+        groupDepth++;
+      } catch { /* ignore */ }
+      originalGroupCollapsed?.apply(console, args);
+    };
+
+    console.groupEnd = function () {
+      try {
+        if (groupDepth > 0) groupDepth--;
+        self.dataBus.emit('console', {
+          timestamp: Date.now(),
+          level: 'group-end',
+          message: '',
+          args: [],
+          indent: groupDepth,
+        });
+      } catch { /* ignore */ }
+      originalGroupEnd?.apply(console);
+    };
+
+    // ── console.count / countReset ─────────────────────────────────────────────
+    const originalCount = console.count;
+    const originalCountReset = console.countReset;
+
+    console.count = function (label = 'default') {
+      try {
+        const n = (countMap.get(label) ?? 0) + 1;
+        countMap.set(label, n);
+        self.dataBus.emit('console', {
+          timestamp: Date.now(),
+          level: 'count',
+          message: `${label}: ${n}`,
+          args: [`${label}: ${n}`],
+          indent: groupDepth,
+        });
+      } catch { /* ignore */ }
+      originalCount?.call(console, label);
+    };
+
+    console.countReset = function (label = 'default') {
+      try {
+        countMap.set(label, 0);
+        self.dataBus.emit('console', {
+          timestamp: Date.now(),
+          level: 'count',
+          message: `${label}: 0`,
+          args: [`${label}: 0`],
+          indent: groupDepth,
+        });
+      } catch { /* ignore */ }
+      originalCountReset?.call(console, label);
+    };
+
+    // ── console.time / timeEnd / timeLog ──────────────────────────────────────
+    const originalTime = console.time;
+    const originalTimeEnd = console.timeEnd;
+    const originalTimeLog = console.timeLog;
+
+    console.time = function (label = 'default') {
+      try {
+        timerMap.set(label, performance.now());
+      } catch { /* ignore */ }
+      originalTime?.call(console, label);
+    };
+
+    console.timeEnd = function (label = 'default') {
+      try {
+        const start = timerMap.get(label);
+        const elapsed = start !== undefined ? (performance.now() - start).toFixed(3) : '?';
+        timerMap.delete(label);
+        self.dataBus.emit('console', {
+          timestamp: Date.now(),
+          level: 'time-log',
+          message: `${label}: ${elapsed}ms`,
+          args: [`${label}: ${elapsed}ms`],
+          indent: groupDepth,
+        });
+      } catch { /* ignore */ }
+      originalTimeEnd?.call(console, label);
+    };
+
+    console.timeLog = function (label = 'default', ...data: unknown[]) {
+      try {
+        const start = timerMap.get(label);
+        const elapsed = start !== undefined ? (performance.now() - start).toFixed(3) : '?';
+        self.dataBus.emit('console', {
+          timestamp: Date.now(),
+          level: 'time-log',
+          message: `${label}: ${elapsed}ms ${data.length ? serializeArgs(data) : ''}`.trim(),
+          args: [`${label}: ${elapsed}ms`, ...data],
+          indent: groupDepth,
+        });
+      } catch { /* ignore */ }
+      originalTimeLog?.call(console, label, ...data);
+    };
+
+    // ── console.assert ─────────────────────────────────────────────────────────
+    const originalAssert = console.assert;
+    console.assert = function (condition?: boolean, ...args: unknown[]) {
+      if (!condition) {
+        try {
+          const msg = args.length ? `Assertion failed: ${serializeArgs(args)}` : 'Assertion failed';
+          self.dataBus.emit('console', {
+            timestamp: Date.now(),
+            level: 'assert',
+            message: msg,
+            args: args.length ? args : ['Assertion failed'],
+            indent: groupDepth,
+            stack: cleanStackTrace(new Error().stack),
+          });
+        } catch { /* ignore */ }
+      }
+      originalAssert?.apply(console, [condition, ...args]);
+    };
   }
 
   private initNetworkInterceptor(config?: NetworkInterceptorConfig): void {

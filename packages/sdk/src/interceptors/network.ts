@@ -41,6 +41,55 @@ function headersToObject(headers: Headers): Record<string, string> {
   return result;
 }
 
+/** 从 PerformanceResourceTiming 提取时间阶段（ms） */
+function getResourceTimingPhases(
+  url: string,
+  startTime: number,
+): NetworkRequestEntry['timingPhases'] | undefined {
+  try {
+    const entries = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+    // 匹配 URL + 请求开始时间（±500ms 容差）
+    const entry = entries.find(
+      (e) => e.name === url || (e.name.endsWith(url) && Math.abs(e.startTime - (startTime - performance.timeOrigin)) < 500),
+    );
+    if (!entry || entry.startTime === 0) return undefined;
+    const dns = entry.domainLookupEnd - entry.domainLookupStart;
+    const tcp = entry.connectEnd - entry.connectStart;
+    const ssl = entry.secureConnectionStart > 0 ? entry.connectEnd - entry.secureConnectionStart : 0;
+    const request = entry.responseStart - entry.requestStart;
+    const response = entry.responseEnd - entry.responseStart;
+    const total = entry.responseEnd - entry.startTime;
+    return {
+      dns: Math.max(0, dns),
+      tcp: Math.max(0, tcp),
+      ssl: Math.max(0, ssl),
+      request: Math.max(0, request),
+      response: Math.max(0, response),
+      total: Math.max(0, total),
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+/** 从响应头提取响应体大小（bytes） */
+function extractResponseSize(
+  responseHeaders: Record<string, string> | undefined,
+  responseBody: string | undefined,
+): number | undefined {
+  if (responseHeaders) {
+    const cl = responseHeaders['content-length'];
+    if (cl) {
+      const n = parseInt(cl, 10);
+      if (!isNaN(n)) return n;
+    }
+  }
+  if (responseBody) {
+    return new TextEncoder().encode(responseBody).length;
+  }
+  return undefined;
+}
+
 export type NetworkReportCallback = (
   entry: Omit<NetworkRequestEntry, 'deviceId' | 'tabId'>,
 ) => void;
@@ -103,6 +152,11 @@ export class NetworkInterceptor {
       let method: string = init?.method?.toUpperCase() || 'GET';
       let requestHeaders: Record<string, string> | undefined;
       let requestBody: string | undefined;
+      // Capture call stack at initiation point (skip 3 frames: Error, fetch wrapper, caller's caller)
+      let initiator: string | undefined;
+      try {
+        initiator = new Error().stack?.split('\n').slice(3, 8).join('\n');
+      } catch { /* ignore */ }
 
       if (typeof input === 'string') {
         url = input;
@@ -206,6 +260,9 @@ export class NetworkInterceptor {
             responseBody,
             duration,
             type: 'fetch',
+            responseSize: extractResponseSize(responseHeaders, responseBody),
+            timingPhases: getResourceTimingPhases(url, startTime),
+            initiator,
           });
 
           return response;
@@ -223,6 +280,7 @@ export class NetworkInterceptor {
             duration,
             type: 'fetch',
             error: error.message,
+            initiator,
           });
 
           throw error;
@@ -249,6 +307,7 @@ export class NetworkInterceptor {
         url: string;
         requestHeaders: Record<string, string>;
         requestBody?: string;
+        initiator?: string;
       }
     >();
 
@@ -260,12 +319,17 @@ export class NetworkInterceptor {
       username?: string | null,
       password?: string | null,
     ) {
+      let initiator: string | undefined;
+      try {
+        initiator = new Error().stack?.split('\n').slice(3, 8).join('\n');
+      } catch { /* ignore */ }
       const context = {
         requestId: generateRequestId(),
         startTime: 0,
         method: method.toUpperCase(),
         url: typeof url === 'string' ? url : url.toString(),
         requestHeaders: {},
+        initiator,
       };
       xhrContextMap.set(this, context);
       return self.originalXhrOpen!.call(this, method, url, async, username as any, password as any);
@@ -379,6 +443,9 @@ export class NetworkInterceptor {
           duration,
           type: 'xhr',
           withCredentials: this.withCredentials,
+          responseSize: extractResponseSize(responseHeaders, responseBody),
+          timingPhases: getResourceTimingPhases(context.url, context.startTime),
+          initiator: context.initiator,
         });
       };
 

@@ -26,7 +26,7 @@ export type SerializedValue =
 // ── Console ─────────────────────────────────────────────────────────────────
 
 export interface ConsolePayload {
-  level: 'log' | 'warn' | 'error' | 'info' | 'debug' | 'repl-input' | 'repl-output';
+  level: 'log' | 'warn' | 'error' | 'info' | 'debug' | 'repl-input' | 'repl-output' | 'table' | 'group' | 'group-collapsed' | 'group-end' | 'assert' | 'count' | 'time-log';
   /** 原始参数列表（已序列化为字符串，保留富文本） */
   args: string[];
   /** 合并后的可读消息（args.join(' ')，方便搜索过滤） */
@@ -39,6 +39,10 @@ export interface ConsolePayload {
   cssStyles?: string[];
   /** Styled parts for %c rendering: each part has text + optional CSS style string */
   styledParts?: Array<{ text: string; style?: string }>;
+  /** Tabular data for console.table() rendering */
+  tableData?: Array<Record<string, unknown>>;
+  /** Group nesting depth at time of log (for indentation) */
+  indent?: number;
 }
 
 // ── Network ──────────────────────────────────────────────────────────────────
@@ -69,6 +73,19 @@ export interface NetworkPayload {
   wsEventType?: 'open' | 'close' | 'error' | 'message';
   /** WebSocket/SSE: 消息数量 */
   messageCount?: number;
+  /** 响应体大小（bytes），从 Content-Length 头或 transferSize 获取 */
+  responseSize?: number;
+  /** 详细时间阶段（ms），从 PerformanceResourceTiming 获取 */
+  timingPhases?: {
+    dns?: number;
+    tcp?: number;
+    ssl?: number;
+    request?: number;
+    response?: number;
+    total?: number;
+  };
+  /** 请求发起时的调用栈（用于定位发起位置） */
+  initiator?: string;
 }
 
 // ── Storage ──────────────────────────────────────────────────────────────────
