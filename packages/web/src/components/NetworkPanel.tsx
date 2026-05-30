@@ -205,6 +205,16 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
     });
   }, [requests, filterMethod, filterType, filterStatus, searchText]);
 
+  // Waterfall timing: compute scale based on all filtered requests
+  const waterfallScale = useMemo(() => {
+    const timed = filteredRequests.filter((r) => r.timestamp && r.duration);
+    if (timed.length === 0) return null;
+    const minTs = Math.min(...timed.map((r) => r.timestamp));
+    const maxEnd = Math.max(...timed.map((r) => r.timestamp + (r.duration ?? 0)));
+    const totalSpan = Math.max(maxEnd - minTs, 1);
+    return { minTs, totalSpan };
+  }, [filteredRequests]);
+
   if (!deviceId) {
     return (
       <div style={styles.placeholder}>
@@ -273,30 +283,56 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
           {!loading && filteredRequests.length === 0 && (
             <div style={styles.emptyHint}>{t.common.noData}</div>
           )}
-          {filteredRequests.map((req) => (
-            <div
-              key={req.id}
-              onClick={() => setSelected(req)}
-              style={{
-                ...styles.row,
-                ...(selected?.id === req.id ? styles.rowSelected : {}),
-                ...(req.error ? styles.rowError : {}),
-              }}
-            >
-              <span style={{ ...styles.method, color: methodColor(req.method) }}>{req.method}</span>
-              <span style={{ ...styles.status, color: statusColor(req.status) }}>
-                {req.type === 'ws' && req.wsDirection === 'send' ? '↑' :
-                 req.type === 'ws' && req.wsDirection === 'receive' ? '↓' :
-                 req.type === 'sse' ? '⟶' :
-                 req.status || '—'}
-              </span>
-              <span style={styles.url} title={req.url}>
-                {formatUrl(req.url)}
-              </span>
-              <span style={styles.duration}>{formatDuration(req.duration)}</span>
-              <span style={styles.type}>{req.type}</span>
-            </div>
-          ))}
+          {filteredRequests.map((req) => {
+              // Compute waterfall bar position/width as percentages
+              let waterfallLeft = 0;
+              let waterfallWidth = 2;
+              if (waterfallScale && req.timestamp && req.duration) {
+                waterfallLeft = ((req.timestamp - waterfallScale.minTs) / waterfallScale.totalSpan) * 100;
+                waterfallWidth = Math.max(2, (req.duration / waterfallScale.totalSpan) * 100);
+                if (waterfallLeft + waterfallWidth > 100) waterfallWidth = 100 - waterfallLeft;
+              }
+              return (
+                <div
+                  key={req.id}
+                  onClick={() => setSelected(req)}
+                  style={{
+                    ...styles.row,
+                    ...(selected?.id === req.id ? styles.rowSelected : {}),
+                    ...(req.error ? styles.rowError : {}),
+                  }}
+                >
+                  <span style={{ ...styles.method, color: methodColor(req.method) }}>{req.method}</span>
+                  <span style={{ ...styles.status, color: statusColor(req.status) }}>
+                    {req.type === 'ws' && req.wsDirection === 'send' ? '↑' :
+                     req.type === 'ws' && req.wsDirection === 'receive' ? '↓' :
+                     req.type === 'sse' ? '⟶' :
+                     req.status || '—'}
+                  </span>
+                  <span style={styles.url} title={req.url}>
+                    {formatUrl(req.url)}
+                  </span>
+                  <span style={styles.duration}>{formatDuration(req.duration)}</span>
+                  <span style={styles.type}>{req.type}</span>
+                  {waterfallScale && (
+                    <span style={styles.waterfall}>
+                      <span
+                        style={{
+                          position: 'absolute',
+                          left: `${waterfallLeft}%`,
+                          width: `${waterfallWidth}%`,
+                          top: '20%',
+                          height: '60%',
+                          backgroundColor: req.error ? '#ff4d4f' : statusColor(req.status),
+                          borderRadius: '2px',
+                          opacity: 0.75,
+                        }}
+                      />
+                    </span>
+                  )}
+                </div>
+              );
+            })}
         </div>
 
         {/* Detail Panel */}
@@ -417,6 +453,14 @@ const styles: Record<string, CSSProperties> = {
     color: '#999',
     fontSize: 10,
     textTransform: 'uppercase',
+  },
+  waterfall: {
+    position: 'relative',
+    flex: '0 0 80px',
+    height: '100%',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '2px',
+    overflow: 'hidden',
   },
   loadingHint: {
     padding: 20,
