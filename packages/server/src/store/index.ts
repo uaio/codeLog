@@ -14,5 +14,5 @@ export { PerfRunStore, type PerfRunSession as PerfRunSessionData } from './perfR
 export { MockStore, type MockRule } from './mocks.js';
 export { Persistence, type PersistenceOptions } from './persistence.js';
 export { SystemStore, type SystemInfo, type SystemConnectionInfo, type SystemBatteryInfo } from './system.js';
-export { IndexedDBStore, type IDBOperationEntry } from './indexeddb.js';
+export { IndexedDBStore, IDBSnapshotStore, type IDBOperationEntry, type IDBSnapshotRecord, type IDBStoreDataRecord } from './indexeddb.js';
 export { SavedLogStore, type SavedLogSession, type SavedLogEntry } from './savedLogs.js';

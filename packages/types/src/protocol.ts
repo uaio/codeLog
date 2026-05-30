@@ -53,7 +53,9 @@ export type ServerToDeviceCommand =
   | { type: 'set_network_throttle'; preset: 'none' | '3g' | '2g' | 'offline' }
   | { type: 'add_mock'; rule: MockRule }
   | { type: 'remove_mock'; id: string }
-  | { type: 'clear_mocks' };
+  | { type: 'clear_mocks' }
+  | { type: 'request_idb_snapshot' }
+  | { type: 'request_idb_store_data'; dbName: string; storeName: string; page: number; pageSize: number; reqId: string };
 
 export interface MockRule {
   id: string;

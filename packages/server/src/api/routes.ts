@@ -11,6 +11,7 @@ import {
   MockStore,
   SystemStore,
   IndexedDBStore,
+  IDBSnapshotStore,
   SavedLogStore,
 } from '../store/index.js';
 import { createDeviceRoutes } from './devices.js';
@@ -29,6 +30,7 @@ export function createRoutes(
   systemStore: SystemStore,
   idbStore: IndexedDBStore,
   savedLogStore: SavedLogStore,
+  idbSnapshotStore?: IDBSnapshotStore,
 ): Router {
   const router = Router();
   const deviceRoutes = createDeviceRoutes(
@@ -43,6 +45,7 @@ export function createRoutes(
     mockStore,
     systemStore,
     idbStore,
+    idbSnapshotStore,
   );
 
   // ── 外部数据接入（统一 Envelope 标准）──────────────────────────────
@@ -132,6 +135,8 @@ export function createRoutes(
   router.get('/api/devices/:deviceId/health', deviceRoutes.getHealthCheck);
   router.get('/api/devices/:deviceId/system', deviceRoutes.getSystemInfo);
   router.get('/api/devices/:deviceId/indexeddb', deviceRoutes.getIndexedDB);
+  router.get('/api/devices/:deviceId/idb-snapshot', deviceRoutes.getIDBSnapshot);
+  router.get('/api/devices/:deviceId/idb-store-data/:reqId', deviceRoutes.getIDBStoreData);
 
   // ── Saved log sessions (offline upload/replay) ────────────────────────
   router.post('/api/saved-logs', (req, res) => {

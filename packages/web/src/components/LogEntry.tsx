@@ -1,6 +1,23 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { ConsoleLog, SerializedValue } from '../types/index.js';
 import { JsonTreeView } from './JsonTreeView.js';
+
+/** Convert a CSS string like "color:red;font-weight:bold" to a React style object */
+function parseCssStyle(css: string): CSSProperties {
+  const style: Record<string, string> = {};
+  css.split(';').forEach((decl) => {
+    const idx = decl.indexOf(':');
+    if (idx === -1) return;
+    const prop = decl.slice(0, idx).trim();
+    const val = decl.slice(idx + 1).trim();
+    if (!prop || !val) return;
+    // Convert kebab-case to camelCase
+    const camel = prop.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+    style[camel] = val;
+  });
+  return style as CSSProperties;
+}
 
 interface LogEntryProps {
   log: ConsoleLog;
@@ -91,7 +108,15 @@ export function LogEntry({ log }: LogEntryProps) {
         {isGlobalError && <span style={styles.globalErrorTag}>GLOBAL</span>}
       </div>
       <div style={{ ...styles.message, fontFamily: isReplInput || isReplOutput ? 'monospace' : undefined }}>
-        {log.message}
+        {log.styledParts && log.styledParts.length > 0 ? (
+          log.styledParts.map((part, i) => (
+            <span key={i} style={part.style ? parseCssStyle(part.style) : undefined}>
+              {part.text}
+            </span>
+          ))
+        ) : (
+          log.message
+        )}
       </div>
       {hasRichArgs && (
         <div style={styles.treeToggle} onClick={() => setTreeOpen((o) => !o)}>

@@ -37,6 +37,8 @@ export interface ConsolePayload {
   serializedArgs?: SerializedValue[];
   /** CSS styles extracted from %c format directives */
   cssStyles?: string[];
+  /** Styled parts for %c rendering: each part has text + optional CSS style string */
+  styledParts?: Array<{ text: string; style?: string }>;
 }
 
 // ── Network ──────────────────────────────────────────────────────────────────
@@ -298,6 +300,7 @@ export interface SystemPayload {
   timezoneOffset: number;
   // 浏览器特性检测
   features: {
+    // Core APIs
     webGL: boolean;
     webGL2: boolean;
     webP: boolean;
@@ -315,6 +318,38 @@ export interface SystemPayload {
     clipboard: boolean;
     share: boolean;
     pdfViewer: boolean;
+    // Network
+    fetch: boolean;
+    beacon: boolean;
+    eventSource: boolean;
+    // JS ES6+ features
+    es6Class: boolean;
+    es6Arrow: boolean;
+    es6Template: boolean;
+    es6Destructuring: boolean;
+    es6Symbol: boolean;
+    es6Promise: boolean;
+    es6Proxy: boolean;
+    es7Async: boolean;
+    es8AsyncAwait: boolean;
+    // CSS features
+    cssGrid: boolean;
+    cssFlexbox: boolean;
+    cssVariables: boolean;
+    cssAnimation: boolean;
+    cssCssHas: boolean;
+    // Element APIs
+    intersectionObserver: boolean;
+    resizeObserver: boolean;
+    mutationObserver: boolean;
+    performanceObserver: boolean;
+    broadcastChannel: boolean;
+    // Storage
+    cacheStorage: boolean;
+    localStorage: boolean;
+    sessionStorage: boolean;
+    cookieStore: boolean;
+    webSQL: boolean;
   };
 }
 
@@ -339,6 +374,48 @@ export interface IndexedDBPayload {
   entries: IndexedDBEntry[];
 }
 
+// ── IDB Browser (live data inspection) ───────────────────────────────────────
+
+export interface IDBIndexInfo {
+  name: string;
+  keyPath: string | string[];
+  unique: boolean;
+  multiEntry: boolean;
+}
+
+export interface IDBStoreSchema {
+  name: string;
+  keyPath: string | string[] | null;
+  autoIncrement: boolean;
+  indexes: IDBIndexInfo[];
+  /** Approximate record count (−1 if unavailable) */
+  count: number;
+}
+
+export interface IDBDatabaseInfo {
+  name: string;
+  version: number;
+  stores: IDBStoreSchema[];
+}
+
+/** Snapshot of all IDB databases + their schemas (no record data). */
+export interface IDBSnapshotPayload {
+  databases: IDBDatabaseInfo[];
+  ts: number;
+}
+
+/** Paginated record data for a specific store. */
+export interface IDBStoreDataPayload {
+  dbName: string;
+  storeName: string;
+  page: number;
+  pageSize: number;
+  total: number;
+  records: unknown[];
+  /** request correlation id */
+  reqId: string;
+}
+
 /**
  * 所有事件类型的字符串枚举。
  * 新增类型时同步扩展 EventPayloadMap。
@@ -355,7 +432,9 @@ export type EventType =
   | 'lifecycle'
   | 'custom'
   | 'system'
-  | 'indexeddb';
+  | 'indexeddb'
+  | 'idb_snapshot'
+  | 'idb_store_data';
 
 /**
  * EventType → Payload 的映射关系（TypeScript discriminated union 的核心）。
@@ -374,4 +453,6 @@ export interface EventPayloadMap {
   custom: CustomPayload;
   system: SystemPayload;
   indexeddb: IndexedDBEntry;
+  idb_snapshot: IDBSnapshotPayload;
+  idb_store_data: IDBStoreDataPayload;
 }

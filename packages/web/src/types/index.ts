@@ -39,6 +39,7 @@ export interface ConsoleLog {
   stack?: string;
   serializedArgs?: SerializedValue[];
   cssStyles?: string[];
+  styledParts?: Array<{ text: string; style?: string }>;
 }
 
 export interface NetworkRequest {
@@ -240,6 +241,38 @@ export interface SystemInfo {
     clipboard: boolean;
     share: boolean;
     pdfViewer: boolean;
+    // Network
+    fetch: boolean;
+    beacon: boolean;
+    eventSource: boolean;
+    // JS ES6+
+    es6Class: boolean;
+    es6Arrow: boolean;
+    es6Template: boolean;
+    es6Destructuring: boolean;
+    es6Symbol: boolean;
+    es6Promise: boolean;
+    es6Proxy: boolean;
+    es7Async: boolean;
+    es8AsyncAwait: boolean;
+    // CSS
+    cssGrid: boolean;
+    cssFlexbox: boolean;
+    cssVariables: boolean;
+    cssAnimation: boolean;
+    cssCssHas: boolean;
+    // Observer APIs
+    intersectionObserver: boolean;
+    resizeObserver: boolean;
+    mutationObserver: boolean;
+    performanceObserver: boolean;
+    broadcastChannel: boolean;
+    // Storage
+    cacheStorage: boolean;
+    localStorage: boolean;
+    sessionStorage: boolean;
+    cookieStore: boolean;
+    webSQL: boolean;
   };
 }
 

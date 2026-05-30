@@ -125,6 +125,20 @@ export const api = {
     return handleResponse(res, url);
   },
 
+  async getIDBSnapshot(deviceId: string): Promise<any> {
+    const url = `${API_BASE}/devices/${deviceId}/idb-snapshot`;
+    const res = await fetch(url);
+    if (res.status === 404) return null;
+    return handleResponse(res, url);
+  },
+
+  async getIDBStoreData(deviceId: string, reqId: string): Promise<any> {
+    const url = `${API_BASE}/devices/${deviceId}/idb-store-data/${encodeURIComponent(reqId)}`;
+    const res = await fetch(url);
+    if (res.status === 404) return null;
+    return handleResponse(res, url);
+  },
+
   async listSavedLogs(): Promise<SavedLogSessionMeta[]> {
     const url = `${API_BASE}/saved-logs`;
     const res = await fetch(url);

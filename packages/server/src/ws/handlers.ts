@@ -10,6 +10,7 @@ import {
   PerfRunStore,
   SystemStore,
   IndexedDBStore,
+  IDBSnapshotStore,
 } from '../store/index.js';
 
 export interface MessageContext {
@@ -24,6 +25,7 @@ export interface MessageContext {
   perfRunStore: PerfRunStore;
   systemStore: SystemStore;
   idbStore: IndexedDBStore;
+  idbSnapshotStore: IDBSnapshotStore;
   deviceIds: Map<WebSocket, string>;
 }
 
@@ -154,6 +156,32 @@ export const handlers: Record<string, MessageHandler> = {
       deviceId,
       tabId: envelope.tabId,
       ...envelope.data,
+    });
+    broadcastEvent(envelope, context);
+  },
+
+  idb_snapshot: (envelope, context) => {
+    const { idbSnapshotStore } = context;
+    const deviceId = envelope.device.deviceId;
+    idbSnapshotStore.setSnapshot(deviceId, {
+      databases: envelope.data.databases ?? [],
+      ts: envelope.data.ts ?? envelope.ts,
+    });
+    broadcastEvent(envelope, context);
+  },
+
+  idb_store_data: (envelope, context) => {
+    const { idbSnapshotStore } = context;
+    const deviceId = envelope.device.deviceId;
+    idbSnapshotStore.setStoreData(deviceId, {
+      reqId: envelope.data.reqId ?? '',
+      dbName: envelope.data.dbName,
+      storeName: envelope.data.storeName,
+      page: envelope.data.page,
+      pageSize: envelope.data.pageSize,
+      total: envelope.data.total,
+      records: envelope.data.records ?? [],
+      ts: envelope.ts,
     });
     broadcastEvent(envelope, context);
   },

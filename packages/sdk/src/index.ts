@@ -23,7 +23,7 @@ import type { RemoteConfig, ErudaConfig, NetworkInterceptorConfig } from './type
 import type { ThrottlePreset } from './interceptors/network-throttle.js';
 import type { MockRule } from './types/index.js';
 import type { PerfRunSession } from './types/index.js';
-import { serializeArgs, cleanStackTrace, extractConsoleCssStyles } from './core/utils/serialize.js';
+import { serializeArgs, cleanStackTrace, extractConsoleCssStyles, formatConsoleStyledParts } from './core/utils/serialize.js';
 import { serializeConsoleArgs } from './core/utils/atom.js';
 import { GestureActivator, type GestureConfig } from './core/gesture.js';
 import { OfflineBuffer, type OfflineBufferOptions } from './core/offline-buffer.js';
@@ -80,7 +80,7 @@ export interface CodeLogOptions extends RemoteConfig {
   };
   /**
    * Console data processor — called for each console entry before it is sent.
-   * Return the (optionally modified) entry to keep it, or null/undefined to drop it.
+   * Return the (optionally modified) entry to keep it, or null/undefined/false to drop it.
    */
   consoleProcessor?: (entry: {
     level: string;
@@ -88,10 +88,47 @@ export interface CodeLogOptions extends RemoteConfig {
     args: unknown[];
     timestamp: number;
   }) => { level: string; message: string; args: unknown[]; timestamp: number } | null | undefined | false;
+  /**
+   * Network data processor — called for each network request/response entry.
+   * Return the entry to keep it, or null/undefined/false to drop it.
+   */
+  networkProcessor?: (entry: {
+    url: string;
+    method: string;
+    type: string;
+    status?: number;
+    requestBody?: string;
+    responseBody?: string;
+  }) => { url: string; method: string; type: string; status?: number; requestBody?: string; responseBody?: string } | null | undefined | false;
+  /**
+   * Storage data processor — called for each storage snapshot.
+   * Return the snapshot to keep it, or null/undefined/false to drop it.
+   */
+  storageProcessor?: (snapshot: {
+    localStorage: Record<string, string>;
+    sessionStorage: Record<string, string>;
+    cookies: string;
+  }) => { localStorage: Record<string, string>; sessionStorage: Record<string, string>; cookies: string } | null | undefined | false;
+  /**
+   * IndexedDB operation processor — called for each IDB entry before it is sent.
+   * Return the entry to keep it, or null/undefined/false to drop it.
+   */
+  databaseProcessor?: (entry: {
+    dbName: string;
+    storeName: string;
+    operation: string;
+    key?: unknown;
+    value?: unknown;
+  }) => { dbName: string; storeName: string; operation: string; key?: unknown; value?: unknown } | null | undefined | false;
   /** Offline buffer configuration — persist events to localStorage when disconnected */
   offline?: OfflineBufferOptions & { enabled?: boolean };
   /** Plugins to install on startup */
   plugins?: CodeLogPlugin[];
+  /**
+   * Disable specific built-in interceptors by name.
+   * Valid names: 'console' | 'network' | 'storage' | 'dom' | 'performance' | 'error' | 'indexeddb' | 'screenshot' | 'system'
+   */
+  disabledPlugins?: Array<'console' | 'network' | 'storage' | 'dom' | 'performance' | 'error' | 'indexeddb' | 'screenshot' | 'system'>;
   /** 平台适配器，默认 BrowserAdapter */
   platform?: PlatformAdapter;
 }
@@ -133,6 +170,10 @@ export class CodeLog {
   private resolvedServerUrl: string | undefined;
   private gestureActivator: GestureActivator | null = null;
   private consoleProcessor: CodeLogOptions['consoleProcessor'] | undefined;
+  private networkProcessor: CodeLogOptions['networkProcessor'] | undefined;
+  private storageProcessor: CodeLogOptions['storageProcessor'] | undefined;
+  private databaseProcessor: CodeLogOptions['databaseProcessor'] | undefined;
+  private disabledPlugins: Set<string>;
   private offlineBuffer: OfflineBuffer | null = null;
   private pluginManager: PluginManager = new PluginManager();
 
@@ -153,6 +194,10 @@ export class CodeLog {
     this.tabId = generateTabId();
     this.heartbeatIntervalMs = options.heartbeatInterval ?? DEFAULT_HEARTBEAT_INTERVAL;
     this.consoleProcessor = options.consoleProcessor;
+    this.networkProcessor = options.networkProcessor;
+    this.storageProcessor = options.storageProcessor;
+    this.databaseProcessor = options.databaseProcessor;
+    this.disabledPlugins = new Set(options.disabledPlugins ?? []);
     if (options.offline?.enabled !== false && typeof localStorage !== 'undefined') {
       this.offlineBuffer = new OfflineBuffer(options.offline ?? {});
     }
@@ -192,27 +237,35 @@ export class CodeLog {
     }
 
     // ④ Console 拦截 — DataBus emit 发生在第一时间，之后再调用原始 console（Eruda 链）
-    this.interceptConsole();
+    if (!this.disabledPlugins.has('console')) {
+      this.interceptConsole();
+    }
 
     // ⑤ 其余采集器全部通过 DataBus 上报
     this.networkConfig = options.network;
-    this.initNetworkInterceptor(options.network);
-    this.initStorageReader();
+    if (!this.disabledPlugins.has('network')) {
+      this.initNetworkInterceptor(options.network);
+    }
+    if (!this.disabledPlugins.has('storage')) {
+      this.initStorageReader();
+    }
 
-    if (options.captureErrors !== false) {
+    if (options.captureErrors !== false && !this.disabledPlugins.has('error')) {
       this.initErrorInterceptor();
     }
 
-    if (options.dom?.enabled !== false) {
+    if (options.dom?.enabled !== false && !this.disabledPlugins.has('dom')) {
       this.initDOMCollector(options.dom?.initialDelay);
     }
 
-    if (options.performance?.enabled !== false) {
+    if (options.performance?.enabled !== false && !this.disabledPlugins.has('performance')) {
       this.initPerformanceCollector();
     }
 
-    // ScreenshotCollector 始终初始化，按需触发（PC 端命令 / 主动调用）
-    this.initScreenshotCollector();
+    // ScreenshotCollector — skippable via disabledPlugins
+    if (!this.disabledPlugins.has('screenshot')) {
+      this.initScreenshotCollector();
+    }
 
     // 注册跑分/Mock/节流相关回调
     this.reporter.onStartPerfRun(() => {
@@ -236,6 +289,26 @@ export class CodeLog {
     });
     this.reporter.onClearMocks(() => {
       this.clearMocks();
+    });
+
+    // IDB browser commands
+    this.reporter.onRequestIDBSnapshot(async () => {
+      if (!this.idbInterceptor) return;
+      try {
+        const snapshot = await this.idbInterceptor.takeSnapshot();
+        this.reporter.reportIDBSnapshot(snapshot);
+      } catch {
+        // ignore
+      }
+    });
+    this.reporter.onRequestIDBStoreData(async (dbName, storeName, page, pageSize, reqId) => {
+      if (!this.idbInterceptor) return;
+      try {
+        const data = await this.idbInterceptor.getStoreData(dbName, storeName, page, pageSize);
+        this.reporter.reportIDBStoreData({ ...data, reqId });
+      } catch {
+        // ignore
+      }
     });
 
     // 标记实例存在
@@ -270,16 +343,33 @@ export class CodeLog {
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
 
     // ⑧ System info — collect once on connect, re-collect on network/battery change
-    this.systemCollector = new SystemInfoCollector((payload) => {
-      this.dataBus.emit('system', payload);
-    });
-    void this.systemCollector.startWatching();
+    if (!this.disabledPlugins.has('system')) {
+      this.systemCollector = new SystemInfoCollector((payload) => {
+        this.dataBus.emit('system', payload);
+      });
+      void this.systemCollector.startWatching();
+    }
 
     // ⑨ IndexedDB monitoring
-    this.idbInterceptor = new IndexedDBInterceptor((entry) => {
-      this.dataBus.emit('indexeddb', entry);
-    });
-    this.idbInterceptor.start();
+    if (!this.disabledPlugins.has('indexeddb')) {
+      this.idbInterceptor = new IndexedDBInterceptor((entry) => {
+        // Apply user-defined database processor
+        if (this.databaseProcessor) {
+          const result = this.databaseProcessor({
+            dbName: entry.dbName,
+            storeName: entry.storeName,
+            operation: entry.operation,
+            key: entry.key,
+            value: entry.value,
+          });
+          if (!result) return;
+          this.dataBus.emit('indexeddb', { ...entry, ...result });
+          return;
+        }
+        this.dataBus.emit('indexeddb', entry);
+      });
+      this.idbInterceptor.start();
+    }
 
     // ⑩ Gesture activation (optional)
     if (options.gesture) {
@@ -373,14 +463,16 @@ export class CodeLog {
             processedArgs = result.args;
           }
           const cssStyles = extractConsoleCssStyles(processedArgs);
+          const styledParts = formatConsoleStyledParts(processedArgs);
           const serializedArgs = serializeConsoleArgs(processedArgs);
           const entry = {
             timestamp: Date.now(),
             level,
             message,
-            args: processedArgs, // 原始参数，供 ErudaPlugin 富文本渲染
-            serializedArgs, // 富结构化参数，供 Web 面板树展开
+            args: processedArgs,
+            serializedArgs,
             ...(cssStyles.length > 0 ? { cssStyles } : {}),
+            ...(styledParts ? { styledParts } : {}),
             ...(captureStack ? { stack: cleanStackTrace(new Error().stack) } : {}),
           };
           self.dataBus.emit('console', entry);
@@ -403,22 +495,50 @@ export class CodeLog {
 
   private initNetworkInterceptor(config?: NetworkInterceptorConfig): void {
     const bus = this.dataBus;
-    this.networkInterceptor = new NetworkInterceptor((entry) => bus.emit('network', entry), config);
+    const proc = this.networkProcessor;
+    const emit = (entry: any) => {
+      if (proc) {
+        const result = proc({
+          url: entry.url,
+          method: entry.method,
+          type: entry.type,
+          status: entry.status,
+          requestBody: entry.requestBody,
+          responseBody: entry.responseBody,
+        });
+        if (!result) return;
+        bus.emit('network', { ...entry, ...result });
+        return;
+      }
+      bus.emit('network', entry);
+    };
+    this.networkInterceptor = new NetworkInterceptor(emit, config);
     this.networkInterceptor.start();
 
-    this.wsInterceptor = new WebSocketInterceptor((entry) => bus.emit('network', entry));
+    this.wsInterceptor = new WebSocketInterceptor(emit);
     this.wsInterceptor.start();
 
-    this.sseInterceptor = new EventSourceInterceptor((entry) => bus.emit('network', entry));
+    this.sseInterceptor = new EventSourceInterceptor(emit);
     this.sseInterceptor.start();
 
-    this.beaconInterceptor = new BeaconInterceptor((entry) => bus.emit('network', entry));
+    this.beaconInterceptor = new BeaconInterceptor(emit);
     this.beaconInterceptor.start();
   }
 
   private initStorageReader(): void {
     const bus = this.dataBus;
+    const proc = this.storageProcessor;
     this.storageReader = new StorageReader((snapshot) => {
+      if (proc) {
+        const result = proc({
+          localStorage: snapshot.localStorage,
+          sessionStorage: snapshot.sessionStorage,
+          cookies: snapshot.cookies,
+        });
+        if (!result) return;
+        bus.emit('storage', { ...snapshot, ...result });
+        return;
+      }
       bus.emit('storage', snapshot);
     });
 

@@ -12,6 +12,7 @@ import {
   MockStore,
   SystemStore,
   IndexedDBStore,
+  IDBSnapshotStore,
 } from '../store/index.js';
 import { sendToDevice } from '../ws/handlers.js';
 
@@ -27,6 +28,7 @@ export function createDeviceRoutes(
   mockStore: MockStore,
   systemStore: SystemStore,
   idbStore: IndexedDBStore,
+  idbSnapshotStore?: IDBSnapshotStore,
 ) {
   return {
     listDevices: (req: Request, res: Response) => {
@@ -384,6 +386,20 @@ export function createDeviceRoutes(
       const { deviceId } = req.params;
       const entries = idbStore.getAll(deviceId);
       return res.json(entries);
+    },
+
+    getIDBSnapshot: (req: Request, res: Response) => {
+      const { deviceId } = req.params;
+      const snapshot = idbSnapshotStore?.getSnapshot(deviceId);
+      if (!snapshot) return res.status(404).json({ error: 'No IDB snapshot available' });
+      return res.json(snapshot);
+    },
+
+    getIDBStoreData: (req: Request, res: Response) => {
+      const { deviceId, reqId } = req.params;
+      const data = idbSnapshotStore?.getStoreData(deviceId, reqId);
+      if (!data) return res.status(404).json({ error: 'Store data not found' });
+      return res.json(data);
     },
   };
 }

@@ -2,25 +2,44 @@ import type { DeviceInfo } from '../types/index.js';
 import type { PlatformAdapter } from '../platform/types.js';
 import { hashString } from './utils/hash.js';
 import { generateTabId } from './utils/id.js';
+import { getOrCreateFingerprint } from './fingerprint.js';
 
 export { generateTabId };
 
-/** 生成设备 ID */
+/**
+ * Generate a stable device ID.
+ *
+ * Strategy (in order of preference):
+ * 1. Browser fingerprint stored in localStorage — same browser/device always gives the same ID.
+ * 2. If we are NOT in a browser environment (mini-program, Node), fall back to hashing UA+projectId.
+ *
+ * The ID is prefixed with the projectId so two different projects on the same device
+ * are still distinguishable by the server.
+ */
 export function generateDeviceId(projectId: string, platform: PlatformAdapter): string {
-  const urlPart = platform.device.getUrl();
+  try {
+    // Browser environment: use stable multi-signal fingerprint
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const fp = getOrCreateFingerprint();
+      return `${hashString(projectId)}-${fp}`;
+    }
+  } catch {
+    // fall through to legacy path
+  }
+  // Non-browser or fingerprint blocked: hash UA + projectId (old behaviour)
   const ua = platform.device.getUserAgent();
-  return hashString(urlPart + ua + projectId);
+  return hashString(ua + projectId);
 }
 
 /** 获取设备信息 */
 export function getDeviceInfo(projectId: string, platform: PlatformAdapter): DeviceInfo {
   const deviceId = generateDeviceId(projectId, platform);
 
-  const cachedId = platform.storage.getItem(`codelog_device_id_${projectId}`);
-  const isNew = !cachedId || cachedId !== deviceId;
+  const CONNECT_KEY = `_codelog_connect_${projectId}`;
+  const existingConnect = platform.storage.getItem(CONNECT_KEY);
 
-  if (isNew) {
-    platform.storage.setItem(`codelog_device_id_${projectId}`, deviceId);
+  if (!existingConnect) {
+    platform.storage.setItem(CONNECT_KEY, Date.now().toString());
   }
 
   return {
@@ -31,9 +50,7 @@ export function getDeviceInfo(projectId: string, platform: PlatformAdapter): Dev
     pixelRatio: platform.device.getPixelRatio(),
     language: platform.device.getLanguage(),
     url: platform.device.getUrl(),
-    connectTime: isNew
-      ? Date.now()
-      : parseInt(platform.storage.getItem(`codelog_connect_time_${projectId}`) || '0'),
+    connectTime: existingConnect ? parseInt(existingConnect) : Date.now(),
     lastActiveTime: Date.now(),
   };
 }

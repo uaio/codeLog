@@ -170,6 +170,7 @@ export class SystemInfoCollector {
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       timezoneOffset: new Date().getTimezoneOffset(),
       features: {
+        // Core APIs
         webGL: webGLSupported,
         webGL2: webGL2Supported,
         webP: webPSupported,
@@ -186,7 +187,39 @@ export class SystemInfoCollector {
         paymentRequest: 'PaymentRequest' in window,
         clipboard: 'clipboard' in navigator,
         share: 'share' in navigator,
-        pdfViewer: navigator.pdfViewerEnabled ?? false,
+        pdfViewer: (navigator as Navigator & { pdfViewerEnabled?: boolean }).pdfViewerEnabled ?? false,
+        // Network
+        fetch: 'fetch' in window,
+        beacon: 'sendBeacon' in navigator,
+        eventSource: 'EventSource' in window,
+        // JS ES6+ (syntax/runtime detection)
+        es6Class: (() => { try { return !!Function('return class {}')(); } catch { return false; } })(),
+        es6Arrow: (() => { try { return !!Function('return (() => true)()')(); } catch { return false; } })(),
+        es6Template: (() => { try { return !!Function('return `ok`')(); } catch { return false; } })(),
+        es6Destructuring: (() => { try { Function('const {a}={}'); return true; } catch { return false; } })(),
+        es6Symbol: typeof Symbol === 'function',
+        es6Promise: typeof Promise === 'function',
+        es6Proxy: typeof Proxy === 'function',
+        es7Async: (() => { try { Function('async function f(){}'); return true; } catch { return false; } })(),
+        es8AsyncAwait: (() => { try { Function('async function f(){ await Promise.resolve(); }'); return true; } catch { return false; } })(),
+        // CSS features
+        cssGrid: (() => { try { return CSS.supports('display', 'grid'); } catch { return false; } })(),
+        cssFlexbox: (() => { try { return CSS.supports('display', 'flex'); } catch { return false; } })(),
+        cssVariables: (() => { try { return CSS.supports('--x', '0'); } catch { return false; } })(),
+        cssAnimation: (() => { try { return CSS.supports('animation', 'none 1s'); } catch { return false; } })(),
+        cssCssHas: (() => { try { return CSS.supports('selector(:has(*))'); } catch { return false; } })(),
+        // Element / Observer APIs
+        intersectionObserver: 'IntersectionObserver' in window,
+        resizeObserver: 'ResizeObserver' in window,
+        mutationObserver: 'MutationObserver' in window,
+        performanceObserver: 'PerformanceObserver' in window,
+        broadcastChannel: 'BroadcastChannel' in window,
+        // Storage
+        cacheStorage: 'caches' in window,
+        localStorage: (() => { try { return !!window.localStorage; } catch { return false; } })(),
+        sessionStorage: (() => { try { return !!window.sessionStorage; } catch { return false; } })(),
+        cookieStore: 'cookieStore' in window,
+        webSQL: 'openDatabase' in window,
       },
     };
   }

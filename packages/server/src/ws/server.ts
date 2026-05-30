@@ -13,6 +13,7 @@ import {
   MockStore,
   SystemStore,
   IndexedDBStore,
+  IDBSnapshotStore,
   Persistence,
 } from '../store/index.js';
 import {
@@ -44,6 +45,7 @@ export function createWebSocketServer(
   const mockStore = new MockStore();
   const systemStore = new SystemStore();
   const idbStore = new IndexedDBStore();
+  const idbSnapshotStore = new IDBSnapshotStore();
   const deviceIds = new Map<WebSocket, string>();
 
   const wss = new WebSocketServer({
@@ -144,6 +146,20 @@ export function createWebSocketServer(
           if (message.type === 'clear_mocks' && message.deviceId) {
             sendToDevice(message.deviceId, { type: 'clear_mocks' });
           }
+          // IDB browser commands
+          if (message.type === 'request_idb_snapshot' && message.deviceId) {
+            sendToDevice(message.deviceId, { type: 'request_idb_snapshot' });
+          }
+          if (message.type === 'request_idb_store_data' && message.deviceId) {
+            sendToDevice(message.deviceId, {
+              type: 'request_idb_store_data',
+              dbName: message.dbName,
+              storeName: message.storeName,
+              page: message.page ?? 0,
+              pageSize: message.pageSize ?? 50,
+              reqId: message.reqId ?? '',
+            });
+          }
           return;
         }
 
@@ -162,6 +178,7 @@ export function createWebSocketServer(
             perfRunStore,
             systemStore,
             idbStore,
+            idbSnapshotStore,
             deviceIds,
           };
           handler(message, context);
@@ -186,6 +203,7 @@ export function createWebSocketServer(
           mockStore.cleanup(deviceId);
           systemStore.delete(deviceId);
           idbStore.deleteDevice(deviceId);
+          idbSnapshotStore.deleteDevice(deviceId);
           deviceIds.delete(ws);
         }
       }
@@ -205,6 +223,7 @@ export function createWebSocketServer(
     mockStore,
     systemStore,
     idbStore,
+    idbSnapshotStore,
   };
 }
 

@@ -211,36 +211,86 @@ function BatteryBar({ level }: { level: number }) {
 }
 
 function FeatureGrid({ features }: { features: SystemInfo['features'] }) {
-  const entries = Object.entries(features) as [string, boolean][];
+  const categories: Array<{ title: string; keys: (keyof SystemInfo['features'])[] }> = [
+    {
+      title: '图形 / 媒体',
+      keys: ['webGL', 'webGL2', 'webP'],
+    },
+    {
+      title: '网络 API',
+      keys: ['webSocket', 'webRTC', 'fetch', 'beacon', 'eventSource'],
+    },
+    {
+      title: '系统 API',
+      keys: ['serviceWorker', 'webWorker', 'geolocation', 'notifications', 'vibration',
+             'bluetooth', 'usb', 'paymentRequest', 'clipboard', 'share', 'pdfViewer',
+             'broadcastChannel'],
+    },
+    {
+      title: '存储',
+      keys: ['indexedDB', 'cacheStorage', 'localStorage', 'sessionStorage', 'cookieStore', 'webSQL'],
+    },
+    {
+      title: 'JavaScript (ES6+)',
+      keys: ['es6Class', 'es6Arrow', 'es6Template', 'es6Destructuring', 'es6Symbol',
+             'es6Promise', 'es6Proxy', 'es7Async', 'es8AsyncAwait'],
+    },
+    {
+      title: 'CSS 特性',
+      keys: ['cssGrid', 'cssFlexbox', 'cssVariables', 'cssAnimation', 'cssCssHas'],
+    },
+    {
+      title: '观察者 API',
+      keys: ['intersectionObserver', 'resizeObserver', 'mutationObserver', 'performanceObserver'],
+    },
+  ];
+
   const labels: Record<string, string> = {
-    webGL: 'WebGL',
-    webGL2: 'WebGL2',
-    webP: 'WebP',
-    serviceWorker: 'Service Worker',
-    webWorker: 'Web Worker',
-    indexedDB: 'IndexedDB',
-    webSocket: 'WebSocket',
-    webRTC: 'WebRTC',
-    geolocation: 'Geolocation',
-    notifications: 'Notifications',
-    vibration: 'Vibration',
-    bluetooth: 'Bluetooth',
-    usb: 'USB',
-    paymentRequest: 'Payment',
-    clipboard: 'Clipboard',
-    share: 'Web Share',
-    pdfViewer: 'PDF Viewer',
+    webGL: 'WebGL', webGL2: 'WebGL2', webP: 'WebP',
+    serviceWorker: 'Service Worker', webWorker: 'Web Worker',
+    indexedDB: 'IndexedDB', webSocket: 'WebSocket', webRTC: 'WebRTC',
+    geolocation: 'Geolocation', notifications: 'Notifications',
+    vibration: 'Vibration', bluetooth: 'Bluetooth', usb: 'USB',
+    paymentRequest: 'Payment', clipboard: 'Clipboard',
+    share: 'Web Share', pdfViewer: 'PDF Viewer',
+    fetch: 'Fetch', beacon: 'Beacon', eventSource: 'EventSource',
+    es6Class: 'Class', es6Arrow: 'Arrow Fn', es6Template: 'Template Literals',
+    es6Destructuring: 'Destructuring', es6Symbol: 'Symbol',
+    es6Promise: 'Promise', es6Proxy: 'Proxy',
+    es7Async: 'Async Fn', es8AsyncAwait: 'Async/Await',
+    cssGrid: 'Grid', cssFlexbox: 'Flexbox', cssVariables: 'Variables',
+    cssAnimation: 'Animation', cssCssHas: ':has()',
+    intersectionObserver: 'IntersectionObserver',
+    resizeObserver: 'ResizeObserver',
+    mutationObserver: 'MutationObserver',
+    performanceObserver: 'PerformanceObserver',
+    broadcastChannel: 'BroadcastChannel',
+    cacheStorage: 'Cache Storage', localStorage: 'localStorage',
+    sessionStorage: 'sessionStorage', cookieStore: 'CookieStore', webSQL: 'WebSQL',
   };
+
   return (
-    <div style={styles.featureGrid}>
-      {entries.map(([key, supported]) => (
-        <div key={key} style={styles.featureItem}>
-          <span style={{ color: supported ? '#52c41a' : '#ff4d4f', marginRight: '4px' }}>
-            {supported ? '✅' : '❌'}
-          </span>
-          <span style={{ fontSize: '11px', color: supported ? '#333' : '#999' }}>
-            {labels[key] || key}
-          </span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {categories.map((cat) => (
+        <div key={cat.title}>
+          <div style={{ fontSize: '11px', color: '#888', marginBottom: '4px', fontWeight: 600 }}>
+            {cat.title}
+          </div>
+          <div style={styles.featureGrid}>
+            {cat.keys.map((key) => {
+              const supported = (features as Record<string, boolean>)[key] ?? false;
+              return (
+                <div key={key} style={styles.featureItem}>
+                  <span style={{ color: supported ? '#52c41a' : '#ff4d4f', marginRight: '4px' }}>
+                    {supported ? '✅' : '❌'}
+                  </span>
+                  <span style={{ fontSize: '11px', color: supported ? '#333' : '#999' }}>
+                    {labels[key] || key}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       ))}
     </div>

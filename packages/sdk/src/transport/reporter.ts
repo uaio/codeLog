@@ -32,6 +32,10 @@ export class Reporter {
   private onAddMockCallback: ((rule: any) => void) | null = null;
   private onRemoveMockCallback: ((id: string) => void) | null = null;
   private onClearMocksCallback: (() => void) | null = null;
+  private onRequestIDBSnapshotCallback: (() => void) | null = null;
+  private onRequestIDBStoreDataCallback:
+    | ((dbName: string, storeName: string, page: number, pageSize: number, reqId: string) => void)
+    | null = null;
   private executeJsBus: DataBus | null = null;
   private rateLimiter = new RateLimiter(100);
   private serverUrl: string | undefined;
@@ -118,6 +122,18 @@ export class Reporter {
           if (data.type === 'clear_mocks') {
             this.onClearMocksCallback?.();
           }
+          if (data.type === 'request_idb_snapshot') {
+            this.onRequestIDBSnapshotCallback?.();
+          }
+          if (data.type === 'request_idb_store_data') {
+            this.onRequestIDBStoreDataCallback?.(
+              data.dbName,
+              data.storeName,
+              data.page ?? 0,
+              data.pageSize ?? 50,
+              data.reqId ?? '',
+            );
+          }
         },
       },
       this.platform,
@@ -160,10 +176,28 @@ export class Reporter {
   onClearMocks(callback: () => void): void {
     this.onClearMocksCallback = callback;
   }
+  onRequestIDBSnapshot(callback: () => void): void {
+    this.onRequestIDBSnapshotCallback = callback;
+  }
+  onRequestIDBStoreData(
+    callback: (dbName: string, storeName: string, page: number, pageSize: number, reqId: string) => void,
+  ): void {
+    this.onRequestIDBStoreDataCallback = callback;
+  }
 
   reportPerfRun(session: import('../types/index.js').PerfRunSession): void {
     if (!this.remoteEnabled || !this.transport) return;
     this.sendEnvelope('perf_run', session);
+  }
+
+  reportIDBSnapshot(snapshot: import('@codelog/types').IDBSnapshotPayload): void {
+    if (!this.remoteEnabled || !this.transport) return;
+    this.sendEnvelope('idb_snapshot', snapshot);
+  }
+
+  reportIDBStoreData(data: import('@codelog/types').IDBStoreDataPayload): void {
+    if (!this.remoteEnabled || !this.transport) return;
+    this.sendEnvelope('idb_store_data', data);
   }
 
   disconnect(): void {
