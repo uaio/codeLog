@@ -1,6 +1,7 @@
-import { CSSProperties, useState } from 'react';
+import { CSSProperties, useState, useCallback } from 'react';
 import { useDOM } from '../hooks/useDOM.js';
 import { useI18n } from '../i18n/index.js';
+import { api } from '../api/client.js';
 import type { DOMNode } from '../types/index.js';
 
 interface DOMPanelProps {
@@ -14,21 +15,52 @@ function formatTime(ts: number) {
 interface DOMNodeViewProps {
   node: DOMNode;
   depth?: number;
+  deviceId?: string;
 }
 
-function DOMNodeView({ node, depth = 0 }: DOMNodeViewProps) {
+function buildSelector(node: DOMNode): string {
+  if (node.id) return `#${node.id}`;
+  if (node.className) {
+    const first = node.className.trim().split(/\s+/)[0];
+    return `${node.tag.toLowerCase()}.${first}`;
+  }
+  return node.tag.toLowerCase();
+}
+
+function DOMNodeView({ node, depth = 0, deviceId }: DOMNodeViewProps) {
   const hasChildren = (node.children && node.children.length > 0) || (node.childCount ?? 0) > 0;
   const [expanded, setExpanded] = useState(depth < 3);
+  const [hovered, setHovered] = useState(false);
 
   const indent = depth * 14;
 
+  const handleHighlight = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!deviceId) return;
+      const selector = buildSelector(node);
+      try {
+        await api.post(`/api/devices/${deviceId}/highlight`, { selector, duration: 3000 });
+      } catch {
+        /* ignore */
+      }
+    },
+    [deviceId, node],
+  );
+
   return (
-    <div style={{ marginLeft: indent }}>
+    <div
+      style={{ marginLeft: indent }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       {/* Opening tag */}
       <div
         style={{
           ...nodeStyles.row,
           cursor: hasChildren ? 'pointer' : 'default',
+          backgroundColor: hovered ? 'rgba(0,120,212,0.06)' : undefined,
+          borderRadius: '3px',
         }}
         onClick={() => hasChildren && setExpanded((e) => !e)}
       >
@@ -62,6 +94,17 @@ function DOMNodeView({ node, depth = 0 }: DOMNodeViewProps) {
           <span style={nodeStyles.text}> {node.text.slice(0, 80)}</span>
         )}
 
+        {/* Highlight button (shown on hover) */}
+        {hovered && deviceId && (
+          <button
+            title="在设备上高亮此元素"
+            onClick={handleHighlight}
+            style={nodeStyles.highlightBtn}
+          >
+            🔍
+          </button>
+        )}
+
         {/* Collapsed hint */}
         {hasChildren && !expanded && (
           <span style={nodeStyles.collapsedHint}>
@@ -73,7 +116,7 @@ function DOMNodeView({ node, depth = 0 }: DOMNodeViewProps) {
       {/* Children */}
       {expanded &&
         node.children &&
-        node.children.map((child, i) => <DOMNodeView key={i} node={child} depth={depth + 1} />)}
+        node.children.map((child, i) => <DOMNodeView key={i} node={child} depth={depth + 1} deviceId={deviceId} />)}
 
       {/* Truncation notice */}
       {expanded && node.childCount && node.children && node.childCount > node.children.length && (
@@ -159,7 +202,7 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
             <span>{t.domPanel.waitingHint}</span>
           </div>
         )}
-        {!loading && snapshot && viewMode === 'tree' && <DOMNodeView node={snapshot.dom} depth={0} />}
+        {!loading && snapshot && viewMode === 'tree' && <DOMNodeView node={snapshot.dom} depth={0} deviceId={deviceId} />}
         {!loading && snapshot && viewMode === 'source' && (
           <pre style={styles.htmlSource}>
             {snapshot.htmlSnapshot ?? '(HTML snapshot not available — upgrade SDK)'}
@@ -307,4 +350,14 @@ const nodeStyles: Record<string, CSSProperties> = {
   collapsedHint: { color: '#666', fontSize: '11px', marginLeft: '8px', fontStyle: 'italic' },
   truncated: { color: '#666', fontSize: '11px', fontStyle: 'italic', padding: '2px 0' },
   closeTag: { color: '#4ec9b0', paddingLeft: 0 },
+  highlightBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '11px',
+    marginLeft: '6px',
+    padding: '0 3px',
+    opacity: 0.7,
+    flexShrink: 0,
+  },
 };

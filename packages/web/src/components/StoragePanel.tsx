@@ -59,6 +59,16 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
     }
   }, [deviceId, activeTab, storageType, refresh]);
 
+  const handleDeleteKey = useCallback(async (key: string) => {
+    if (!deviceId) return;
+    try {
+      await api.post(`/api/devices/${deviceId}/storage/delete`, { key, storageType });
+      setTimeout(refresh, 300);
+    } catch {
+      /* ignore */
+    }
+  }, [deviceId, storageType, refresh]);
+
   if (!deviceId) {
     return (
       <div style={styles.container}>
@@ -111,6 +121,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
             <tr>
               <th style={{ ...styles.th, width: '35%' }}>Key</th>
               <th style={styles.th}>Value</th>
+              <th style={{ ...styles.th, width: '40px' }}></th>
             </tr>
           </thead>
           <tbody>
@@ -119,6 +130,15 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
                 <td style={{ ...styles.td, ...styles.keyCell }}>{key}</td>
                 <td style={{ ...styles.td, ...styles.valueCell }}>
                   <span style={styles.valueText}>{value}</span>
+                </td>
+                <td style={{ ...styles.td, textAlign: 'center', padding: '0 4px' }}>
+                  <button
+                    title="删除"
+                    onClick={() => handleDeleteKey(key)}
+                    style={styles.deleteBtn}
+                  >
+                    🗑
+                  </button>
                 </td>
               </tr>
             ))}
@@ -541,5 +561,14 @@ const styles: Record<string, CSSProperties> = {
   },
   spinner: {
     fontSize: '20px',
+  },
+  deleteBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '13px',
+    opacity: 0.5,
+    padding: '2px 4px',
+    borderRadius: '3px',
   },
 };

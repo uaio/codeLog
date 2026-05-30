@@ -98,6 +98,14 @@ export class Reporter {
               /* ignore */
             }
           }
+          if (data.type === 'delete_storage') {
+            try {
+              const store = data.storageType === 'session' ? sessionStorage : localStorage;
+              store.removeItem(data.key);
+            } catch {
+              /* ignore */
+            }
+          }
           if (data.type === 'highlight_element' && data.selector) {
             this.highlightElement(data.selector, data.duration ?? 3000);
           }

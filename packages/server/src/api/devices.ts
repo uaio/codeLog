@@ -234,6 +234,16 @@ export function createDeviceRoutes(
       res.json({ ok: true });
     },
 
+    deleteStorage: (req: Request, res: Response) => {
+      const { deviceId } = req.params;
+      const { key, storageType } = req.body as { key?: string; storageType?: string };
+      if (!key) return res.status(400).json({ error: 'key is required' });
+      const device = deviceStore.get(deviceId);
+      if (!device) return res.status(404).json({ error: 'Device not found' });
+      sendToDevice(deviceId, { type: 'delete_storage', key, storageType: storageType || 'local' });
+      res.json({ ok: true });
+    },
+
     highlightElement: (req: Request, res: Response) => {
       const { deviceId } = req.params;
       const { selector, duration } = req.body as { selector?: string; duration?: number };

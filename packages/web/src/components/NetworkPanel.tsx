@@ -1,4 +1,4 @@
-import { CSSProperties, useState, useMemo } from 'react';
+import { CSSProperties, useState, useMemo, useCallback } from 'react';
 import { useNetworkRequests } from '../hooks/useNetworkRequests.js';
 import { useI18n } from '../i18n/index.js';
 import type { NetworkRequest } from '../types/index.js';
@@ -45,6 +45,7 @@ function formatUrl(url: string): string {
 
 function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose: () => void }) {
   const [tab, setTab] = useState<'headers' | 'request' | 'response'>('headers');
+  const [curlCopied, setCurlCopied] = useState(false);
   const { t } = useI18n();
 
   const handleResend = () => {
@@ -62,6 +63,26 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
       .catch((e) => alert(`Resend failed: ${e}`));
   };
 
+  const handleCopyCurl = useCallback(() => {
+    const method = request.method.toUpperCase();
+    const parts: string[] = [`curl -X ${method}`];
+    if (request.requestHeaders) {
+      for (const [k, v] of Object.entries(request.requestHeaders)) {
+        parts.push(`  -H '${k}: ${String(v).replace(/'/g, "'\\''")}'`);
+      }
+    }
+    if (method !== 'GET' && method !== 'HEAD' && request.requestBody) {
+      const body = String(request.requestBody).replace(/'/g, "'\\''");
+      parts.push(`  --data-raw '${body}'`);
+    }
+    parts.push(`  '${request.url}'`);
+    const curl = parts.join(' \\\n');
+    navigator.clipboard.writeText(curl).then(() => {
+      setCurlCopied(true);
+      setTimeout(() => setCurlCopied(false), 1500);
+    }).catch(() => {/* ignore */});
+  }, [request]);
+
   return (
     <div style={detailStyles.container}>
       <div style={detailStyles.header}>
@@ -74,6 +95,11 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
         {(request.type === 'fetch' || request.type === 'xhr') && (
           <button onClick={handleResend} style={detailStyles.resendBtn} title="Resend request">
             ↩ 重发
+          </button>
+        )}
+        {(request.type === 'fetch' || request.type === 'xhr') && (
+          <button onClick={handleCopyCurl} style={detailStyles.resendBtn} title="Copy as cURL">
+            {curlCopied ? '✅' : '📋'} cURL
           </button>
         )}
         <button onClick={onClose} style={detailStyles.closeBtn}>

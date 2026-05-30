@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import type { ConsoleLog, SerializedValue } from '../types/index.js';
 import { JsonTreeView } from './JsonTreeView.js';
@@ -29,7 +29,16 @@ function isComplex(v: SerializedValue): boolean {
 
 export function LogEntry({ log }: LogEntryProps) {
   const [treeOpen, setTreeOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const hasRichArgs = (log.serializedArgs ?? []).some(isComplex);
+
+  const handleCopy = useCallback(() => {
+    const text = log.stack ? `${log.message}\n${log.stack}` : log.message;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }).catch(() => {/* ignore */});
+  }, [log.message, log.stack]);
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('zh-CN', {
@@ -106,6 +115,13 @@ export function LogEntry({ log }: LogEntryProps) {
           {isReplInput ? 'INPUT' : isReplOutput ? 'RESULT' : log.level.toUpperCase()}
         </span>
         {isGlobalError && <span style={styles.globalErrorTag}>GLOBAL</span>}
+        <button
+          title="复制日志"
+          onClick={handleCopy}
+          style={styles.copyBtn}
+        >
+          {copied ? '✅' : '📋'}
+        </button>
       </div>
       <div style={{ ...styles.message, fontFamily: isReplInput || isReplOutput ? 'monospace' : undefined }}>
         {log.styledParts && log.styledParts.length > 0 ? (
@@ -228,5 +244,14 @@ const styles = {
     backgroundColor: '#1a1a2e',
     borderRadius: '4px',
     border: '1px solid #333',
+  },
+  copyBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '12px',
+    marginLeft: 'auto',
+    opacity: 0.5,
+    padding: '0 2px',
   },
 };

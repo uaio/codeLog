@@ -121,6 +121,7 @@ export function createRoutes(
   router.post('/api/devices/:deviceId/reload', deviceRoutes.reloadPage);
   router.post('/api/devices/:deviceId/storage/set', deviceRoutes.setStorage);
   router.post('/api/devices/:deviceId/storage/clear', deviceRoutes.clearStorage);
+  router.post('/api/devices/:deviceId/storage/delete', deviceRoutes.deleteStorage);
   router.post('/api/devices/:deviceId/highlight', deviceRoutes.highlightElement);
   router.post('/api/devices/:deviceId/zen', deviceRoutes.setZenMode);
   router.post('/api/devices/:deviceId/perf-run/start', deviceRoutes.startPerfRun);

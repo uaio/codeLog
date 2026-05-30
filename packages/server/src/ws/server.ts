@@ -115,6 +115,13 @@ export function createWebSocketServer(
               storageType: message.storageType || 'all',
             });
           }
+          if (message.type === 'delete_storage' && message.deviceId && message.key !== undefined) {
+            sendToDevice(message.deviceId, {
+              type: 'delete_storage',
+              storageType: message.storageType || 'local',
+              key: message.key,
+            });
+          }
           if (message.type === 'highlight_element' && message.deviceId && message.selector) {
             sendToDevice(message.deviceId, {
               type: 'highlight_element',
