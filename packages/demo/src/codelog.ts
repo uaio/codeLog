@@ -31,15 +31,21 @@ export async function initCodeLog() {
     const script = document.createElement('script');
     script.src = SDK_URL;
     script.onload = () => {
-      if (window.CodeLog) {
-        window.__codelog__ = new window.CodeLog({
-          projectId: 'codelog-demo',
-          server: SERVER_URL,
-          lang: 'zh',
-        });
-        console.log('[codeLog] SDK initialized', `→ ${SERVER_URL}`, `(SDK: ${SDK_URL})`);
+      // IIFE exposes a module namespace object: { CodeLog, default, init, ... }
+      // Use init() helper if available, otherwise fall back to new CodeLog()
+      const ns = window.CodeLog;
+      const opts = { projectId: 'codelog-demo', server: SERVER_URL, lang: 'zh' };
+      if (typeof ns?.init === 'function') {
+        window.__codelog__ = ns.init(opts);
+        console.log('[codeLog] SDK initialized via init()', `→ ${SERVER_URL}`);
       } else {
-        console.warn('[codeLog] window.CodeLog not found after script load');
+        const Ctor = ns?.default || ns?.CodeLog;
+        if (Ctor) {
+          window.__codelog__ = new Ctor(opts);
+          console.log('[codeLog] SDK initialized via new CodeLog()', `→ ${SERVER_URL}`);
+        } else {
+          console.warn('[codeLog] SDK constructor not found. window.CodeLog =', ns);
+        }
       }
       resolve();
     };
