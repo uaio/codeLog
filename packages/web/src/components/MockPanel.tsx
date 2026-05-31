@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { api } from '../api/client.js';
 import { useI18n } from '../i18n/index.js';
 
@@ -32,6 +32,7 @@ export function MockPanel({ deviceId }: MockPanelProps) {
   const [msg, setMsg] = useState('');
   const [rules, setRules] = useState<MockRule[]>([]);
   const [loadingRules, setLoadingRules] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
   const { t } = useI18n();
 
   // 加载已有规则
@@ -119,6 +120,55 @@ export function MockPanel({ deviceId }: MockPanelProps) {
       setTimeout(() => setMsg(''), 3000);
     }
   }, [deviceId]);
+
+  const handleExport = useCallback(() => {
+    if (rules.length === 0) return;
+    const exportable = rules.map(({ pattern, method, status, body }) => ({
+      pattern,
+      method: method || 'GET',
+      status,
+      body: body ?? '',
+    }));
+    const blob = new Blob([JSON.stringify(exportable, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mock-rules-${deviceId ?? 'export'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [rules, deviceId]);
+
+  const handleImport = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !deviceId) return;
+      try {
+        const text = await file.text();
+        const imported = JSON.parse(text);
+        if (!Array.isArray(imported)) throw new Error('文件格式不正确，需要 JSON 数组');
+        let successCount = 0;
+        for (const rule of imported) {
+          if (!rule.pattern) continue;
+          await api.post(`/api/devices/${deviceId}/mocks`, {
+            pattern: rule.pattern,
+            method: rule.method ?? 'GET',
+            status: Number(rule.status ?? 200),
+            headers: {},
+            body: rule.body ?? '',
+          });
+          successCount++;
+        }
+        setMsg(`✅ 已导入 ${successCount} 条规则`);
+        loadRules();
+      } catch (err: any) {
+        setMsg('❌ 导入失败: ' + err.message);
+      } finally {
+        if (importInputRef.current) importInputRef.current.value = '';
+        setTimeout(() => setMsg(''), 4000);
+      }
+    },
+    [deviceId, loadRules],
+  );
 
   if (!deviceId)
     return (
@@ -373,7 +423,7 @@ export function MockPanel({ deviceId }: MockPanelProps) {
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
           <button
             onClick={handleSubmit}
             disabled={saving || !form.pattern.trim()}
@@ -404,6 +454,44 @@ export function MockPanel({ deviceId }: MockPanelProps) {
           >
             🗑 清空全部
           </button>
+          <button
+            onClick={handleExport}
+            disabled={rules.length === 0}
+            style={{
+              padding: '6px 16px',
+              fontSize: 13,
+              border: '1px solid #52c41a',
+              borderRadius: 4,
+              backgroundColor: '#fff',
+              color: rules.length === 0 ? '#ccc' : '#52c41a',
+              cursor: rules.length === 0 ? 'not-allowed' : 'pointer',
+            }}
+            title="导出规则为 JSON 文件"
+          >
+            ⬇ 导出
+          </button>
+          <label
+            style={{
+              padding: '6px 16px',
+              fontSize: 13,
+              border: '1px solid #722ed1',
+              borderRadius: 4,
+              backgroundColor: '#fff',
+              color: '#722ed1',
+              cursor: 'pointer',
+              display: 'inline-block',
+            }}
+            title="从 JSON 文件导入规则"
+          >
+            ⬆ 导入
+            <input
+              ref={importInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              style={{ display: 'none' }}
+            />
+          </label>
         </div>
       </div>
 
