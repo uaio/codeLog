@@ -2,6 +2,7 @@ import { CSSProperties, useState, useCallback, useEffect } from 'react';
 import { useDOM } from '../hooks/useDOM.js';
 import { useI18n } from '../i18n/index.js';
 import { api } from '../api/client.js';
+import { websocketManager } from '../lib/websocketManager.js';
 import type { DOMNode } from '../types/index.js';
 
 interface DOMPanelProps {
@@ -277,6 +278,30 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
   const { t } = useI18n();
   const [viewMode, setViewMode] = useState<'tree' | 'source'>('tree');
   const [selectedSelector, setSelectedSelector] = useState<string | undefined>(undefined);
+  const [pickerActive, setPickerActive] = useState(false);
+
+  // Listen for element_picked events from device
+  useEffect(() => {
+    if (!deviceId) return;
+    const unsub = websocketManager.subscribe((msg: any) => {
+      if (
+        msg.type === 'event' &&
+        msg.deviceId === deviceId &&
+        msg.envelope?.type === 'element_picked'
+      ) {
+        const selector = msg.envelope.data?.selector;
+        if (selector) setSelectedSelector(selector);
+        setPickerActive(false);
+      }
+    });
+    return unsub;
+  }, [deviceId]);
+
+  const startPicker = useCallback(() => {
+    if (!deviceId) return;
+    setPickerActive(true);
+    websocketManager.send({ type: 'start_element_picker', deviceId });
+  }, [deviceId]);
 
   if (!deviceId) {
     return (
@@ -308,6 +333,18 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
           >
             🔄 {t.common.refresh}
           </button>
+          {deviceId && (
+            <button
+              style={{
+                ...styles.btn,
+                ...(pickerActive ? { background: 'rgba(0,122,204,0.3)', borderColor: '#007acc' } : {}),
+              }}
+              onClick={startPicker}
+              title="在设备上点击元素以选中"
+            >
+              {pickerActive ? '⏳ 等待选择…' : '🔍 选取元素'}
+            </button>
+          )}
         </div>
       </div>
 

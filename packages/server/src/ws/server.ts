@@ -185,6 +185,10 @@ export function createWebSocketServer(
               value: message.value ?? '',
             });
           }
+          // Element picker
+          if (message.type === 'start_element_picker' && message.deviceId) {
+            sendToDevice(message.deviceId, { type: 'start_element_picker' });
+          }
           return;
         }
 

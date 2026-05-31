@@ -53,6 +53,7 @@ interface OriginalConsole {
   info: typeof console.info;
   debug: typeof console.debug;
   trace: typeof console.trace;
+  clear: typeof console.clear;
 }
 
 export interface CodeLogOptions extends RemoteConfig {
@@ -359,6 +360,65 @@ export class CodeLog {
       }
     });
 
+    this.reporter.onStartElementPicker(() => {
+      let overlay: HTMLDivElement | null = null;
+
+      const buildSelector = (el: Element): string => {
+        if (el.id) return `#${el.id}`;
+        const tag = el.tagName.toLowerCase();
+        const classes = Array.from(el.classList).slice(0, 2).join('.');
+        return classes ? `${tag}.${classes}` : tag;
+      };
+
+      const onMove = (e: MouseEvent) => {
+        const target = e.target as Element | null;
+        if (!target || target === overlay) return;
+        const rect = target.getBoundingClientRect();
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.style.cssText = [
+            'position:fixed', 'pointer-events:none', 'z-index:2147483647',
+            'border:2px solid #007acc', 'background:rgba(0,122,204,0.15)',
+            'box-sizing:border-box', 'transition:all 60ms ease',
+          ].join(';');
+          document.body.appendChild(overlay);
+        }
+        overlay.style.top = `${rect.top}px`;
+        overlay.style.left = `${rect.left}px`;
+        overlay.style.width = `${rect.width}px`;
+        overlay.style.height = `${rect.height}px`;
+      };
+
+      const onPick = (e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const target = e.target as Element | null;
+        cleanup();
+        if (!target) return;
+        const selector = buildSelector(target);
+        this.reporter.reportPickedElement(selector, target.tagName);
+        // Also request DOM snapshot centered on this element
+        this.domCollector?.collect();
+      };
+
+      const cleanup = () => {
+        document.removeEventListener('mousemove', onMove, true);
+        document.removeEventListener('click', onPick, true);
+        document.removeEventListener('keydown', onKey, true);
+        if (overlay) { overlay.remove(); overlay = null; }
+        document.body.style.cursor = '';
+      };
+
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') cleanup();
+      };
+
+      document.body.style.cursor = 'crosshair';
+      document.addEventListener('mousemove', onMove, true);
+      document.addEventListener('click', onPick, true);
+      document.addEventListener('keydown', onKey, true);
+    });
+
     // 标记实例存在
     (globalThis as Record<symbol, unknown>)[CODELOG_INSTANCE_KEY] = this;
 
@@ -484,6 +544,7 @@ export class CodeLog {
       info: console.info,
       debug: console.debug,
       trace: console.trace,
+      clear: console.clear,
     };
 
     const self = this;
@@ -716,6 +777,21 @@ export class CodeLog {
         } catch { /* ignore */ }
       }
       originalAssert?.apply(console, [condition, ...args]);
+    };
+
+    // ── console.clear ──────────────────────────────────────────────────────────
+    const originalClear = console.clear;
+    console.clear = function () {
+      try {
+        self.dataBus.emit('console', {
+          timestamp: Date.now(),
+          level: 'log',
+          message: '--- console cleared ---',
+          args: ['--- console cleared ---'],
+          indent: 0,
+        });
+      } catch { /* ignore */ }
+      originalClear?.call(console);
     };
   }
 
@@ -1114,6 +1190,7 @@ export class CodeLog {
       console.info = this.originalConsole.info;
       console.debug = this.originalConsole.debug;
       console.trace = this.originalConsole.trace;
+      console.clear = this.originalConsole.clear;
       this.originalConsole = null;
     }
 

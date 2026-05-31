@@ -199,6 +199,10 @@ export const handlers: Record<string, MessageHandler> = {
     });
     broadcastEvent(envelope, context);
   },
+
+  element_picked: (envelope, _context) => {
+    broadcastEvent(envelope, _context);
+  },
 };
 
 const pcClients = new Set<WebSocket>();

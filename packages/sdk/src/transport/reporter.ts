@@ -38,6 +38,7 @@ export class Reporter {
     | null = null;
   private onGetComputedStylesCallback: ((selector: string) => void) | null = null;
   private onSetElementAttrCallback: ((selector: string, attr: string, value: string) => void) | null = null;
+  private onStartElementPickerCallback: (() => void) | null = null;
   private executeJsBus: DataBus | null = null;
   private rateLimiter = new RateLimiter(100);
   private serverUrl: string | undefined;
@@ -160,6 +161,9 @@ export class Reporter {
           if (data.type === 'set_element_attr' && data.selector && data.attr !== undefined) {
             this.onSetElementAttrCallback?.(data.selector, data.attr, data.value ?? '');
           }
+          if (data.type === 'start_element_picker') {
+            this.onStartElementPickerCallback?.();
+          }
         },
       },
       this.platform,
@@ -219,9 +223,18 @@ export class Reporter {
     this.onSetElementAttrCallback = callback;
   }
 
+  onStartElementPicker(callback: () => void): void {
+    this.onStartElementPickerCallback = callback;
+  }
+
   reportComputedStyles(selector: string, styles: Record<string, string>): void {
     if (!this.remoteEnabled || !this.transport) return;
     this.sendEnvelope('computed_styles', { selector, styles });
+  }
+
+  reportPickedElement(selector: string, tagName: string): void {
+    if (!this.remoteEnabled || !this.transport) return;
+    this.sendEnvelope('element_picked', { selector, tagName });
   }
 
   reportPerfRun(session: import('../types/index.js').PerfRunSession): void {
