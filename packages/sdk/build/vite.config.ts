@@ -18,7 +18,7 @@ export default defineConfig({
       }
     },
     rollupOptions: {
-      external: ['@codelog/eruda'],
+      // No external deps for browser IIFE — eruda and all deps bundled inline.
       input: {
         index: './src/index.ts'
       },
