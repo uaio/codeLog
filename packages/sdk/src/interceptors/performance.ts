@@ -4,6 +4,7 @@ import type {
   LongTask,
   ResourceTiming,
   InteractionTiming,
+  UserMark,
 } from '../types/index.js';
 import type { PerformanceSample as SDKPerformanceSample } from '../types/index.js';
 import type { DataBus } from '../core/DataBus.js';
@@ -37,6 +38,7 @@ const MAX_SAMPLES = 120; // 最多保留 6 分钟采样
 const MAX_LONG_TASKS = 100; // 最多保留 100 条 long tasks
 const MAX_RESOURCES = 200; // 最多保留 200 条资源
 const MAX_INTERACTIONS = 100; // 最多保留 100 次交互
+const MAX_MARKS = 200; // 最多保留 200 条自定义 mark/measure
 
 export class PerformanceCollector {
   private bus: DataBus;
@@ -45,6 +47,7 @@ export class PerformanceCollector {
   private longTasks: LongTask[] = [];
   private resources: ResourceTiming[] = [];
   private interactions: InteractionTiming[] = [];
+  private marks: UserMark[] = [];
   private rafHandle = 0;
   private intervalHandle: ReturnType<typeof setInterval> | null = null;
   private observers: PerformanceObserver[] = [];
@@ -65,6 +68,7 @@ export class PerformanceCollector {
     this.observeLongTasks();
     this.observeResources();
     this.observeInteractions();
+    this.observeUserMarks();
   }
 
   private async collectVitals() {
@@ -175,6 +179,39 @@ export class PerformanceCollector {
     }
   }
 
+  private observeUserMarks() {
+    try {
+      const existing = performance.getEntriesByType('mark') as PerformanceMark[];
+      for (const e of existing) {
+        this.marks.push({ name: e.name, startTime: Math.round(e.startTime), type: 'mark' });
+        if (this.marks.length > MAX_MARKS) this.marks.shift();
+      }
+      const existingMeasures = performance.getEntriesByType('measure') as PerformanceMeasure[];
+      for (const e of existingMeasures) {
+        this.marks.push({ name: e.name, startTime: Math.round(e.startTime), duration: Math.round(e.duration), type: 'measure' });
+        if (this.marks.length > MAX_MARKS) this.marks.shift();
+      }
+
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          const type = entry.entryType as 'mark' | 'measure';
+          this.marks.push({
+            name: entry.name,
+            startTime: Math.round(entry.startTime),
+            ...(entry.duration ? { duration: Math.round(entry.duration) } : {}),
+            type,
+          });
+          if (this.marks.length > MAX_MARKS) this.marks.shift();
+        }
+        this.flush();
+      });
+      observer.observe({ entryTypes: ['mark', 'measure'] });
+      this.observers.push(observer);
+    } catch {
+      // mark/measure 部分环境不支持，静默降级
+    }
+  }
+
   private startFPSLoop() {
     const tick = () => {
       if (this.destroyed) return;
@@ -217,6 +254,7 @@ export class PerformanceCollector {
       longTasks: [...this.longTasks],
       resources: [...this.resources],
       interactions: [...this.interactions],
+      marks: [...this.marks],
     };
     this.bus.emit('performance', report);
   }
@@ -228,6 +266,7 @@ export class PerformanceCollector {
       longTasks: [...this.longTasks],
       resources: [...this.resources],
       interactions: [...this.interactions],
+      marks: [...this.marks],
     };
   }
 
@@ -237,6 +276,7 @@ export class PerformanceCollector {
     this.longTasks = [];
     this.resources = [];
     this.interactions = [];
+    this.marks = [];
     this.fpsFrames = 0;
     this.fpsLastTick = performance.now();
   }

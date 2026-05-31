@@ -18,6 +18,7 @@ import type {
   LongTask,
   ResourceTiming,
   InteractionTiming,
+  UserMark,
 } from '../types/index.js';
 
 interface PerformancePanelProps {
@@ -108,6 +109,7 @@ export function PerformancePanel({ deviceId }: PerformancePanelProps) {
   const longTasks: LongTask[] = report?.longTasks ?? [];
   const resources: ResourceTiming[] = report?.resources ?? [];
   const interactions: InteractionTiming[] = report?.interactions ?? [];
+  const userMarks: UserMark[] = report?.marks ?? [];
 
   const chartData = samples.map((s) => ({
     time: formatTime(s.timestamp),
@@ -409,6 +411,46 @@ export function PerformancePanel({ deviceId }: PerformancePanelProps) {
                         </td>
                       </tr>
                     ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {/* User Timing Marks & Measures */}
+        {userMarks.length > 0 && (
+          <section style={styles.section}>
+            <div style={styles.sectionTitle}>
+              🏷️ 自定义标记 (performance.mark / measure)
+              <span style={styles.countBadge}>{userMarks.length}</span>
+            </div>
+            <div style={styles.tableWrap}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>类型</th>
+                    <th style={{ ...styles.th, width: '45%' }}>名称</th>
+                    <th style={styles.th}>起始 (ms)</th>
+                    <th style={styles.th}>耗时 (ms)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...userMarks].slice(-50).reverse().map((m, i) => (
+                    <tr key={i} style={styles.tr}>
+                      <td style={{ ...styles.td, color: m.type === 'measure' ? '#9cdcfe' : '#ce9178', fontSize: '11px' }}>
+                        {m.type}
+                      </td>
+                      <td style={{ ...styles.td, fontFamily: 'monospace', fontSize: '12px' }} title={m.name}>
+                        {m.name}
+                      </td>
+                      <td style={{ ...styles.td, color: '#888', fontSize: '11px' }}>
+                        {m.startTime.toFixed(1)}
+                      </td>
+                      <td style={{ ...styles.td, color: m.duration != null ? '#4caf50' : '#666', fontSize: '11px' }}>
+                        {m.duration != null ? `${m.duration.toFixed(1)}ms` : '—'}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

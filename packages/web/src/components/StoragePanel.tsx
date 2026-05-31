@@ -160,6 +160,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
   const [setKey, setSetKey] = useState('');
   const [setValue, setSetValue] = useState('');
   const [setLoading, setSetLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { t } = useI18n();
 
   const storageType = activeTab === 'sessionStorage' ? 'session' : 'local';
@@ -184,15 +185,24 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
   }, [deviceId, setKey, setValue, storageType, refresh]);
 
   const handleClearStorage = useCallback(async () => {
-    if (!deviceId || activeTab === 'cookies') return;
+    if (!deviceId) return;
     if (!window.confirm(t.storagePanel.clearConfirm)) return;
     try {
-      await api.post(`/api/devices/${deviceId}/storage/clear`, { storageType });
+      if (activeTab === 'cookies') {
+        const entries = snapshot?.cookieEntries ?? [];
+        await Promise.all(
+          entries.map((c) =>
+            api.post(`/api/devices/${deviceId}/storage/delete`, { key: c.name, storageType: 'cookie' }),
+          ),
+        );
+      } else {
+        await api.post(`/api/devices/${deviceId}/storage/clear`, { storageType });
+      }
       setTimeout(refresh, 300);
     } catch {
       /* ignore */
     }
-  }, [deviceId, activeTab, storageType, refresh]);
+  }, [deviceId, activeTab, storageType, snapshot, refresh]);
 
   const handleDeleteKey = useCallback(async (key: string) => {
     if (!deviceId) return;
@@ -295,12 +305,24 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
   ];
 
   const renderKVTable = (data: Record<string, string>, totalSize?: number) => {
-    const entries = Object.entries(data);
-    if (entries.length === 0) {
+    const q = searchQuery.toLowerCase();
+    const entries = Object.entries(data).filter(
+      ([k, v]) => !q || k.toLowerCase().includes(q) || v.toLowerCase().includes(q),
+    );
+    const totalCount = Object.keys(data).length;
+    if (totalCount === 0) {
       return (
         <div style={styles.empty}>
           <span style={styles.emptyIcon}>📭</span>
           <span>暂无数据</span>
+        </div>
+      );
+    }
+    if (entries.length === 0) {
+      return (
+        <div style={styles.empty}>
+          <span style={styles.emptyIcon}>🔍</span>
+          <span>无匹配结果</span>
         </div>
       );
     }
@@ -309,7 +331,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
         {totalSize !== undefined && (
           <div style={styles.sizeBar}>
             <span style={styles.sizeLabel}>总大小：{formatSize(totalSize)}</span>
-            <span style={styles.countLabel}>{entries.length} 条记录</span>
+            <span style={styles.countLabel}>{entries.length} / {totalCount} 条记录</span>
           </div>
         )}
         <table style={styles.table}>
@@ -337,12 +359,16 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
   };
 
   const renderCookies = (raw: string, entries?: CookieEntry[]) => {
+    const q = searchQuery.toLowerCase();
     // Prefer rich cookieEntry list when available (cookieStore API)
     if (entries && entries.length > 0) {
+      const filtered = entries.filter(
+        (c) => !q || c.name.toLowerCase().includes(q) || c.value.toLowerCase().includes(q),
+      );
       return (
         <div>
           <div style={styles.sizeBar}>
-            <span style={styles.countLabel}>{entries.length} 条 Cookie</span>
+            <span style={styles.countLabel}>{filtered.length} / {entries.length} 条 Cookie</span>
             <span style={{ ...styles.countLabel, fontSize: '11px', color: '#aaa' }}>
               via cookieStore API · 双击 Value 可编辑
             </span>
@@ -361,7 +387,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
               </tr>
             </thead>
             <tbody>
-              {entries.map((c, i) => (
+              {filtered.map((c, i) => (
                 <CookieEditableRow
                   key={i}
                   cookie={c}
@@ -384,7 +410,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
         </div>
       );
     }
-    const fallbackEntries = raw
+    const allFallback = raw
       .split(';')
       .map((c) => c.trim())
       .filter(Boolean)
@@ -393,10 +419,13 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
         if (idx === -1) return { key: c, value: '' };
         return { key: c.slice(0, idx).trim(), value: c.slice(idx + 1).trim() };
       });
+    const fallbackEntries = allFallback.filter(
+      ({ key, value }) => !q || key.toLowerCase().includes(q) || value.toLowerCase().includes(q),
+    );
     return (
       <div>
         <div style={styles.sizeBar}>
-          <span style={styles.countLabel}>{fallbackEntries.length} 条 Cookie</span>
+          <span style={styles.countLabel}>{fallbackEntries.length} / {allFallback.length} 条 Cookie</span>
         </div>
         <table style={styles.table}>
           <thead>
@@ -476,7 +505,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
               ...styles.subTab,
               ...(activeTab === tab.id ? styles.subTabActive : {}),
             }}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => { setActiveTab(tab.id); setSearchQuery(''); }}
           >
             {tab.label}
             {tab.count !== undefined && (
@@ -491,6 +520,19 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
             )}
           </button>
         ))}
+      </div>
+
+      {/* 搜索栏 */}
+      <div style={styles.searchBar}>
+        <input
+          style={styles.searchInput}
+          placeholder="搜索 key / value..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        {searchQuery && (
+          <button style={styles.searchClear} onClick={() => setSearchQuery('')} title="清除搜索">✕</button>
+        )}
       </div>
 
       {/* 写入 / 清空操作栏 */}
@@ -519,16 +561,14 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
         >
           {activeTab === 'cookies' ? '设 Cookie' : '写入'}
         </button>
-        {activeTab !== 'cookies' && (
-          <button
-            style={{ ...styles.btn, borderColor: '#ff4d4f', color: !deviceId ? '#999' : '#ff4d4f' }}
-            disabled={!deviceId}
-            onClick={handleClearStorage}
-            title={`清空手机端 ${activeTab}`}
-          >
-            清空
-          </button>
-        )}
+        <button
+          style={{ ...styles.btn, borderColor: '#ff4d4f', color: !deviceId ? '#999' : '#ff4d4f' }}
+          disabled={!deviceId}
+          onClick={handleClearStorage}
+          title={`清空 ${activeTab}`}
+        >
+          清空
+        </button>
       </div>
 
       {/* Content */}
@@ -596,6 +636,30 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: '4px',
     fontFamily: 'monospace',
     minWidth: 0,
+  },
+  searchBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 16px',
+    borderBottom: '1px solid #f0f0f0',
+    backgroundColor: '#fff',
+  },
+  searchInput: {
+    flex: 1,
+    padding: '4px 8px',
+    fontSize: '12px',
+    border: '1px solid #d9d9d9',
+    borderRadius: '4px',
+    outline: 'none',
+  },
+  searchClear: {
+    border: 'none',
+    background: 'none',
+    cursor: 'pointer',
+    fontSize: '12px',
+    color: '#999',
+    padding: '0 4px',
   },
   subTabs: {
     display: 'flex',

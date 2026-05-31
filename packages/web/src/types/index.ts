@@ -152,6 +152,13 @@ export interface InteractionTiming {
   target?: string;
 }
 
+export interface UserMark {
+  name: string;
+  startTime: number;
+  duration?: number;
+  type: 'mark' | 'measure';
+}
+
 export interface PerformanceReport {
   deviceId: string;
   tabId: string;
@@ -160,6 +167,7 @@ export interface PerformanceReport {
   longTasks: LongTask[];
   resources: ResourceTiming[];
   interactions: InteractionTiming[];
+  marks?: UserMark[];
 }
 
 export interface PerfScoreItem {

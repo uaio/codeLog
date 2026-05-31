@@ -51,6 +51,7 @@ export type {
   LongTask,
   ResourceTiming,
   InteractionTiming,
+  UserMark,
   // Error
   ErrorPayload,
   ErrorSource,

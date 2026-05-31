@@ -176,6 +176,15 @@ export interface PerformancePayload {
   longTasks: LongTask[];
   resources: ResourceTiming[];
   interactions: InteractionTiming[];
+  marks?: UserMark[];
+}
+
+export interface UserMark {
+  name: string;
+  startTime: number;
+  /** Set for performance.measure() entries */
+  duration?: number;
+  type: 'mark' | 'measure';
 }
 
 // ── Error ─────────────────────────────────────────────────────────────────────
