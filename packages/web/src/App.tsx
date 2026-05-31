@@ -29,8 +29,6 @@ function App() {
   const [wsState, setWsState] = useState(websocketManager.getConnectionState());
   const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
   const [badges, setBadges] = useState<Record<string, number>>({});
-  const [compareMode, setCompareMode] = useState(false);
-  const [compareDevice, setCompareDevice] = useState<Device | null>(null);
   const { t } = useI18n();
 
   useEffect(() => {
@@ -208,21 +206,6 @@ function App() {
           </p>
         </div>
         <div style={styles.statusBadge}>
-          <button
-            style={{
-              ...styles.compareBtn,
-              backgroundColor: compareMode ? '#1890ff' : '#fff',
-              color: compareMode ? '#fff' : '#666',
-              borderColor: compareMode ? '#1890ff' : '#d9d9d9',
-            }}
-            title="Side-by-side device comparison"
-            onClick={() => {
-              setCompareMode((m) => !m);
-              if (compareMode) setCompareDevice(null);
-            }}
-          >
-            ⊞ Compare
-          </button>
           <span
             style={{
               ...styles.statusDot,
@@ -245,59 +228,20 @@ function App() {
       </div>
 
       <div style={styles.content}>
-        <div style={compareMode ? styles.sidebarCompare : styles.sidebar}>
-          {compareMode && <div style={styles.sidebarLabel}>Primary</div>}
+        <div style={styles.sidebar}>
           <DeviceList
             onSelectDevice={handleSelectDevice}
             selectedDeviceId={selectedDevice?.deviceId}
           />
-          {compareMode && (
-            <>
-              <div style={{ ...styles.sidebarLabel, marginTop: '16px', borderTop: '1px solid #e8e8e8', paddingTop: '12px' }}>
-                Compare
-              </div>
-              <DeviceList
-                onSelectDevice={setCompareDevice}
-                selectedDeviceId={compareDevice?.deviceId}
-              />
-            </>
-          )}
         </div>
 
-        <div style={compareMode ? styles.mainCompare : styles.main}>
-          {/* Primary device panel */}
-          <div style={compareMode ? styles.comparePane : undefined}>
-            {compareMode && (
-              <div style={styles.compareDeviceBadge}>
-                {selectedDevice
-                  ? `📱 ${selectedDevice.ua.slice(0, 40)}…`
-                  : 'No device selected'}
-              </div>
-            )}
-            <TabFilter
-              deviceId={selectedDevice?.deviceId}
-              value={selectedTabId}
-              onChange={setSelectedTabId}
-            />
-            <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
-          </div>
-
-          {/* Compare device panel */}
-          {compareMode && (
-            <div style={styles.comparePane}>
-              <div style={styles.compareDeviceBadge}>
-                {compareDevice
-                  ? `📱 ${compareDevice.ua.slice(0, 40)}…`
-                  : 'Select a device to compare'}
-              </div>
-              <TabFilter
-                deviceId={compareDevice?.deviceId}
-                value={selectedTabId}
-                onChange={setSelectedTabId}
-              />
-              <Tabs tabs={buildCompareTabs(compareDevice?.deviceId, t, selectedTabId)} activeTab={activeTab} onChange={handleTabChange} />
-            </div>
-          )}
+        <div style={styles.main}>
+          <TabFilter
+            deviceId={selectedDevice?.deviceId}
+            value={selectedTabId}
+            onChange={setSelectedTabId}
+          />
+          <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
         </div>
       </div>
     </div>
@@ -387,64 +331,6 @@ const styles = {
     color: '#666',
     fontWeight: 500 as const,
   },
-  compareBtn: {
-    padding: '4px 10px',
-    borderRadius: '4px',
-    border: '1px solid #d9d9d9',
-    cursor: 'pointer',
-    fontSize: '12px',
-    fontWeight: 500 as const,
-    transition: 'background 0.15s',
-  },
-  sidebarCompare: {
-    width: '220px',
-    borderRight: '1px solid #e0e0e0',
-    overflow: 'auto',
-    flexShrink: 0,
-  },
-  sidebarLabel: {
-    fontSize: '11px',
-    fontWeight: 600 as const,
-    color: '#999',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-    padding: '8px 12px 4px',
-  },
-  mainCompare: {
-    flex: 1,
-    display: 'flex',
-    overflow: 'hidden',
-    gap: '4px',
-  },
-  comparePane: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column' as const,
-    overflow: 'hidden',
-    border: '1px solid #e0e0e0',
-    borderRadius: '6px',
-    backgroundColor: '#fff',
-  },
-  compareDeviceBadge: {
-    padding: '6px 12px',
-    backgroundColor: '#fafafa',
-    borderBottom: '1px solid #f0f0f0',
-    fontSize: '11px',
-    color: '#666',
-    fontFamily: 'monospace',
-    flexShrink: 0,
-  },
 };
-
-function buildCompareTabs(deviceId: string | undefined, t: ReturnType<typeof useI18n>['t'], selectedTabId: string | null): Tab[] {
-  return [
-    { id: 'console', label: t.tabs.console, icon: '📝', content: <LogPanel deviceId={deviceId} tabId={selectedTabId} /> },
-    { id: 'network', label: t.tabs.network, icon: '🌐', content: <NetworkPanel deviceId={deviceId} tabId={selectedTabId} /> },
-    { id: 'storage', label: t.tabs.storage, icon: '💾', content: <StoragePanel deviceId={deviceId} /> },
-    { id: 'element', label: t.tabs.dom, icon: '🏗️', content: <DOMPanel deviceId={deviceId} /> },
-    { id: 'perf', label: t.tabs.perf, icon: '⚡', content: <PerformancePanel deviceId={deviceId} /> },
-    { id: 'system', label: t.tabs.system, icon: '🖥️', content: <SystemPanel deviceId={deviceId} /> },
-  ];
-}
 
 export default App;
