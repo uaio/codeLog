@@ -15,6 +15,7 @@ import { IndexedDBPanel } from './components/IndexedDBPanel.js';
 import { OfflineLogsPanel } from './components/OfflineLogsPanel.js';
 import { ErrorPanel } from './components/ErrorPanel.js';
 import { PluginsPanel } from './components/PluginsPanel.js';
+import { ScreenshotPanel } from './components/ScreenshotPanel.js';
 import { TabFilter } from './components/TabFilter.js';
 import { Tabs, type Tab } from './components/Tabs.js';
 import { useI18n } from './i18n/index.js';
@@ -174,6 +175,12 @@ function App() {
       label: t.tabs.system,
       icon: '🖥️',
       content: <SystemPanel deviceId={selectedDevice?.deviceId} />,
+    },
+    {
+      id: 'screenshot',
+      label: '截图',
+      icon: '📷',
+      content: <ScreenshotPanel deviceId={selectedDevice?.deviceId} />,
     },
     {
       id: 'plugins',

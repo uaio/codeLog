@@ -6,6 +6,7 @@ export interface MockRule {
   status: number;
   headers?: Record<string, string>;
   body?: string;
+  delay?: number;
   createdAt: number;
   enabled: boolean;
   matchCount: number;

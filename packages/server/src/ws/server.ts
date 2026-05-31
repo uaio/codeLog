@@ -186,6 +186,15 @@ export function createWebSocketServer(
               storeName: message.storeName,
             });
           }
+          if (message.type === 'idb_put_record' && message.deviceId && message.dbName && message.storeName) {
+            sendToDevice(message.deviceId, {
+              type: 'idb_put_record',
+              dbName: message.dbName,
+              storeName: message.storeName,
+              key: message.key,
+              value: message.value,
+            });
+          }
           // DOM computed styles
           if (message.type === 'get_computed_styles' && message.deviceId && message.selector) {
             sendToDevice(message.deviceId, {

@@ -62,6 +62,7 @@ export interface NetworkRequest {
   error?: string;
   wsDirection?: 'send' | 'receive';
   wsEventType?: 'open' | 'close' | 'error' | 'message';
+  wsConnectionId?: string;
   messageCount?: number;
   responseSize?: number;
   timingPhases?: {

@@ -12,6 +12,8 @@ interface MockRule {
   method?: string;
   status: number;
   body?: string;
+  delay?: number;
+  headers?: Record<string, string>;
   createdAt: number;
   enabled: boolean;
   matchCount: number;
@@ -22,9 +24,18 @@ interface MockRuleForm {
   method: string;
   status: number;
   body: string;
+  delay: number;
+  headersText: string;
 }
 
-const defaultForm: MockRuleForm = { pattern: '', method: 'GET', status: 200, body: '{"ok":true}' };
+const defaultForm: MockRuleForm = {
+  pattern: '',
+  method: 'GET',
+  status: 200,
+  body: '{"ok":true}',
+  delay: 0,
+  headersText: '',
+};
 
 export function MockPanel({ deviceId }: MockPanelProps) {
   const [form, setForm] = useState<MockRuleForm>(defaultForm);
@@ -59,12 +70,21 @@ export function MockPanel({ deviceId }: MockPanelProps) {
     if (!deviceId || !form.pattern.trim()) return;
     setSaving(true);
     try {
+      // Parse headersText: "Key: Value\nKey2: Value2"
+      const headers: Record<string, string> = {};
+      for (const line of form.headersText.split('\n')) {
+        const idx = line.indexOf(':');
+        if (idx > 0) {
+          headers[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+        }
+      }
       await api.post(`/api/devices/${deviceId}/mocks`, {
         pattern: form.pattern,
         method: form.method || undefined,
         status: Number(form.status),
-        headers: {},
+        headers,
         body: form.body,
+        delay: form.delay > 0 ? form.delay : undefined,
       });
       setMsg('✅ Mock 规则已添加到设备');
       setForm(defaultForm);
@@ -123,11 +143,13 @@ export function MockPanel({ deviceId }: MockPanelProps) {
 
   const handleExport = useCallback(() => {
     if (rules.length === 0) return;
-    const exportable = rules.map(({ pattern, method, status, body }) => ({
+    const exportable = rules.map(({ pattern, method, status, body, delay, headers }) => ({
       pattern,
       method: method || 'GET',
       status,
       body: body ?? '',
+      ...(delay ? { delay } : {}),
+      ...(headers && Object.keys(headers).length ? { headers } : {}),
     }));
     const blob = new Blob([JSON.stringify(exportable, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -153,8 +175,9 @@ export function MockPanel({ deviceId }: MockPanelProps) {
             pattern: rule.pattern,
             method: rule.method ?? 'GET',
             status: Number(rule.status ?? 200),
-            headers: {},
+            headers: rule.headers ?? {},
             body: rule.body ?? '',
+            delay: rule.delay ?? undefined,
           });
           successCount++;
         }
@@ -302,6 +325,22 @@ export function MockPanel({ deviceId }: MockPanelProps) {
                   ×{rule.matchCount}
                 </span>
               )}
+              {/* Delay badge */}
+              {rule.delay && rule.delay > 0 ? (
+                <span
+                  style={{
+                    fontSize: 10,
+                    backgroundColor: '#fa8c16',
+                    color: '#fff',
+                    padding: '1px 5px',
+                    borderRadius: 10,
+                    flexShrink: 0,
+                  }}
+                  title={`延迟 ${rule.delay}ms`}
+                >
+                  ⏱{rule.delay}ms
+                </span>
+              ) : null}
               <button
                 onClick={() => handleRemoveRule(rule.id)}
                 style={{
@@ -410,6 +449,51 @@ export function MockPanel({ deviceId }: MockPanelProps) {
             value={form.body}
             onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
             rows={4}
+            style={{
+              width: '100%',
+              padding: '6px 10px',
+              border: '1px solid #d9d9d9',
+              borderRadius: 4,
+              fontSize: 12,
+              fontFamily: 'monospace',
+              resize: 'vertical',
+              boxSizing: 'border-box' as const,
+            }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: 'block', fontSize: 12, color: '#666', marginBottom: 4 }}>
+              延迟 (ms)
+            </label>
+            <input
+              type="number"
+              value={form.delay}
+              min={0}
+              onChange={(e) => setForm((f) => ({ ...f, delay: Number(e.target.value) }))}
+              placeholder="0"
+              style={{
+                width: '100%',
+                padding: '6px 10px',
+                border: '1px solid #d9d9d9',
+                borderRadius: 4,
+                fontSize: 13,
+                boxSizing: 'border-box' as const,
+              }}
+            />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: 'block', fontSize: 12, color: '#666', marginBottom: 4 }}>
+            响应 Headers（每行 Key: Value，可选）
+          </label>
+          <textarea
+            value={form.headersText}
+            onChange={(e) => setForm((f) => ({ ...f, headersText: e.target.value }))}
+            rows={2}
+            placeholder={'X-Custom-Header: value\nAnother-Header: value2'}
             style={{
               width: '100%',
               padding: '6px 10px',

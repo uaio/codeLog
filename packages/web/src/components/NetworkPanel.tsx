@@ -278,6 +278,154 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
   );
 }
 
+// ── WebSocket grouped view ──────────────────────────────────────────────────
+
+interface WsConnection {
+  id: string;
+  url: string;
+  status: 'open' | 'closed' | 'error';
+  openTime?: number;
+  closeTime?: number;
+  messageCount: number;
+  frames: NetworkRequest[];
+}
+
+function WsFrameList({ frames }: { frames: NetworkRequest[] }) {
+  const [selectedFrame, setSelectedFrame] = useState<NetworkRequest | null>(null);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        {frames.length === 0 && (
+          <div style={{ padding: 20, color: '#999', textAlign: 'center', fontSize: 12 }}>暂无消息帧</div>
+        )}
+        {frames.map((f) => {
+          const isSend = f.wsDirection === 'send';
+          const isEvent = f.wsEventType !== 'message';
+          const body = f.wsEventType === 'message'
+            ? (f.wsDirection === 'send' ? f.requestBody : f.responseBody) ?? ''
+            : f.wsEventType ?? '';
+          return (
+            <div
+              key={f.id}
+              onClick={() => setSelectedFrame(selectedFrame?.id === f.id ? null : f)}
+              style={{
+                padding: '5px 10px',
+                borderBottom: '1px solid #f0f0f0',
+                cursor: 'pointer',
+                fontSize: 12,
+                display: 'flex',
+                gap: 8,
+                alignItems: 'flex-start',
+                backgroundColor: selectedFrame?.id === f.id ? '#e6f7ff' : isEvent ? '#fffbe6' : '#fff',
+              }}
+            >
+              <span style={{ color: isSend ? '#1890ff' : '#52c41a', fontWeight: 'bold', flexShrink: 0, width: 14 }}>
+                {isEvent ? '●' : isSend ? '↑' : '↓'}
+              </span>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: selectedFrame?.id === f.id ? 'pre-wrap' : 'nowrap', wordBreak: 'break-all', color: isEvent ? '#d48806' : '#333' }}>
+                {body || '(empty)'}
+              </span>
+              <span style={{ flexShrink: 0, color: '#bbb', fontSize: 11 }}>
+                {f.timestamp ? new Date(f.timestamp).toLocaleTimeString() : ''}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WsGroupView({ requests, searchText }: { requests: NetworkRequest[]; searchText: string }) {
+  const [selectedConnId, setSelectedConnId] = useState<string | null>(null);
+
+  const wsRequests = useMemo(
+    () => requests.filter((r) => r.type === 'ws' && (!searchText || r.url.toLowerCase().includes(searchText.toLowerCase()))),
+    [requests, searchText],
+  );
+
+  const connections = useMemo<WsConnection[]>(() => {
+    const map = new Map<string, WsConnection>();
+    for (const r of wsRequests) {
+      const connId = r.wsConnectionId ?? r.id;
+      if (!map.has(connId)) {
+        map.set(connId, { id: connId, url: r.url, status: 'open', messageCount: 0, frames: [] });
+      }
+      const conn = map.get(connId)!;
+      if (r.wsEventType === 'open') {
+        conn.openTime = r.timestamp;
+      } else if (r.wsEventType === 'close') {
+        conn.status = 'closed';
+        conn.closeTime = r.timestamp;
+        conn.messageCount = r.messageCount ?? conn.messageCount;
+        conn.frames.push(r);
+      } else if (r.wsEventType === 'error') {
+        conn.status = 'error';
+        conn.frames.push(r);
+      } else if (r.wsEventType === 'message') {
+        conn.messageCount++;
+        conn.frames.push(r);
+      }
+    }
+    return Array.from(map.values());
+  }, [wsRequests]);
+
+  const selectedConn = connections.find((c) => c.id === selectedConnId) ?? null;
+
+  return (
+    <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      {/* Connection list */}
+      <div style={{ width: 260, flexShrink: 0, borderRight: '1px solid #e8e8e8', overflow: 'auto' }}>
+        {connections.length === 0 && (
+          <div style={{ padding: 20, color: '#999', textAlign: 'center', fontSize: 12 }}>暂无 WebSocket 连接</div>
+        )}
+        {connections.map((conn) => (
+          <div
+            key={conn.id}
+            onClick={() => setSelectedConnId(conn.id === selectedConnId ? null : conn.id)}
+            style={{
+              padding: '8px 12px',
+              borderBottom: '1px solid #f0f0f0',
+              cursor: 'pointer',
+              backgroundColor: selectedConnId === conn.id ? '#e6f7ff' : '#fff',
+              fontSize: 12,
+            }}
+          >
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 3 }}>
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                backgroundColor: conn.status === 'open' ? '#52c41a' : conn.status === 'error' ? '#ff4d4f' : '#bbb',
+              }} />
+              <span style={{ fontWeight: 'bold', color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {(() => { try { return new URL(conn.url).pathname || '/'; } catch { return conn.url; } })()}
+              </span>
+            </div>
+            <div style={{ color: '#999', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingLeft: 14 }}>
+              {conn.url}
+            </div>
+            <div style={{ color: '#aaa', fontSize: 11, paddingLeft: 14, marginTop: 2 }}>
+              {conn.messageCount} 条消息 · {conn.status}
+              {conn.closeTime && conn.openTime ? ` · ${conn.closeTime - conn.openTime}ms` : ''}
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Frame list */}
+      <div style={{ flex: 1, overflow: 'hidden' }}>
+        {selectedConn ? (
+          <WsFrameList frames={selectedConn.frames} />
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999', fontSize: 12 }}>
+            选择一个连接查看消息帧
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main NetworkPanel ──────────────────────────────────────────────────────
+
 export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
   const { requests, clearRequests, loading } = useNetworkRequests(deviceId, 500, tabId);
   const [selected, setSelected] = useState<NetworkRequest | null>(null);
@@ -287,7 +435,10 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
   const [searchText, setSearchText] = useState('');
   const { t } = useI18n();
 
+  const isWsGroupMode = filterType === 'ws';
+
   const filteredRequests = useMemo(() => {
+    if (isWsGroupMode) return requests; // WsGroupView handles its own filtering
     return requests.filter((req) => {
       if (filterMethod !== 'ALL' && req.method.toUpperCase() !== filterMethod) return false;
       if (filterType !== 'all' && req.type !== filterType) return false;
@@ -298,7 +449,7 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
       if (searchText && !req.url.toLowerCase().includes(searchText.toLowerCase())) return false;
       return true;
     });
-  }, [requests, filterMethod, filterType, filterStatus, searchText]);
+  }, [requests, filterMethod, filterType, filterStatus, searchText, isWsGroupMode]);
 
   // Waterfall timing: compute scale based on all filtered requests
   const waterfallScale = useMemo(() => {
@@ -368,71 +519,77 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
         <button onClick={clearRequests} style={styles.clearBtn} title={t.common.clear}>
           🗑
         </button>
-        <span style={styles.count}>{filteredRequests.length}</span>
+        <span style={styles.count}>{isWsGroupMode ? requests.filter(r => r.type === 'ws').length : filteredRequests.length}</span>
       </div>
 
       <div style={styles.body}>
-        {/* Request List */}
-        <div style={styles.list}>
-          {loading && <div style={styles.loadingHint}>{t.common.loading}</div>}
-          {!loading && filteredRequests.length === 0 && (
-            <div style={styles.emptyHint}>{t.common.noData}</div>
-          )}
-          {filteredRequests.map((req) => {
-              // Compute waterfall bar position/width as percentages
-              let waterfallLeft = 0;
-              let waterfallWidth = 2;
-              if (waterfallScale && req.timestamp && req.duration) {
-                waterfallLeft = ((req.timestamp - waterfallScale.minTs) / waterfallScale.totalSpan) * 100;
-                waterfallWidth = Math.max(2, (req.duration / waterfallScale.totalSpan) * 100);
-                if (waterfallLeft + waterfallWidth > 100) waterfallWidth = 100 - waterfallLeft;
-              }
-              return (
-                <div
-                  key={req.id}
-                  onClick={() => setSelected(req)}
-                  style={{
-                    ...styles.row,
-                    ...(selected?.id === req.id ? styles.rowSelected : {}),
-                    ...(req.error ? styles.rowError : {}),
-                  }}
-                >
-                  <span style={{ ...styles.method, color: methodColor(req.method) }}>{req.method}</span>
-                  <span style={{ ...styles.status, color: statusColor(req.status) }}>
-                    {req.type === 'ws' && req.wsDirection === 'send' ? '↑' :
-                     req.type === 'ws' && req.wsDirection === 'receive' ? '↓' :
-                     req.type === 'sse' ? '⟶' :
-                     req.status || '—'}
-                  </span>
-                  <span style={styles.url} title={req.url}>
-                    {formatUrl(req.url)}
-                  </span>
-                  <span style={styles.size}>{formatSize(req.responseSize)}</span>
-                  <span style={styles.duration}>{formatDuration(req.duration)}</span>
-                  <span style={styles.type}>{req.type}</span>
-                  {waterfallScale && (
-                    <span style={styles.waterfall}>
-                      <span
-                        style={{
-                          position: 'absolute',
-                          left: `${waterfallLeft}%`,
-                          width: `${waterfallWidth}%`,
-                          top: '20%',
-                          height: '60%',
-                          backgroundColor: req.error ? '#ff4d4f' : statusColor(req.status),
-                          borderRadius: '2px',
-                          opacity: 0.75,
-                        }}
-                      />
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-        </div>
+        {isWsGroupMode ? (
+          <WsGroupView requests={requests} searchText={searchText} />
+        ) : (
+          <>
+            {/* Request List */}
+            <div style={styles.list}>
+              {loading && <div style={styles.loadingHint}>{t.common.loading}</div>}
+              {!loading && filteredRequests.length === 0 && (
+                <div style={styles.emptyHint}>{t.common.noData}</div>
+              )}
+              {filteredRequests.map((req) => {
+                  // Compute waterfall bar position/width as percentages
+                  let waterfallLeft = 0;
+                  let waterfallWidth = 2;
+                  if (waterfallScale && req.timestamp && req.duration) {
+                    waterfallLeft = ((req.timestamp - waterfallScale.minTs) / waterfallScale.totalSpan) * 100;
+                    waterfallWidth = Math.max(2, (req.duration / waterfallScale.totalSpan) * 100);
+                    if (waterfallLeft + waterfallWidth > 100) waterfallWidth = 100 - waterfallLeft;
+                  }
+                  return (
+                    <div
+                      key={req.id}
+                      onClick={() => setSelected(req)}
+                      style={{
+                        ...styles.row,
+                        ...(selected?.id === req.id ? styles.rowSelected : {}),
+                        ...(req.error ? styles.rowError : {}),
+                      }}
+                    >
+                      <span style={{ ...styles.method, color: methodColor(req.method) }}>{req.method}</span>
+                      <span style={{ ...styles.status, color: statusColor(req.status) }}>
+                        {req.type === 'ws' && req.wsDirection === 'send' ? '↑' :
+                         req.type === 'ws' && req.wsDirection === 'receive' ? '↓' :
+                         req.type === 'sse' ? '⟶' :
+                         req.status || '—'}
+                      </span>
+                      <span style={styles.url} title={req.url}>
+                        {formatUrl(req.url)}
+                      </span>
+                      <span style={styles.size}>{formatSize(req.responseSize)}</span>
+                      <span style={styles.duration}>{formatDuration(req.duration)}</span>
+                      <span style={styles.type}>{req.type}</span>
+                      {waterfallScale && (
+                        <span style={styles.waterfall}>
+                          <span
+                            style={{
+                              position: 'absolute',
+                              left: `${waterfallLeft}%`,
+                              width: `${waterfallWidth}%`,
+                              top: '20%',
+                              height: '60%',
+                              backgroundColor: req.error ? '#ff4d4f' : statusColor(req.status),
+                              borderRadius: '2px',
+                              opacity: 0.75,
+                            }}
+                          />
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
 
-        {/* Detail Panel */}
-        {selected && <RequestDetail request={selected} onClose={() => setSelected(null)} />}
+            {/* Detail Panel */}
+            {selected && <RequestDetail request={selected} onClose={() => setSelected(null)} />}
+          </>
+        )}
       </div>
     </div>
   );

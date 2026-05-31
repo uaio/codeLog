@@ -92,6 +92,7 @@ export interface MockRule {
   status: number;
   headers?: Record<string, string>;
   body: string;
+  delay?: number;
   enabled?: boolean;
 }
 

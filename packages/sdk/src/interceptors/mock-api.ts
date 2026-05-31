@@ -47,6 +47,9 @@ export class MockAPI {
       const matched = self.matchRule(url, method);
       if (matched) {
         self.onMatch?.(matched.id, url);
+        if (matched.delay && matched.delay > 0) {
+          await new Promise((resolve) => setTimeout(resolve, matched.delay));
+        }
         return new Response(matched.body, {
           status: matched.status,
           headers: { 'Content-Type': 'application/json', ...matched.headers },
@@ -83,46 +86,47 @@ export class MockAPI {
 
       if (matched) {
         self.onMatch?.(matched.id, xhrUrl);
-        // Simulate a mock response
-        Object.defineProperty(this, 'status', {
-          value: matched.status,
-          writable: false,
-          configurable: true,
-        });
-        Object.defineProperty(this, 'statusText', {
-          value: 'OK',
-          writable: false,
-          configurable: true,
-        });
-        Object.defineProperty(this, 'responseText', {
-          value: matched.body,
-          writable: false,
-          configurable: true,
-        });
-        Object.defineProperty(this, 'response', {
-          value: matched.body,
-          writable: false,
-          configurable: true,
-        });
-        Object.defineProperty(this, 'readyState', {
-          value: 4,
-          writable: false,
-          configurable: true,
-        });
+        const respond = () => {
+          // Simulate a mock response
+          Object.defineProperty(this, 'status', {
+            value: matched.status,
+            writable: false,
+            configurable: true,
+          });
+          Object.defineProperty(this, 'statusText', {
+            value: 'OK',
+            writable: false,
+            configurable: true,
+          });
+          Object.defineProperty(this, 'responseText', {
+            value: matched.body,
+            writable: false,
+            configurable: true,
+          });
+          Object.defineProperty(this, 'response', {
+            value: matched.body,
+            writable: false,
+            configurable: true,
+          });
+          Object.defineProperty(this, 'readyState', {
+            value: 4,
+            writable: false,
+            configurable: true,
+          });
 
-        const headerStr = Object.entries({ 'Content-Type': 'application/json', ...matched.headers })
-          .map(([k, v]) => `${k}: ${v}`)
-          .join('\r\n');
-        Object.defineProperty(this, 'getAllResponseHeaders', {
-          value: () => headerStr,
-          configurable: true,
-        });
+          const headerStr = Object.entries({ 'Content-Type': 'application/json', ...matched.headers })
+            .map(([k, v]) => `${k}: ${v}`)
+            .join('\r\n');
+          Object.defineProperty(this, 'getAllResponseHeaders', {
+            value: () => headerStr,
+            configurable: true,
+          });
 
-        setTimeout(() => {
           this.dispatchEvent(new Event('readystatechange'));
           this.dispatchEvent(new Event('load'));
           this.dispatchEvent(new Event('loadend'));
-        }, 0);
+        };
+        setTimeout(respond, Math.max(0, matched.delay ?? 0));
         return;
       }
       origSend.call(this, body);

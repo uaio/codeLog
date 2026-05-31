@@ -71,6 +71,8 @@ export interface NetworkPayload {
   wsDirection?: 'send' | 'receive';
   /** WebSocket: 连接状态 open/close/error/message */
   wsEventType?: 'open' | 'close' | 'error' | 'message';
+  /** WebSocket: 所属连接的 ID（与 open 事件的 id 相同） */
+  wsConnectionId?: string;
   /** WebSocket/SSE: 消息数量 */
   messageCount?: number;
   /** 响应体大小（bytes），从 Content-Length 头或 transferSize 获取 */
@@ -438,6 +440,10 @@ export interface IDBStoreDataPayload {
   pageSize: number;
   total: number;
   records: unknown[];
+  /** Record keys (parallel array with records); undefined on older SDKs */
+  keys?: unknown[];
+  /** Store keyPath (null if out-of-line keys) */
+  keyPath?: string | string[] | null;
   /** request correlation id */
   reqId: string;
 }

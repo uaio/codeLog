@@ -204,6 +204,29 @@ export class Reporter {
               /* ignore */
             }
           }
+          if (data.type === 'idb_put_record' && data.dbName && data.storeName && data.value !== undefined) {
+            try {
+              const req = indexedDB.open(data.dbName);
+              req.onsuccess = () => {
+                const db = req.result;
+                try {
+                  const tx = db.transaction(data.storeName, 'readwrite');
+                  const objStore = tx.objectStore(data.storeName);
+                  // If keyPath is defined, key is embedded in value; otherwise use explicit key
+                  const putReq = objStore.keyPath !== null
+                    ? objStore.put(data.value)
+                    : objStore.put(data.value, data.key);
+                  putReq.onsuccess = () => {};
+                  tx.oncomplete = () => { db.close(); };
+                  tx.onerror = () => { db.close(); };
+                } catch {
+                  db.close();
+                }
+              };
+            } catch {
+              /* ignore */
+            }
+          }
           if (data.type === 'get_computed_styles' && data.selector) {
             this.onGetComputedStylesCallback?.(data.selector);
           }

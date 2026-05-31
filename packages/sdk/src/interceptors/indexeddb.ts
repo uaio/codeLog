@@ -150,10 +150,11 @@ export class IndexedDBInterceptor {
         const db = openReq.result;
         if (!db.objectStoreNames.contains(storeName)) {
           db.close();
-          return resolve({ dbName, storeName, records: [], total: 0, page, pageSize });
+          return resolve({ dbName, storeName, records: [], keys: [], total: 0, page, pageSize });
         }
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
+        const keyPath = store.keyPath;
 
         // Count total
         const countReq = store.count();
@@ -163,13 +164,14 @@ export class IndexedDBInterceptor {
 
           // Fetch records with cursor (skip offset, take pageSize)
           const records: unknown[] = [];
+          const keys: unknown[] = [];
           let skipped = 0;
           const cursorReq = store.openCursor();
           cursorReq.onsuccess = () => {
             const cursor = cursorReq.result;
             if (!cursor) {
               db.close();
-              return resolve({ dbName, storeName, records, total, page, pageSize });
+              return resolve({ dbName, storeName, records, keys, keyPath, total, page, pageSize });
             }
             if (skipped < offset) {
               skipped++;
@@ -182,15 +184,16 @@ export class IndexedDBInterceptor {
               } catch {
                 records.push(String(cursor.value));
               }
+              keys.push(cursor.key);
               cursor.continue();
             } else {
               db.close();
-              resolve({ dbName, storeName, records, total, page, pageSize });
+              resolve({ dbName, storeName, records, keys, keyPath, total, page, pageSize });
             }
           };
           cursorReq.onerror = () => {
             db.close();
-            resolve({ dbName, storeName, records, total, page, pageSize });
+            resolve({ dbName, storeName, records, keys, keyPath, total, page, pageSize });
           };
         };
         countReq.onerror = () => {

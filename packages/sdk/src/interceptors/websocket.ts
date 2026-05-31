@@ -53,6 +53,7 @@ export class WebSocketInterceptor {
           url: urlStr,
           type: 'ws',
           wsEventType: 'open',
+          wsConnectionId: id,
           status: 101,
           statusText: 'Switching Protocols',
           timestamp: Date.now(),
@@ -78,6 +79,7 @@ export class WebSocketInterceptor {
           type: 'ws',
           wsEventType: 'message',
           wsDirection: 'receive',
+          wsConnectionId: id,
           responseBody: body,
           timestamp: Date.now(),
         });
@@ -91,6 +93,7 @@ export class WebSocketInterceptor {
           url: urlStr,
           type: 'ws',
           wsEventType: 'error',
+          wsConnectionId: id,
           error: 'WebSocket error',
           timestamp: Date.now(),
         });
@@ -106,6 +109,7 @@ export class WebSocketInterceptor {
           url: urlStr,
           type: 'ws',
           wsEventType: 'close',
+          wsConnectionId: id,
           status: event.code,
           statusText: event.reason || 'Connection closed',
           duration,
@@ -135,6 +139,7 @@ export class WebSocketInterceptor {
           type: 'ws',
           wsEventType: 'message',
           wsDirection: 'send',
+          wsConnectionId: id,
           requestBody: body,
           timestamp: Date.now(),
         });

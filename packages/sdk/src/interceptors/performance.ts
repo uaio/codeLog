@@ -73,7 +73,7 @@ export class PerformanceCollector {
 
   private async collectVitals() {
     try {
-      const { onLCP, onCLS, onFCP, onTTFB, onINP } = await import('web-vitals');
+      const { onLCP, onCLS, onFCP, onTTFB, onINP, onFID } = await import('web-vitals');
 
       const report = (name: string, value: number, rating: WebVital['rating']) => {
         const idx = this.vitals.findIndex((v) => v.name === name);
@@ -89,6 +89,9 @@ export class PerformanceCollector {
       onTTFB((m) => report('TTFB', m.value, m.rating));
       try {
         onINP((m) => report('INP', m.value, m.rating));
+      } catch {}
+      try {
+        onFID((m) => report('FID', m.value, m.rating));
       } catch {}
     } catch (e) {
       console.warn('[codeLog] web-vitals unavailable', e);

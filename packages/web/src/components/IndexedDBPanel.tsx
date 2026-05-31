@@ -42,6 +42,8 @@ interface IDBStoreData {
   pageSize: number;
   total: number;
   records: unknown[];
+  keys?: unknown[];
+  keyPath?: string | string[] | null;
   reqId: string;
 }
 
@@ -433,6 +435,10 @@ function DatabaseBrowser({ deviceId }: { deviceId: string }) {
                     key={idx}
                     index={storeData.page * storeData.pageSize + idx}
                     record={record}
+                    recordKey={storeData.keys?.[idx]}
+                    deviceId={deviceId}
+                    dbName={storeData.dbName}
+                    storeName={storeData.storeName}
                   />
                 ))}
               </div>
@@ -444,8 +450,22 @@ function DatabaseBrowser({ deviceId }: { deviceId: string }) {
   );
 }
 
-function RecordRow({ index, record }: { index: number; record: unknown }) {
+interface RecordRowProps {
+  index: number;
+  record: unknown;
+  recordKey?: unknown;
+  deviceId: string;
+  dbName: string;
+  storeName: string;
+}
+
+function RecordRow({ index, record, recordKey, deviceId, dbName, storeName }: RecordRowProps) {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState('');
+  const [editError, setEditError] = useState('');
+  const [saving, setSaving] = useState(false);
+
   const json = (() => {
     try {
       return JSON.stringify(record, null, 2);
@@ -455,13 +475,93 @@ function RecordRow({ index, record }: { index: number; record: unknown }) {
   })();
   const preview = json.length > 120 ? json.slice(0, 120) + '…' : json;
 
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditText(json);
+    setEditError('');
+    setEditing(true);
+  };
+
+  const handleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(editText);
+    } catch {
+      setEditError('JSON 格式错误，请检查后重试');
+      return;
+    }
+    setSaving(true);
+    websocketManager.send({
+      type: 'idb_put_record',
+      deviceId,
+      dbName,
+      storeName,
+      key: recordKey,
+      value: parsed,
+    });
+    setTimeout(() => {
+      setSaving(false);
+      setEditing(false);
+    }, 600);
+  };
+
+  const handleCancel = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditing(false);
+    setEditError('');
+  };
+
+  if (editing) {
+    return (
+      <div style={{ ...bs.recordRow, flexDirection: 'column', alignItems: 'stretch', gap: 6 }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+          <span style={bs.recordIdx}>#{index}</span>
+          <span style={{ fontSize: 11, color: '#1890ff' }}>编辑记录</span>
+          {recordKey !== undefined && (
+            <span style={{ fontSize: 11, color: '#999' }}>key: {JSON.stringify(recordKey)}</span>
+          )}
+        </div>
+        <textarea
+          value={editText}
+          onChange={(e) => { setEditText(e.target.value); setEditError(''); }}
+          style={{ fontFamily: 'monospace', fontSize: 12, width: '100%', minHeight: 120, boxSizing: 'border-box', border: editError ? '1px solid #ff4d4f' : '1px solid #d9d9d9', borderRadius: 4, padding: 6, resize: 'vertical' }}
+          onClick={(e) => e.stopPropagation()}
+        />
+        {editError && <div style={{ color: '#ff4d4f', fontSize: 11 }}>{editError}</div>}
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{ padding: '3px 10px', fontSize: 12, backgroundColor: '#1890ff', color: '#fff', border: 'none', borderRadius: 4, cursor: saving ? 'not-allowed' : 'pointer' }}
+          >
+            {saving ? '保存中…' : '保存'}
+          </button>
+          <button
+            onClick={handleCancel}
+            style={{ padding: '3px 10px', fontSize: 12, backgroundColor: '#fff', border: '1px solid #d9d9d9', borderRadius: 4, cursor: 'pointer' }}
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={bs.recordRow} onClick={() => setExpanded((v) => !v)}>
       <span style={bs.recordIdx}>#{index}</span>
-      <pre style={{ ...bs.recordPreview, whiteSpace: expanded ? 'pre-wrap' : 'nowrap' }}>
+      <pre style={{ ...bs.recordPreview, whiteSpace: expanded ? 'pre-wrap' : 'nowrap', flex: 1 }}>
         {expanded ? json : preview}
       </pre>
-      <span style={{ color: '#ccc', fontSize: '10px', marginLeft: '4px' }}>
+      <button
+        title="编辑记录"
+        onClick={handleEditClick}
+        style={{ flexShrink: 0, padding: '2px 6px', fontSize: 11, backgroundColor: '#fff', border: '1px solid #d9d9d9', borderRadius: 3, cursor: 'pointer', color: '#666', marginLeft: 4 }}
+      >
+        ✏️
+      </button>
+      <span style={{ color: '#ccc', fontSize: '10px', marginLeft: '4px', flexShrink: 0 }}>
         {expanded ? '▲' : '▼'}
       </span>
     </div>
