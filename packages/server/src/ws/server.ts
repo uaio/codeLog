@@ -176,6 +176,15 @@ export function createWebSocketServer(
               selector: message.selector,
             });
           }
+          // DOM attribute editing
+          if (message.type === 'set_element_attr' && message.deviceId && message.selector && message.attr !== undefined) {
+            sendToDevice(message.deviceId, {
+              type: 'set_element_attr',
+              selector: message.selector,
+              attr: message.attr,
+              value: message.value ?? '',
+            });
+          }
           return;
         }
 

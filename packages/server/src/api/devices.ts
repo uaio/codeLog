@@ -428,5 +428,13 @@ export function createDeviceRoutes(
       if (!snapshot) return res.status(404).json({ error: 'No computed styles available' });
       return res.json(snapshot);
     },
+
+    setElementAttr: (req: Request, res: Response) => {
+      const { deviceId } = req.params;
+      const { selector, attr, value } = req.body as { selector?: string; attr?: string; value?: string };
+      if (!selector || !attr) return res.status(400).json({ error: 'selector and attr are required' });
+      sendToDevice(deviceId, { type: 'set_element_attr', selector, attr, value: value ?? '' });
+      return res.json({ ok: true });
+    },
   };
 }

@@ -33,6 +33,8 @@ function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: 
   const hasChildren = (node.children && node.children.length > 0) || (node.childCount ?? 0) > 0;
   const [expanded, setExpanded] = useState(depth < 3);
   const [hovered, setHovered] = useState(false);
+  const [editingAttr, setEditingAttr] = useState<string | null>(null);
+  const [editingVal, setEditingVal] = useState('');
   const selector = buildSelector(node);
   const isSelected = selectedSelector === selector;
 
@@ -60,6 +62,59 @@ function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: 
     [selector, hasChildren, onSelect],
   );
 
+  const startEditAttr = useCallback((e: React.MouseEvent, attrName: string, currentVal: string) => {
+    e.stopPropagation();
+    setEditingAttr(attrName);
+    setEditingVal(currentVal);
+  }, []);
+
+  const commitAttrEdit = useCallback(async () => {
+    if (!deviceId || !editingAttr) return;
+    try {
+      await api.setElementAttr(deviceId, selector, editingAttr, editingVal);
+    } catch {
+      /* ignore */
+    }
+    setEditingAttr(null);
+  }, [deviceId, selector, editingAttr, editingVal]);
+
+  const cancelAttrEdit = useCallback(() => {
+    setEditingAttr(null);
+  }, []);
+
+  /** Render a single attribute — double-click to edit inline */
+  const renderAttr = (attrName: string, attrVal: string, color: string) => {
+    if (editingAttr === attrName) {
+      return (
+        <span key={attrName} style={{ color }} onClick={(e) => e.stopPropagation()}>
+          {' '}{attrName}=&quot;
+          <input
+            autoFocus
+            value={editingVal}
+            onChange={(e) => setEditingVal(e.target.value)}
+            onBlur={commitAttrEdit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitAttrEdit();
+              if (e.key === 'Escape') cancelAttrEdit();
+            }}
+            style={nodeStyles.attrInput}
+          />
+          &quot;
+        </span>
+      );
+    }
+    return (
+      <span
+        key={attrName}
+        style={{ ...nodeStyles.attr, color }}
+        onDoubleClick={(e) => startEditAttr(e, attrName, attrVal)}
+        title="双击编辑"
+      >
+        {' '}{attrName}=<span style={nodeStyles.attrVal}>"{attrVal.slice(0, 40)}"</span>
+      </span>
+    );
+  };
+
   return (
     <div style={{ marginLeft: indent }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       {/* Opening tag */}
@@ -80,25 +135,10 @@ function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: 
         {!hasChildren && <span style={nodeStyles.arrowPlaceholder} />}
 
         <span style={nodeStyles.tag}>&lt;{node.tag}</span>
-        {node.id && (
-          <span style={nodeStyles.attrId}>
-            {' '}
-            id=<span style={nodeStyles.attrVal}>"{node.id}"</span>
-          </span>
-        )}
-        {node.className && (
-          <span style={nodeStyles.attrClass}>
-            {' '}
-            class=<span style={nodeStyles.attrVal}>"{node.className.slice(0, 50)}"</span>
-          </span>
-        )}
+        {node.id && renderAttr('id', node.id, '#ce9178')}
+        {node.className && renderAttr('class', node.className, '#ce9178')}
         {node.attrs &&
-          Object.entries(node.attrs).map(([k, v]) => (
-            <span key={k} style={nodeStyles.attr}>
-              {' '}
-              {k}=<span style={nodeStyles.attrVal}>"{v.slice(0, 40)}"</span>
-            </span>
-          ))}
+          Object.entries(node.attrs).map(([k, v]) => renderAttr(k, v, '#9cdcfe'))}
         <span style={nodeStyles.tag}>&gt;</span>
 
         {/* Inline text for leaf nodes */}
@@ -458,10 +498,19 @@ const nodeStyles: Record<string, CSSProperties> = {
   arrow: { color: '#888', width: '14px', flexShrink: 0, fontSize: '10px', userSelect: 'none' },
   arrowPlaceholder: { width: '14px', flexShrink: 0, display: 'inline-block' },
   tag: { color: '#4ec9b0' },
-  attrId: { color: '#ce9178' },
-  attrClass: { color: '#ce9178' },
   attr: { color: '#9cdcfe' },
   attrVal: { color: '#ce9178' },
+  attrInput: {
+    background: '#2d2d2d',
+    border: '1px solid #007acc',
+    borderRadius: '2px',
+    color: '#ce9178',
+    fontSize: '12px',
+    padding: '0 2px',
+    outline: 'none',
+    width: '120px',
+    fontFamily: 'inherit',
+  },
   text: {
     color: '#d4d4d4',
     fontSize: '11px',

@@ -26,6 +26,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
   const [screenshotLoading, setScreenshotLoading] = useState(false);
   const [networkThrottle, setNetworkThrottleState] = useState<string>('none');
   const [aiModal, setAiModal] = useState(false);
+  const [autoScroll, setAutoScroll] = useState(true);
   const jsInputRef = useRef<HTMLInputElement>(null);
 
   // 调试：监控 logs 变化 — removed (debug log removed)
@@ -38,11 +39,11 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
 
   // 自动滚动到底部
   useEffect(() => {
-    if (logs.length > prevLogsLengthRef.current && containerRef.current) {
+    if (autoScroll && logs.length > prevLogsLengthRef.current && containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
     prevLogsLengthRef.current = logs.length;
-  }, [logs.length]);
+  }, [logs.length, autoScroll]);
 
   const handleClearCurrent = () => {
     clearLogs();
@@ -288,7 +289,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
       {/* 筛选工具栏 */}
       <div style={styles.toolbar}>
         <div style={styles.levelButtons}>
-          {(['all', 'log', 'warn', 'error', 'info', 'repl-input'] as const).map((level) => (
+          {(['all', 'log', 'debug', 'warn', 'error', 'info', 'repl-input'] as const).map((level) => (
             <button
               key={level}
               onClick={() => setFilterLevel(level)}
@@ -296,12 +297,26 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
                 ...styles.levelButton,
                 ...(filterLevel === level ? styles.levelButtonActive : {}),
                 ...(level === 'repl-input' ? { color: '#1890ff' } : {}),
+                ...(level === 'debug' ? { color: '#888' } : {}),
               }}
             >
               {level === 'all' ? t.logPanel.all : level === 'repl-input' ? 'REPL' : level.toUpperCase()}
             </button>
           ))}
         </div>
+        <button
+          onClick={() => setAutoScroll((v) => !v)}
+          title={autoScroll ? '点击暂停自动滚动' : '点击开启自动滚动'}
+          style={{
+            ...styles.levelButton,
+            ...(autoScroll ? styles.levelButtonActive : {}),
+            marginLeft: '8px',
+            color: autoScroll ? '#52c41a' : '#888',
+            flexShrink: 0,
+          }}
+        >
+          {autoScroll ? '⬇ 跟随' : '⏸ 暂停'}
+        </button>
         <input
           type="text"
           placeholder={t.logPanel.search}

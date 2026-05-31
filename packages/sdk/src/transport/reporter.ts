@@ -37,6 +37,7 @@ export class Reporter {
     | ((dbName: string, storeName: string, page: number, pageSize: number, reqId: string) => void)
     | null = null;
   private onGetComputedStylesCallback: ((selector: string) => void) | null = null;
+  private onSetElementAttrCallback: ((selector: string, attr: string, value: string) => void) | null = null;
   private executeJsBus: DataBus | null = null;
   private rateLimiter = new RateLimiter(100);
   private serverUrl: string | undefined;
@@ -156,6 +157,9 @@ export class Reporter {
           if (data.type === 'get_computed_styles' && data.selector) {
             this.onGetComputedStylesCallback?.(data.selector);
           }
+          if (data.type === 'set_element_attr' && data.selector && data.attr !== undefined) {
+            this.onSetElementAttrCallback?.(data.selector, data.attr, data.value ?? '');
+          }
         },
       },
       this.platform,
@@ -209,6 +213,10 @@ export class Reporter {
 
   onGetComputedStyles(callback: (selector: string) => void): void {
     this.onGetComputedStylesCallback = callback;
+  }
+
+  onSetElementAttr(callback: (selector: string, attr: string, value: string) => void): void {
+    this.onSetElementAttrCallback = callback;
   }
 
   reportComputedStyles(selector: string, styles: Record<string, string>): void {

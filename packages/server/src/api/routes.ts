@@ -143,6 +143,7 @@ export function createRoutes(
   router.get('/api/devices/:deviceId/idb-store-data/:reqId', deviceRoutes.getIDBStoreData);
   router.post('/api/devices/:deviceId/computed-styles', deviceRoutes.requestComputedStyles);
   router.get('/api/devices/:deviceId/computed-styles', deviceRoutes.getComputedStyles);
+  router.post('/api/devices/:deviceId/element-attr', deviceRoutes.setElementAttr);
 
   // ── Saved log sessions (offline upload/replay) ────────────────────────
   router.post('/api/saved-logs', (req, res) => {

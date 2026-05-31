@@ -343,6 +343,22 @@ export class CodeLog {
       }
     });
 
+    this.reporter.onSetElementAttr((selector, attr, value) => {
+      try {
+        const el = document.querySelector(selector);
+        if (!el) return;
+        if (value === '') {
+          el.removeAttribute(attr);
+        } else {
+          el.setAttribute(attr, value);
+        }
+        // Trigger DOM snapshot refresh so web panel updates
+        this.domCollector?.collect();
+      } catch {
+        // ignore
+      }
+    });
+
     // 标记实例存在
     (globalThis as Record<symbol, unknown>)[CODELOG_INSTANCE_KEY] = this;
 

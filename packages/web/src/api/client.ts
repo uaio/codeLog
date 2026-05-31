@@ -155,6 +155,14 @@ export const api = {
     return handleResponse(res, url);
   },
 
+  async setElementAttr(deviceId: string, selector: string, attr: string, value: string): Promise<void> {
+    await fetch(`${API_BASE}/devices/${deviceId}/element-attr`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ selector, attr, value }),
+    });
+  },
+
   async listSavedLogs(): Promise<SavedLogSessionMeta[]> {
     const url = `${API_BASE}/saved-logs`;
     const res = await fetch(url);
