@@ -5,6 +5,8 @@
   "keywords": [
     "codelog",
     "cli",
+    "server",
+    "websocket",
     "mobile-debugging",
     "mcp",
     "claude",
@@ -23,6 +25,22 @@
   "bin": {
     "codelog": "./bin/codelog.js"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli/index.d.ts",
+      "import": "./dist/cli/index.js"
+    },
+    "./cli/init": {
+      "types": "./dist/cli/init.d.ts",
+      "import": "./dist/cli/init.js"
+    }
+  },
   "files": [
     "bin",
     "dist",
@@ -33,19 +51,24 @@
   },
   "scripts": {
     "clean": "rm -rf dist public",
-    "prebuild": "npm run clean",
-    "build": "tsc && npm run copy-web",
-    "copy-web": "node scripts/copy-web.cjs",
     "dev": "tsc --watch",
+    "build": "npm run clean && tsc && npm run copy-web",
+    "copy-web": "node scripts/copy-web.cjs",
     "test": "vitest run"
   },
   "dependencies": {
-    "@codelog/mcp": "workspace:*",
-    "@codelog/server": "workspace:*"
+    "@codelog/types": "workspace:*",
+    "better-sqlite3": "^12.9.0",
+    "cors": "^2.8.6",
+    "express": "^4.18.0",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.0",
     "@types/node": "^20.0.0",
-    "typescript": "^5.3.0",
+    "@types/ws": "^8.5.0",
     "vitest": "^1.6.0"
   }
 }

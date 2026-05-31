@@ -1,4 +1,4 @@
-// Copy web/dist → cli/public/ for bundling with the published package
+// Copy web/dist → packages/cli/public/ for bundling with the published package
 const fs = require('fs');
 const path = require('path');
 

@@ -322,10 +322,9 @@ codeLog/
 ├── packages/
 │   ├── types/      # Unified data standard (@codelog/types) ← single source of truth
 │   ├── sdk/        # Mobile SDK (data collection + Eruda integration)
-│   ├── server/     # Node.js server (WebSocket + REST API)
+│   ├── cli/        # Server + CLI tool (@codelog/cli) — WebSocket hub, REST API, npx entry
 │   ├── web/        # PC debug panel (React)
 │   ├── mcp/        # MCP Server (AI toolset)
-│   ├── cli/        # CLI tool (@codelog/cli) — npx entry, server lifecycle & AI tool config
 │   ├── eruda/      # Bundled Eruda build (used internally by SDK for local panel)
 │   └── demo/       # Demo & test pages for development
 ```
@@ -565,10 +564,7 @@ pnpm test       # Run tests (requires build first)
 pnpm dev        # Dev mode (watch)
 
 # Run tests for a specific package:
-pnpm --filter @codelog/server test
-pnpm --filter @codelog/mcp test
 pnpm --filter @codelog/cli test
-pnpm --filter @codelog/sdk test
 ```
 
 ---

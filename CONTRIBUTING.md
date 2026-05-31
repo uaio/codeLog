@@ -35,10 +35,9 @@ pnpm dev
 packages/
 ├── types/      # Shared TypeScript types (@codelog/types)
 ├── sdk/        # Mobile SDK (@codelog/sdk)
-├── server/     # Node.js WebSocket + REST server (@codelog/server)
+├── cli/        # Server + CLI tool (@codelog/cli) — WebSocket hub, REST API, npx entry
 ├── web/        # PC debug panel (React, @codelog/web)
 ├── mcp/        # MCP AI toolset (@codelog/mcp)
-├── cli/        # CLI entry point (@codelog/cli)
 ├── eruda/      # Forked Eruda for on-device panel
 └── demo/       # Demo app for testing
 ```
@@ -68,7 +67,7 @@ pnpm demo    # Starts at http://localhost:5274
 **Terminal 3 — (Optional) Watch mode for active development:**
 ```bash
 # Watch a specific package:
-pnpm --filter @codelog/server dev   # Recompile server on change
+pnpm --filter @codelog/cli dev   # Recompile server on change
 pnpm --filter @codelog/sdk dev      # Recompile SDK on change
 pnpm --filter @codelog/web dev      # Web panel with HMR
 ```
@@ -85,10 +84,9 @@ pnpm --filter @codelog/web dev      # Web panel with HMR
 
 | Package | Dev Command | Notes |
 |---------|-------------|-------|
-| `@codelog/server` | `pnpm --filter @codelog/server dev` | TypeScript watch mode |
+| `@codelog/cli` | `pnpm --filter @codelog/cli dev` | TypeScript watch mode (server + CLI) |
 | `@codelog/sdk` | `pnpm --filter @codelog/sdk dev` | Vite build watch |
 | `@codelog/web` | `pnpm --filter @codelog/web dev` | Vite HMR (port 5173) |
-| `@codelog/cli` | `pnpm --filter @codelog/cli dev` | TypeScript watch mode |
 | `@codelog/mcp` | Rebuild after changes | No watch mode |
 | `docs` | `pnpm docs:dev` | VitePress dev server |
 
@@ -119,7 +117,7 @@ pnpm build    # Builds all 8 packages via Turborepo
 5. **Commit** using conventional commit messages:
    ```
    feat(sdk): add new collector for X
-   fix(server): handle disconnection gracefully
+   fix(cli): handle disconnection gracefully
    docs: update README with new API
    ```
 
@@ -137,7 +135,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `test`: Adding or updating tests
 - `chore`: Build process or auxiliary tool changes
 
-Scope should be the package name: `sdk`, `server`, `mcp`, `cli`, `web`, `types`.
+Scope should be the package name: `sdk`, `cli`, `mcp`, `web`, `types`.
 
 ## Testing
 
@@ -146,9 +144,8 @@ Scope should be the package name: `sdk`, `server`, `mcp`, `cli`, `web`, `types`.
 pnpm test
 
 # Run tests for a specific package
-pnpm --filter @codelog/server test
-pnpm --filter @codelog/mcp test
 pnpm --filter @codelog/cli test
+pnpm --filter @codelog/mcp test
 pnpm --filter @codelog/sdk test
 ```
 

@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@codelog/server": "workspace:*",
+    "@codelog/cli": "workspace:*",
     "@codelog/types": "workspace:*",
     "open": "^10.0.0",
     "ws": "^8.16.0"

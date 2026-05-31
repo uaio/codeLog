@@ -1,65 +1,71 @@
 # @codelog/cli
 
-> CLI for codeLog — start the server, configure AI tools, one-command setup.
+> Node.js WebSocket + REST API server for codeLog — the real-time communication hub between mobile devices, PC panel, and AI tools. Also provides the `npx @codelog/cli` command to start the server and configure AI tool integrations.
 
 ## Installation
 
 ```bash
-# Use directly with npx (zero install)
-npx @codelog/cli
-
-# Or install globally
-npm install -g @codelog/cli
+npm install @codelog/cli
 ```
 
-## Commands
+## Usage
 
-### Start Server
+### Via CLI (recommended)
 
 ```bash
-codelog              # Start with default port (38291)
-codelog -p 8080     # Custom port
-codelog --host myapp.example.com  # Public/cloud deployment
+npx @codelog/cli           # Starts server with auto-detected LAN IPs
+npx @codelog/cli -p 8080   # Custom port
 ```
 
-On startup, the CLI prints:
-- All available LAN IP addresses
-- SDK snippet ready to copy
-- PC panel URL
+### Programmatic
 
-### Configure AI Tools
+```typescript
+import { createServer } from '@codelog/cli';
 
-```bash
-codelog init                # Auto-detect installed AI tools
-codelog init --for=claude   # Configure for Claude Code
-codelog init --for=cursor   # Configure for Cursor
-codelog init --for=windsurf # Configure for Windsurf
+## REST API
+
+| Method | Path | Description |
+|--------|------|-------------|
+| **POST** | `/api/ingest` | External data ingestion |
+| GET | `/api/devices` | List connected devices |
+| GET | `/api/devices/:id/logs` | Get console logs |
+| GET | `/api/devices/:id/network` | Get network requests |
+| GET | `/api/devices/:id/storage` | Get storage snapshot |
+| GET | `/api/devices/:id/performance` | Get performance data |
+| GET | `/api/devices/:id/health` | Health check |
+| POST | `/api/devices/:id/execute` | Remote JS execution |
+| POST | `/api/devices/:id/screenshot` | Trigger screenshot |
+| POST | `/api/devices/:id/network-throttle` | Network throttling |
+| POST | `/api/devices/:id/mocks` | Add Mock rule |
+| DELETE | `/api/devices/:id/mocks/:mockId` | Delete Mock rule |
+| POST | `/api/devices/:id/perf-run/start` | Start benchmark |
+| POST | `/api/devices/:id/perf-run/stop` | Stop benchmark |
+| GET | `/api/devices/:id/perf-run` | Benchmark history |
+
+## WebSocket Protocol
+
+The server acts as a relay hub between:
+- **Mobile SDK** → pushes real-time data (logs, network, storage, etc.)
+- **PC Panel** → receives data + sends commands (execute JS, reload, mock)
+- **MCP Tools** → queries data + sends commands via AI agents
+
+## Architecture
+
 ```
-
-The `init` command:
-1. Detects installed AI tools
-2. Writes MCP server configuration
-3. For Claude Code: installs slash commands (`/codelog:start`, `/codelog:stop`, etc.)
-
-### MCP Mode (Internal)
-
-```bash
-codelog --mcp   # Start in MCP server mode (used by AI tools)
+Express HTTP Server
+├── REST API routes (/api/*)
+├── Static file serving (PC panel)
+└── WebSocket Server
+    ├── Device connections (SDK)
+    ├── Panel connections (Web)
+    └── Data stores (in-memory)
+        ├── DeviceStore
+        ├── LogStore
+        ├── NetworkStore
+        ├── StorageStore
+        ├── PerformanceStore
+        └── PerfRunStore
 ```
-
-## Claude Code Slash Commands
-
-After running `codelog init`, these commands are available in Claude Code:
-
-| Command | Description |
-|---------|-------------|
-| `/codelog:setup` | One-click zero-to-ready setup |
-| `/codelog:start` | Start monitoring + WS connection |
-| `/codelog:stop` | Stop monitoring |
-| `/codelog:status` | Check device connection status |
-| `/codelog:logs` | View logs + checkpoint trace |
-| `/codelog:screenshot` | Capture current page |
-| `/codelog:clean` | Remove all `@codelog` debug logs |
 
 ## Development
 
