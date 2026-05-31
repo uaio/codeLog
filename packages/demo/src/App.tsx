@@ -57,7 +57,7 @@ function Home() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <NavBar />
       <main className="main">
         <Routes>
