@@ -10,46 +10,42 @@ interface DeviceListProps {
 }
 
 /** Parse UA string to a short browser/OS label */
-function parseUA(ua: string): string {
-  if (!ua || ua.startsWith('ingest/')) return ua;
-  // Chrome
+function parseUA(ua: string): { platform: string; browser: string; icon: string } {
+  if (!ua || ua.startsWith('ingest/')) return { platform: '', browser: ua, icon: '📱' };
   const chrome = ua.match(/Chrome\/(\d+)/);
   const safari = ua.match(/Safari\/(\d+)/);
   const firefox = ua.match(/Firefox\/(\d+)/);
   const edge = ua.match(/Edg\/(\d+)/);
   const mobile = /Mobile|Android|iPhone|iPad/.test(ua);
-  const platform = /iPhone/.test(ua)
-    ? 'iPhone'
-    : /iPad/.test(ua)
-      ? 'iPad'
-      : /Android/.test(ua)
-        ? 'Android'
-        : /Macintosh/.test(ua)
-          ? 'macOS'
-          : /Windows/.test(ua)
-            ? 'Windows'
-            : /Linux/.test(ua)
-              ? 'Linux'
-              : '';
 
-  const browser = edge
-    ? `Edge ${edge[1]}`
-    : chrome && !safari
-      ? `Chrome ${chrome[1]}`
-      : safari && !chrome
-        ? `Safari`
-        : firefox
-          ? `Firefox ${firefox[1]}`
-          : 'Browser';
+  const platform = /iPhone/.test(ua) ? 'iPhone'
+    : /iPad/.test(ua) ? 'iPad'
+    : /Android/.test(ua) ? 'Android'
+    : /Macintosh/.test(ua) ? 'macOS'
+    : /Windows/.test(ua) ? 'Windows'
+    : /Linux/.test(ua) ? 'Linux'
+    : 'Unknown';
 
-  return [platform, browser, mobile && !platform ? '📱' : ''].filter(Boolean).join(' · ');
+  const browser = edge ? `Edge ${edge[1]}`
+    : chrome && !safari ? `Chrome ${chrome[1]}`
+    : safari && !chrome ? 'Safari'
+    : firefox ? `Firefox ${firefox[1]}`
+    : 'Browser';
+
+  const icon = /iPhone|iPad/.test(ua) ? '📱'
+    : /Android/.test(ua) ? '📱'
+    : mobile ? '📱'
+    : /Macintosh/.test(ua) ? '💻'
+    : '🖥️';
+
+  return { platform, browser, icon };
 }
 
 function formatTime(ms: number): string {
   const diff = Date.now() - ms;
   if (diff < 60_000) return '刚刚';
-  if (diff < 3600_000) return `${Math.floor(diff / 60_000)}分钟前`;
-  if (diff < 86400_000) return `${Math.floor(diff / 3600_000)}小时前`;
+  if (diff < 3600_000) return `${Math.floor(diff / 60_000)}m 前`;
+  if (diff < 86400_000) return `${Math.floor(diff / 3600_000)}h 前`;
   return new Date(ms).toLocaleString();
 }
 
@@ -70,7 +66,6 @@ export function DeviceList({ projectId, onSelectDevice, selectedDeviceId }: Devi
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(device);
     }
-    // Sort: online first within each group
     for (const [, list] of map) {
       list.sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0));
     }
@@ -80,78 +75,87 @@ export function DeviceList({ projectId, onSelectDevice, selectedDeviceId }: Devi
   const currentSelectedId = selectedDeviceId !== undefined ? selectedDeviceId : selectedId;
   const hasMultipleProjects = grouped.size > 1;
 
-  if (loading) {
-    return <div style={styles.loading}>{t.common.loading}</div>;
-  }
-
   return (
     <div style={styles.container}>
+      {/* Header */}
       <div style={styles.header}>
-        {t.deviceList.title} ({devices.length})
+        <span style={styles.headerIcon}>📡</span>
+        <span style={styles.headerTitle}>{t.deviceList.title}</span>
+        <span style={styles.headerCount}>{devices.length}</span>
       </div>
 
-      {devices.length === 0 ? (
-        <div style={styles.empty}>{t.deviceList.empty}</div>
+      {/* Body */}
+      {loading ? (
+        <div style={styles.center}><span style={styles.loadingText}>Loading…</span></div>
+      ) : devices.length === 0 ? (
+        <div style={styles.center}>
+          <span style={styles.emptyIcon}>🔌</span>
+          <span style={styles.emptyText}>{t.deviceList.empty}</span>
+          <span style={styles.emptyHint}>等待设备连接…</span>
+        </div>
       ) : (
         <div style={styles.list}>
           {[...grouped.entries()].map(([pid, groupDevices]) => (
             <div key={pid}>
               {hasMultipleProjects && (
                 <div style={styles.groupHeader}>
-                  <span style={styles.groupIcon}>📦</span>
+                  <span style={styles.groupDot} />
                   <span style={styles.groupName}>{pid}</span>
-                  <span style={styles.groupCount}>{groupDevices.length}</span>
+                  <span style={styles.groupBadge}>{groupDevices.length}</span>
                 </div>
               )}
               {groupDevices.map((device) => {
                 const isSelected = currentSelectedId === device.deviceId;
-                const parsedUA = parseUA(device.ua);
+                const ua = parseUA(device.ua);
                 return (
                   <div
                     key={device.deviceId}
                     onClick={() => handleSelect(device)}
                     style={{
-                      ...styles.deviceItem,
-                      ...(isSelected ? styles.selected : {}),
-                      ...(isSelected
-                        ? {}
-                        : device.online
-                          ? styles.onlineBorder
-                          : styles.offlineBorder),
+                      ...styles.card,
+                      ...(isSelected ? styles.cardSelected : styles.cardDefault),
                     }}
-                    title={device.ua}
                   >
-                    <div style={styles.deviceInfo}>
-                      <div style={styles.deviceName}>{parsedUA || device.ua}</div>
-                      <div style={styles.deviceDetails}>
-                        📐 {device.screen}
-                        {device.pixelRatio > 1 ? ` @${device.pixelRatio}x` : ''}
-                        {' · '}
-                        🌐 {device.language}
+                    {/* Device icon + status */}
+                    <div style={styles.cardLeft}>
+                      <div style={{
+                        ...styles.deviceIconWrap,
+                        backgroundColor: isSelected ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.07)',
+                      }}>
+                        <span style={styles.deviceIconEmoji}>{ua.icon}</span>
                       </div>
-                      <div style={styles.deviceFooter}>
-                        {!hasMultipleProjects && (
-                          <span style={styles.projectBadge}>{device.projectId}</span>
-                        )}
-                        <span style={styles.connectTime}>
-                          🕐 {formatTime(device.connectTime)}
-                        </span>
+                      <span style={{
+                        ...styles.onlineDot,
+                        backgroundColor: device.online ? '#10b981' : '#475569',
+                        boxShadow: device.online ? '0 0 0 2px rgba(16,185,129,0.25)' : 'none',
+                      }} />
+                    </div>
+
+                    {/* Info */}
+                    <div style={styles.cardBody}>
+                      <div style={styles.cardPlatform}>{ua.platform || ua.browser}</div>
+                      <div style={styles.cardBrowser}>{ua.platform ? ua.browser : ''}</div>
+                      <div style={styles.cardMeta}>
+                        <span style={styles.metaChip}>{device.screen}</span>
+                        <span style={styles.metaChip}>{device.language}</span>
                         {device.activeTabs > 1 && (
-                          <span style={styles.tabBadge}>{device.activeTabs} tabs</span>
+                          <span style={{ ...styles.metaChip, ...styles.metaChipBlue }}>
+                            {device.activeTabs} tabs
+                          </span>
                         )}
                       </div>
                     </div>
 
-                    <div style={styles.deviceMeta}>
-                      <div
-                        style={{
-                          ...styles.status,
-                          backgroundColor: device.online ? '#f6ffed' : '#fff2f0',
-                          color: device.online ? '#52c41a' : '#ff4d4f',
-                        }}
-                      >
+                    {/* Right: time + status */}
+                    <div style={styles.cardRight}>
+                      <span style={{
+                        ...styles.statusBadge,
+                        backgroundColor: device.online ? 'rgba(16,185,129,0.15)' : 'rgba(71,85,105,0.3)',
+                        color: device.online ? '#10b981' : '#64748b',
+                      }}>
                         {device.online ? t.common.online : t.common.offline}
-                      </div>
+                      </span>
+                      <span style={styles.timeText}>{formatTime(device.connectTime)}</span>
                     </div>
                   </div>
                 );
@@ -169,140 +173,199 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as const,
     height: '100%',
-    backgroundColor: '#f5f5f5',
-    borderRight: '1px solid #e0e0e0',
-  },
-  loading: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: '#999',
+    backgroundColor: '#1e293b',
+    color: '#e2e8f0',
+    overflow: 'hidden',
   },
   header: {
-    padding: '16px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    borderBottom: '1px solid #e0e0e0',
-    backgroundColor: '#fff',
-  },
-  empty: {
     display: 'flex',
     alignItems: 'center',
+    gap: '8px',
+    padding: '14px 16px 12px',
+    borderBottom: '1px solid rgba(255,255,255,0.06)',
+    flexShrink: 0,
+  },
+  headerIcon: {
+    fontSize: '13px',
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: '12px',
+    fontWeight: 600,
+    color: '#94a3b8',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.7px',
+  },
+  headerCount: {
+    fontSize: '11px',
+    fontWeight: 600,
+    color: '#475569',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    padding: '1px 7px',
+    borderRadius: '10px',
+  },
+  center: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
-    color: '#999',
+    flex: 1,
+    gap: '6px',
+    padding: '24px',
+  },
+  loadingText: {
+    fontSize: '13px',
+    color: '#475569',
+  },
+  emptyIcon: {
+    fontSize: '32px',
+    opacity: 0.3,
+    marginBottom: '4px',
+  },
+  emptyText: {
+    fontSize: '13px',
+    color: '#64748b',
+    fontWeight: 500,
+  },
+  emptyHint: {
+    fontSize: '11px',
+    color: '#334155',
   },
   list: {
     flex: 1,
     overflowY: 'auto' as const,
     padding: '8px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px',
   },
   groupHeader: {
     display: 'flex',
     alignItems: 'center',
     gap: '6px',
-    padding: '8px 12px 4px',
-    fontSize: '12px',
-    fontWeight: 600,
-    color: '#666',
+    padding: '8px 10px 4px',
     marginTop: '4px',
   },
-  groupIcon: {
-    fontSize: '12px',
+  groupDot: {
+    width: '4px',
+    height: '4px',
+    borderRadius: '50%',
+    backgroundColor: '#475569',
+    flexShrink: 0,
   },
   groupName: {
     flex: 1,
+    fontSize: '11px',
+    fontWeight: 600,
+    color: '#475569',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const,
   },
-  groupCount: {
-    fontSize: '11px',
-    color: '#999',
-    backgroundColor: '#e8e8e8',
+  groupBadge: {
+    fontSize: '10px',
+    color: '#475569',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: '8px',
     padding: '1px 6px',
   },
-  deviceItem: {
+  // ── Device Card ───────────────────────────────
+  card: {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    gap: '10px',
     padding: '10px 12px',
-    marginBottom: '6px',
-    backgroundColor: '#fff',
-    borderRadius: '6px',
+    borderRadius: '8px',
     cursor: 'pointer',
-    transition: 'all 0.2s',
-    borderLeft: '3px solid transparent',
+    transition: 'background 0.15s',
+    border: '1px solid transparent',
   },
-  selected: {
-    borderLeftColor: '#1890ff',
-    boxShadow: '0 2px 8px rgba(24, 144, 255, 0.15)',
-    backgroundColor: '#f0f7ff',
+  cardDefault: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderColor: 'transparent',
   },
-  onlineBorder: {
-    borderLeftColor: '#52c41a',
+  cardSelected: {
+    backgroundColor: 'rgba(99,102,241,0.12)',
+    borderColor: 'rgba(99,102,241,0.35)',
   },
-  offlineBorder: {
-    borderLeftColor: '#ff4d4f',
+  cardLeft: {
+    position: 'relative' as const,
+    flexShrink: 0,
   },
-  deviceInfo: {
+  deviceIconWrap: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background 0.15s',
+  },
+  deviceIconEmoji: {
+    fontSize: '18px',
+  },
+  onlineDot: {
+    position: 'absolute' as const,
+    bottom: '-2px',
+    right: '-2px',
+    width: '9px',
+    height: '9px',
+    borderRadius: '50%',
+    border: '2px solid #1e293b',
+  },
+  cardBody: {
     flex: 1,
     minWidth: 0,
   },
-  deviceName: {
+  cardPlatform: {
     fontSize: '13px',
-    fontWeight: 500,
-    marginBottom: '3px',
+    fontWeight: 600,
+    color: '#e2e8f0',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const,
+    marginBottom: '2px',
   },
-  deviceDetails: {
+  cardBrowser: {
     fontSize: '11px',
-    color: '#888',
-    marginBottom: '3px',
+    color: '#64748b',
+    marginBottom: '4px',
   },
-  deviceFooter: {
+  cardMeta: {
     display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
+    gap: '4px',
     flexWrap: 'wrap' as const,
   },
-  projectBadge: {
-    display: 'inline-block',
+  metaChip: {
     fontSize: '10px',
-    color: '#8c8c8c',
-    backgroundColor: '#f0f0f0',
-    padding: '1px 6px',
-    borderRadius: '3px',
-    fontFamily: 'monospace',
-  },
-  connectTime: {
-    fontSize: '10px',
-    color: '#aaa',
-  },
-  tabBadge: {
-    fontSize: '10px',
-    color: '#1890ff',
-    backgroundColor: '#e6f7ff',
+    color: '#475569',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     padding: '1px 5px',
     borderRadius: '3px',
   },
-  deviceMeta: {
+  metaChipBlue: {
+    color: '#818cf8',
+    backgroundColor: 'rgba(99,102,241,0.12)',
+  },
+  cardRight: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'flex-end',
     gap: '4px',
-    marginLeft: '8px',
     flexShrink: 0,
   },
-  status: {
-    fontSize: '11px',
-    padding: '2px 8px',
+  statusBadge: {
+    fontSize: '10px',
+    fontWeight: 600,
+    padding: '2px 7px',
     borderRadius: '10px',
-    fontWeight: 500,
     whiteSpace: 'nowrap' as const,
   },
+  timeText: {
+    fontSize: '10px',
+    color: '#334155',
+  },
 };
+

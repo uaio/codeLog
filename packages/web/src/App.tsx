@@ -78,7 +78,6 @@ function App() {
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
-    // Clear badge for the tab being activated
     setBadges((prev) => ({ ...prev, [tabId]: 0 }));
   };
 
@@ -94,6 +93,7 @@ function App() {
         <div style={styles.placeholder}>
           <div style={styles.placeholderIcon}>📱</div>
           <div style={styles.placeholderText}>{t.common.selectDevice}</div>
+          <div style={styles.placeholderHint}>从左侧选择一个设备开始调试</div>
         </div>
       ),
     },
@@ -133,7 +133,7 @@ function App() {
     },
     {
       id: 'perf_run',
-      label: t.tabs.perf,
+      label: '性能跑分',
       icon: '🏁',
       content: <PerfRunPanel deviceId={selectedDevice?.deviceId} />,
     },
@@ -165,7 +165,7 @@ function App() {
     {
       id: 'offline-logs',
       label: '离线日志',
-      icon: '💾',
+      icon: '📦',
       content: <OfflineLogsPanel />,
     },
     {
@@ -194,30 +194,38 @@ function App() {
     },
   ];
 
+  const wsColors = {
+    connected: { dot: '#10b981', bg: 'rgba(16,185,129,0.12)', text: '#10b981' },
+    connecting: { dot: '#f59e0b', bg: 'rgba(245,158,11,0.12)', text: '#f59e0b' },
+    disconnected: { dot: '#ef4444', bg: 'rgba(239,68,68,0.12)', text: '#ef4444' },
+  };
+  const wsColor = wsColors[wsState] ?? wsColors.disconnected;
+
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.headerLeft}>
-          <h1 style={styles.title}>{t.common.title}</h1>
-          <p style={styles.subtitle}>
-            {selectedDevice
-              ? `${selectedDevice.ua.slice(0, 50)}${selectedDevice.ua.length > 50 ? '...' : ''}`
-              : t.common.selectDevice}
-          </p>
+      {/* ── Header ── */}
+      <header style={styles.header}>
+        <div style={styles.headerBrand}>
+          <span style={styles.brandIcon}>📡</span>
+          <span style={styles.brandName}>codeLog</span>
+          <span style={styles.brandDivider} />
+          <span style={styles.brandSub}>Remote Debugger</span>
         </div>
-        <div style={styles.statusBadge}>
-          <span
-            style={{
-              ...styles.statusDot,
-              backgroundColor:
-                wsState === 'connected'
-                  ? '#52c41a'
-                  : wsState === 'connecting'
-                    ? '#faad14'
-                    : '#ff4d4f',
-            }}
-          />
-          <span style={styles.statusText}>
+
+        <div style={styles.headerCenter}>
+          {selectedDevice && (
+            <div style={styles.deviceChip}>
+              <span style={styles.deviceChipDot} />
+              <span style={styles.deviceChipText}>
+                {selectedDevice.ua.slice(0, 60)}{selectedDevice.ua.length > 60 ? '…' : ''}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div style={{ ...styles.statusPill, backgroundColor: wsColor.bg }}>
+          <span style={{ ...styles.statusPulse, backgroundColor: wsColor.dot }} />
+          <span style={{ ...styles.statusLabel, color: wsColor.text }}>
             {wsState === 'connected'
               ? t.common.connected
               : wsState === 'connecting'
@@ -225,24 +233,27 @@ function App() {
                 : t.common.disconnected}
           </span>
         </div>
-      </div>
+      </header>
 
-      <div style={styles.content}>
-        <div style={styles.sidebar}>
+      {/* ── Body ── */}
+      <div style={styles.body}>
+        {/* Sidebar */}
+        <aside style={styles.sidebar}>
           <DeviceList
             onSelectDevice={handleSelectDevice}
             selectedDeviceId={selectedDevice?.deviceId}
           />
-        </div>
+        </aside>
 
-        <div style={styles.main}>
+        {/* Main panel */}
+        <main style={styles.main}>
           <TabFilter
             deviceId={selectedDevice?.deviceId}
             value={selectedTabId}
             onChange={setSelectedTabId}
           />
           <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
-        </div>
+        </main>
       </div>
     </div>
   );
@@ -253,83 +264,137 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as const,
     height: '100vh',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f1f5f9',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   },
+  // ── Header ──────────────────────────────────────
   header: {
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderBottom: '1px solid #e0e0e0',
-    padding: '16px 24px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+    gap: '16px',
+    height: '52px',
+    padding: '0 20px',
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+    boxShadow: '0 1px 0 rgba(255,255,255,0.06), 0 2px 12px rgba(0,0,0,0.2)',
+    flexShrink: 0,
+    zIndex: 10,
   },
-  headerLeft: {
+  headerBrand: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    flexShrink: 0,
+  },
+  brandIcon: {
+    fontSize: '18px',
+  },
+  brandName: {
+    fontSize: '15px',
+    fontWeight: 700,
+    color: '#f8fafc',
+    letterSpacing: '-0.3px',
+  },
+  brandDivider: {
+    width: '1px',
+    height: '14px',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  brandSub: {
+    fontSize: '12px',
+    color: 'rgba(255,255,255,0.45)',
+    fontWeight: 400,
+  },
+  headerCenter: {
     flex: 1,
+    display: 'flex',
+    justifyContent: 'center',
   },
-  title: {
-    fontSize: '20px',
-    fontWeight: 'bold' as const,
-    color: '#333',
-    margin: 0,
+  deviceChip: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '4px 12px',
+    borderRadius: '20px',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    maxWidth: '500px',
   },
-  subtitle: {
-    fontSize: '14px',
-    color: '#666',
-    margin: '4px 0 0 0',
+  deviceChipDot: {
+    width: '6px',
+    height: '6px',
+    borderRadius: '50%',
+    backgroundColor: '#10b981',
+    flexShrink: 0,
   },
-  content: {
+  deviceChipText: {
+    fontSize: '12px',
+    color: 'rgba(255,255,255,0.7)',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap' as const,
+  },
+  statusPill: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '5px 12px',
+    borderRadius: '20px',
+    flexShrink: 0,
+  },
+  statusPulse: {
+    width: '7px',
+    height: '7px',
+    borderRadius: '50%',
+  },
+  statusLabel: {
+    fontSize: '12px',
+    fontWeight: 600,
+  },
+  // ── Body ────────────────────────────────────────
+  body: {
     display: 'flex',
     flex: 1,
     overflow: 'hidden',
   },
   sidebar: {
-    width: '280px',
-    borderRight: '1px solid #e0e0e0',
-    overflow: 'auto',
-  },
-  main: {
-    flex: 1,
-    padding: '8px',
+    width: '260px',
+    flexShrink: 0,
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column' as const,
+    background: '#1e293b',
+    borderRight: '1px solid #0f172a',
   },
+  main: {
+    flex: 1,
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    background: '#f8fafc',
+  },
+  // ── Placeholder ──────────────────────────────────
   placeholder: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',
-    color: '#999',
+    gap: '8px',
+    color: '#94a3b8',
   },
   placeholderIcon: {
-    fontSize: '64px',
-    marginBottom: '16px',
-    opacity: 0.5,
+    fontSize: '56px',
+    opacity: 0.4,
+    marginBottom: '8px',
   },
   placeholderText: {
-    fontSize: '16px',
-    fontWeight: 500,
+    fontSize: '15px',
+    fontWeight: 600,
+    color: '#64748b',
   },
-  statusBadge: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '4px 12px',
-    borderRadius: '12px',
-    backgroundColor: '#f5f5f5',
-    border: '1px solid #e0e0e0',
-  },
-  statusDot: {
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-  },
-  statusText: {
-    fontSize: '12px',
-    color: '#666',
-    fontWeight: 500 as const,
+  placeholderHint: {
+    fontSize: '13px',
+    color: '#94a3b8',
   },
 };
 
