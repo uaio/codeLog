@@ -209,6 +209,15 @@ export function createWebSocketServer(
         }
 
         // 移动端设备消息：Envelope（数据）或协议消息（register/heartbeat）
+        // mock_matched: device reports a rule was matched
+        if (message.type === 'mock_matched' && message.ruleId) {
+          const deviceId = deviceIds.get(ws);
+          if (deviceId) {
+            mockStore.incrementMatch(deviceId, message.ruleId);
+          }
+          return;
+        }
+
         const handler = handlers[message.type];
         if (handler) {
           const context: MessageContext = {

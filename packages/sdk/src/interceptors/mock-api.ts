@@ -6,6 +6,7 @@ export class MockAPI {
   private originalXHROpen: typeof XMLHttpRequest.prototype.open | null = null;
   private originalXHRSend: typeof XMLHttpRequest.prototype.send | null = null;
   private active = false;
+  onMatch?: (ruleId: string, url: string) => void;
 
   start(): void {
     if (this.active || typeof window === 'undefined') return;
@@ -16,6 +17,7 @@ export class MockAPI {
 
   private matchRule(url: string, method: string): MockRule | undefined {
     return this.rules.find((r) => {
+      if ((r as any).enabled === false) return false;
       const patternMatch = (() => {
         try {
           return new RegExp(r.pattern).test(url);
@@ -44,6 +46,7 @@ export class MockAPI {
       const method = (init?.method ?? 'GET').toUpperCase();
       const matched = self.matchRule(url, method);
       if (matched) {
+        self.onMatch?.(matched.id, url);
         return new Response(matched.body, {
           status: matched.status,
           headers: { 'Content-Type': 'application/json', ...matched.headers },
@@ -79,6 +82,7 @@ export class MockAPI {
       const matched = self.matchRule(xhrUrl, xhrMethod);
 
       if (matched) {
+        self.onMatch?.(matched.id, xhrUrl);
         // Simulate a mock response
         Object.defineProperty(this, 'status', {
           value: matched.status,
@@ -158,5 +162,10 @@ export class MockAPI {
 
   getRules(): MockRule[] {
     return [...this.rules];
+  }
+
+  updateRule(id: string, updates: Partial<Pick<MockRule, 'enabled'>>): void {
+    const rule = this.rules.find((r) => r.id === id);
+    if (rule) Object.assign(rule, updates);
   }
 }

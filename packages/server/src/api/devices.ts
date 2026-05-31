@@ -340,6 +340,17 @@ export function createDeviceRoutes(
       res.json({ ok: true });
     },
 
+    toggleMock: (req: Request, res: Response) => {
+      const { deviceId, mockId } = req.params;
+      const device = deviceStore.get(deviceId);
+      if (!device) return res.status(404).json({ error: 'Device not found' });
+      const updated = mockStore.toggle(deviceId, mockId);
+      if (!updated) return res.status(404).json({ error: 'Mock rule not found' });
+      // Inform SDK to enable/disable the rule
+      sendToDevice(deviceId, { type: 'update_mock_rule', id: mockId, enabled: updated.enabled });
+      res.json({ ok: true, rule: updated });
+    },
+
     getHealthCheck: (req: Request, res: Response) => {
       const { deviceId } = req.params;
       const device = deviceStore.get(deviceId);

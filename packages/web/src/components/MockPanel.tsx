@@ -13,6 +13,8 @@ interface MockRule {
   status: number;
   body?: string;
   createdAt: number;
+  enabled: boolean;
+  matchCount: number;
 }
 
 interface MockRuleForm {
@@ -88,6 +90,22 @@ export function MockPanel({ deviceId }: MockPanelProps) {
     [deviceId],
   );
 
+  const handleToggleRule = useCallback(
+    async (mockId: string) => {
+      if (!deviceId) return;
+      try {
+        const result = await api.patch(`/api/devices/${deviceId}/mocks/${mockId}`, {});
+        if (result?.rule) {
+          setRules((prev) => prev.map((r) => r.id === mockId ? { ...r, enabled: result.rule.enabled } : r));
+        }
+      } catch (e: any) {
+        setMsg('❌ 切换失败: ' + e.message);
+        setTimeout(() => setMsg(''), 3000);
+      }
+    },
+    [deviceId],
+  );
+
   const handleClearAll = useCallback(async () => {
     if (!deviceId) return;
     if (!confirm(t.mockPanel.clearAllConfirm)) return;
@@ -150,7 +168,7 @@ export function MockPanel({ deviceId }: MockPanelProps) {
           }}
         >
           <div style={{ fontWeight: 'bold', marginBottom: 12, fontSize: 13 }}>
-            已生效规则 ({rules.length})
+            已有规则 ({rules.length})
           </div>
           {rules.map((rule) => (
             <div
@@ -161,11 +179,28 @@ export function MockPanel({ deviceId }: MockPanelProps) {
                 gap: 8,
                 padding: '8px 10px',
                 marginBottom: 6,
-                backgroundColor: '#f9f9f9',
+                backgroundColor: rule.enabled ? '#f9f9f9' : '#fafafa',
                 borderRadius: 4,
-                border: '1px solid #f0f0f0',
+                border: `1px solid ${rule.enabled ? '#f0f0f0' : '#e0e0e0'}`,
+                opacity: rule.enabled ? 1 : 0.55,
               }}
             >
+              {/* Enable/disable toggle */}
+              <button
+                onClick={() => handleToggleRule(rule.id)}
+                title={rule.enabled ? '点击禁用' : '点击启用'}
+                style={{
+                  border: 'none',
+                  background: 'none',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  padding: '0 2px',
+                  flexShrink: 0,
+                  color: rule.enabled ? '#52c41a' : '#bbb',
+                }}
+              >
+                {rule.enabled ? '●' : '○'}
+              </button>
               <span
                 style={{
                   fontSize: 10,
@@ -201,6 +236,22 @@ export function MockPanel({ deviceId }: MockPanelProps) {
               >
                 {rule.status}
               </span>
+              {/* Match count badge */}
+              {rule.matchCount > 0 && (
+                <span
+                  style={{
+                    fontSize: 10,
+                    backgroundColor: '#722ed1',
+                    color: '#fff',
+                    padding: '1px 5px',
+                    borderRadius: 10,
+                    flexShrink: 0,
+                  }}
+                  title={`已命中 ${rule.matchCount} 次`}
+                >
+                  ×{rule.matchCount}
+                </span>
+              )}
               <button
                 onClick={() => handleRemoveRule(rule.id)}
                 style={{

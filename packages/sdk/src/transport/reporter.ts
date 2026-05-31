@@ -32,6 +32,7 @@ export class Reporter {
   private onAddMockCallback: ((rule: any) => void) | null = null;
   private onRemoveMockCallback: ((id: string) => void) | null = null;
   private onClearMocksCallback: (() => void) | null = null;
+  private onUpdateMockRuleCallback: ((id: string, enabled: boolean) => void) | null = null;
   private onRequestIDBSnapshotCallback: (() => void) | null = null;
   private onRequestIDBStoreDataCallback:
     | ((dbName: string, storeName: string, page: number, pageSize: number, reqId: string) => void)
@@ -170,6 +171,9 @@ export class Reporter {
           if (data.type === 'clear_mocks') {
             this.onClearMocksCallback?.();
           }
+          if (data.type === 'update_mock_rule' && data.id) {
+            this.onUpdateMockRuleCallback?.(data.id, data.enabled ?? true);
+          }
           if (data.type === 'request_idb_snapshot') {
             this.onRequestIDBSnapshotCallback?.();
           }
@@ -250,6 +254,13 @@ export class Reporter {
   }
   onClearMocks(callback: () => void): void {
     this.onClearMocksCallback = callback;
+  }
+  onUpdateMockRule(callback: (id: string, enabled: boolean) => void): void {
+    this.onUpdateMockRuleCallback = callback;
+  }
+  reportMockMatch(ruleId: string, url: string): void {
+    if (!this.remoteEnabled || !this.transport) return;
+    this.transport.send(JSON.stringify({ type: 'mock_matched', ruleId, url }));
   }
   onRequestIDBSnapshot(callback: () => void): void {
     this.onRequestIDBSnapshotCallback = callback;

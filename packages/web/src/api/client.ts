@@ -201,6 +201,16 @@ export const api = {
     const res = await fetch(url, { method: 'DELETE' });
     return handleResponse(res, url);
   },
+
+  async patch(path: string, body: unknown): Promise<any> {
+    const url = path.startsWith('http') ? path : `${API_BASE.replace('/api', '')}${path}`;
+    const res = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return handleResponse(res, url);
+  },
 };
 
 export { ApiClientError };

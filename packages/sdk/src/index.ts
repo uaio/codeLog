@@ -281,6 +281,9 @@ export class CodeLog {
     this.reporter.onAddMock((rule) => {
       if (!this.mockApi) {
         this.mockApi = new MockAPI();
+        this.mockApi.onMatch = (ruleId, url) => {
+          this.reporter.reportMockMatch(ruleId, url);
+        };
         this.mockApi.start();
       }
       this.mockApi.addRule(rule);
@@ -290,6 +293,9 @@ export class CodeLog {
     });
     this.reporter.onClearMocks(() => {
       this.clearMocks();
+    });
+    this.reporter.onUpdateMockRule((id, enabled) => {
+      this.mockApi?.updateRule(id, { enabled });
     });
 
     // IDB browser commands
@@ -966,6 +972,9 @@ export class CodeLog {
   addMock(urlPattern: string, response: Omit<MockRule, 'id' | 'pattern'>): string {
     if (!this.mockApi) {
       this.mockApi = new MockAPI();
+      this.mockApi.onMatch = (ruleId, url) => {
+        this.reporter.reportMockMatch(ruleId, url);
+      };
       this.mockApi.start();
     }
     return this.mockApi.addRule({ pattern: urlPattern, ...response });

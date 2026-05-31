@@ -136,6 +136,7 @@ export function createRoutes(
   router.post('/api/devices/:deviceId/mocks', deviceRoutes.addMock);
   router.delete('/api/devices/:deviceId/mocks/:mockId', deviceRoutes.removeMock);
   router.delete('/api/devices/:deviceId/mocks', deviceRoutes.clearMocks);
+  router.patch('/api/devices/:deviceId/mocks/:mockId', deviceRoutes.toggleMock);
   router.get('/api/devices/:deviceId/health', deviceRoutes.getHealthCheck);
   router.get('/api/devices/:deviceId/system', deviceRoutes.getSystemInfo);
   router.get('/api/devices/:deviceId/indexeddb', deviceRoutes.getIndexedDB);

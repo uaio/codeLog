@@ -31,10 +31,18 @@ export interface DeviceHeartbeatMessage {
   ts: number;
 }
 
+/** SDK 上报 Mock 规则命中 */
+export interface DeviceMockMatchMessage {
+  type: 'mock_matched';
+  ruleId: string;
+  url: string;
+}
+
 export type DeviceToServerMessage =
   | DeviceRegisterMessage
   | DeviceDataMessage
-  | DeviceHeartbeatMessage;
+  | DeviceHeartbeatMessage
+  | DeviceMockMatchMessage;
 
 // ─── Server → Device（指令下发）────────────────────────────────────────────────
 
@@ -56,6 +64,7 @@ export type ServerToDeviceCommand =
   | { type: 'add_mock'; rule: MockRule }
   | { type: 'remove_mock'; id: string }
   | { type: 'clear_mocks' }
+  | { type: 'update_mock_rule'; id: string; enabled: boolean }
   | { type: 'request_idb_snapshot' }
   | { type: 'request_idb_store_data'; dbName: string; storeName: string; page: number; pageSize: number; reqId: string }
   | { type: 'idb_clear_store'; dbName: string; storeName: string };
@@ -67,6 +76,7 @@ export interface MockRule {
   status: number;
   headers?: Record<string, string>;
   body: string;
+  enabled?: boolean;
 }
 
 // ─── PC Viewer → Server ───────────────────────────────────────────────────────
