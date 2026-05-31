@@ -11,6 +11,7 @@ import {
   SystemStore,
   IndexedDBStore,
   IDBSnapshotStore,
+  ComputedStylesStore,
 } from '../store/index.js';
 
 export interface MessageContext {
@@ -26,6 +27,7 @@ export interface MessageContext {
   systemStore: SystemStore;
   idbStore: IndexedDBStore;
   idbSnapshotStore: IDBSnapshotStore;
+  computedStylesStore: ComputedStylesStore;
   deviceIds: Map<WebSocket, string>;
 }
 
@@ -182,6 +184,18 @@ export const handlers: Record<string, MessageHandler> = {
       total: envelope.data.total,
       records: envelope.data.records ?? [],
       ts: envelope.ts,
+    });
+    broadcastEvent(envelope, context);
+  },
+
+  computed_styles: (envelope, context) => {
+    const { computedStylesStore } = context;
+    const deviceId = envelope.device.deviceId;
+    computedStylesStore.set(deviceId, {
+      deviceId,
+      selector: envelope.data.selector ?? '',
+      styles: envelope.data.styles ?? {},
+      timestamp: envelope.ts,
     });
     broadcastEvent(envelope, context);
   },

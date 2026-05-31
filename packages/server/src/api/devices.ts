@@ -13,6 +13,7 @@ import {
   SystemStore,
   IndexedDBStore,
   IDBSnapshotStore,
+  ComputedStylesStore,
 } from '../store/index.js';
 import { sendToDevice } from '../ws/handlers.js';
 
@@ -29,6 +30,7 @@ export function createDeviceRoutes(
   systemStore: SystemStore,
   idbStore: IndexedDBStore,
   idbSnapshotStore?: IDBSnapshotStore,
+  computedStylesStore?: ComputedStylesStore,
 ) {
   return {
     listDevices: (req: Request, res: Response) => {
@@ -410,6 +412,21 @@ export function createDeviceRoutes(
       const data = idbSnapshotStore?.getStoreData(deviceId, reqId);
       if (!data) return res.status(404).json({ error: 'Store data not found' });
       return res.json(data);
+    },
+
+    requestComputedStyles: (req: Request, res: Response) => {
+      const { deviceId } = req.params;
+      const { selector } = req.body as { selector?: string };
+      if (!selector) return res.status(400).json({ error: 'selector is required' });
+      sendToDevice(deviceId, { type: 'get_computed_styles', selector });
+      return res.json({ ok: true });
+    },
+
+    getComputedStyles: (req: Request, res: Response) => {
+      const { deviceId } = req.params;
+      const snapshot = computedStylesStore?.get(deviceId);
+      if (!snapshot) return res.status(404).json({ error: 'No computed styles available' });
+      return res.json(snapshot);
     },
   };
 }

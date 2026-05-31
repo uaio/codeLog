@@ -14,6 +14,7 @@ import {
   SystemStore,
   IndexedDBStore,
   IDBSnapshotStore,
+  ComputedStylesStore,
   Persistence,
 } from '../store/index.js';
 import {
@@ -46,6 +47,7 @@ export function createWebSocketServer(
   const systemStore = new SystemStore();
   const idbStore = new IndexedDBStore();
   const idbSnapshotStore = new IDBSnapshotStore();
+  const computedStylesStore = new ComputedStylesStore();
   const deviceIds = new Map<WebSocket, string>();
 
   const wss = new WebSocketServer({
@@ -167,6 +169,13 @@ export function createWebSocketServer(
               reqId: message.reqId ?? '',
             });
           }
+          // DOM computed styles
+          if (message.type === 'get_computed_styles' && message.deviceId && message.selector) {
+            sendToDevice(message.deviceId, {
+              type: 'get_computed_styles',
+              selector: message.selector,
+            });
+          }
           return;
         }
 
@@ -186,6 +195,7 @@ export function createWebSocketServer(
             systemStore,
             idbStore,
             idbSnapshotStore,
+            computedStylesStore,
             deviceIds,
           };
           handler(message, context);
@@ -231,6 +241,7 @@ export function createWebSocketServer(
     systemStore,
     idbStore,
     idbSnapshotStore,
+    computedStylesStore,
   };
 }
 

@@ -16,3 +16,4 @@ export { Persistence, type PersistenceOptions } from './persistence.js';
 export { SystemStore, type SystemInfo, type SystemConnectionInfo, type SystemBatteryInfo } from './system.js';
 export { IndexedDBStore, IDBSnapshotStore, type IDBOperationEntry, type IDBSnapshotRecord, type IDBStoreDataRecord } from './indexeddb.js';
 export { SavedLogStore, type SavedLogSession, type SavedLogEntry } from './savedLogs.js';
+export { ComputedStylesStore, type ComputedStylesSnapshot } from './computedStyles.js';

@@ -36,6 +36,7 @@ export class Reporter {
   private onRequestIDBStoreDataCallback:
     | ((dbName: string, storeName: string, page: number, pageSize: number, reqId: string) => void)
     | null = null;
+  private onGetComputedStylesCallback: ((selector: string) => void) | null = null;
   private executeJsBus: DataBus | null = null;
   private rateLimiter = new RateLimiter(100);
   private serverUrl: string | undefined;
@@ -152,6 +153,9 @@ export class Reporter {
               data.reqId ?? '',
             );
           }
+          if (data.type === 'get_computed_styles' && data.selector) {
+            this.onGetComputedStylesCallback?.(data.selector);
+          }
         },
       },
       this.platform,
@@ -201,6 +205,15 @@ export class Reporter {
     callback: (dbName: string, storeName: string, page: number, pageSize: number, reqId: string) => void,
   ): void {
     this.onRequestIDBStoreDataCallback = callback;
+  }
+
+  onGetComputedStyles(callback: (selector: string) => void): void {
+    this.onGetComputedStylesCallback = callback;
+  }
+
+  reportComputedStyles(selector: string, styles: Record<string, string>): void {
+    if (!this.remoteEnabled || !this.transport) return;
+    this.sendEnvelope('computed_styles', { selector, styles });
   }
 
   reportPerfRun(session: import('../types/index.js').PerfRunSession): void {

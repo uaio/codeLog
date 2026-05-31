@@ -139,6 +139,22 @@ export const api = {
     return handleResponse(res, url);
   },
 
+  async requestComputedStyles(deviceId: string, selector: string): Promise<void> {
+    const url = `${API_BASE}/devices/${deviceId}/computed-styles`;
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ selector }),
+    });
+  },
+
+  async getComputedStyles(deviceId: string): Promise<{ selector: string; styles: Record<string, string>; timestamp: number } | null> {
+    const url = `${API_BASE}/devices/${deviceId}/computed-styles`;
+    const res = await fetch(url);
+    if (res.status === 404) return null;
+    return handleResponse(res, url);
+  },
+
   async listSavedLogs(): Promise<SavedLogSessionMeta[]> {
     const url = `${API_BASE}/saved-logs`;
     const res = await fetch(url);

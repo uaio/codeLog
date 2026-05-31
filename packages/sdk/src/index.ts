@@ -311,6 +311,38 @@ export class CodeLog {
       }
     });
 
+    this.reporter.onGetComputedStyles((selector) => {
+      try {
+        const el = document.querySelector(selector);
+        if (!el) return;
+        const cs = window.getComputedStyle(el);
+        const props = [
+          'color', 'background-color', 'background', 'font-size', 'font-family', 'font-weight',
+          'font-style', 'line-height', 'letter-spacing', 'text-align', 'text-decoration',
+          'display', 'position', 'top', 'right', 'bottom', 'left',
+          'width', 'height', 'min-width', 'max-width', 'min-height', 'max-height',
+          'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+          'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+          'border', 'border-radius', 'outline',
+          'overflow', 'overflow-x', 'overflow-y',
+          'z-index', 'opacity', 'visibility', 'cursor',
+          'flex', 'flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-self',
+          'grid', 'grid-template-columns', 'grid-template-rows',
+          'transform', 'transition', 'animation',
+          'box-shadow', 'text-shadow',
+          'pointer-events', 'user-select',
+        ];
+        const styles: Record<string, string> = {};
+        for (const prop of props) {
+          const val = cs.getPropertyValue(prop);
+          if (val) styles[prop] = val;
+        }
+        this.reporter.reportComputedStyles(selector, styles);
+      } catch {
+        // ignore — element may not be in DOM
+      }
+    });
+
     // 标记实例存在
     (globalThis as Record<symbol, unknown>)[CODELOG_INSTANCE_KEY] = this;
 

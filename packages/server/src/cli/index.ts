@@ -59,6 +59,7 @@ export async function start(options: CLIOptions = {}) {
     systemStore,
     idbStore,
     idbSnapshotStore,
+    computedStylesStore,
   } = createWebSocketServer(server, { apiKey, persistence });
 
   // Start hourly TTL cleanup for log entries older than 24 hours
@@ -82,6 +83,7 @@ export async function start(options: CLIOptions = {}) {
       idbStore,
       savedLogStore,
       idbSnapshotStore,
+      computedStylesStore,
     ),
   );
 

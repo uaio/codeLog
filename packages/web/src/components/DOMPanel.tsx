@@ -1,4 +1,4 @@
-import { CSSProperties, useState, useCallback } from 'react';
+import { CSSProperties, useState, useCallback, useEffect } from 'react';
 import { useDOM } from '../hooks/useDOM.js';
 import { useI18n } from '../i18n/index.js';
 import { api } from '../api/client.js';
@@ -16,6 +16,8 @@ interface DOMNodeViewProps {
   node: DOMNode;
   depth?: number;
   deviceId?: string;
+  selectedSelector?: string;
+  onSelect?: (selector: string) => void;
 }
 
 function buildSelector(node: DOMNode): string {
@@ -27,10 +29,12 @@ function buildSelector(node: DOMNode): string {
   return node.tag.toLowerCase();
 }
 
-function DOMNodeView({ node, depth = 0, deviceId }: DOMNodeViewProps) {
+function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: DOMNodeViewProps) {
   const hasChildren = (node.children && node.children.length > 0) || (node.childCount ?? 0) > 0;
   const [expanded, setExpanded] = useState(depth < 3);
   const [hovered, setHovered] = useState(false);
+  const selector = buildSelector(node);
+  const isSelected = selectedSelector === selector;
 
   const indent = depth * 14;
 
@@ -38,31 +42,39 @@ function DOMNodeView({ node, depth = 0, deviceId }: DOMNodeViewProps) {
     async (e: React.MouseEvent) => {
       e.stopPropagation();
       if (!deviceId) return;
-      const selector = buildSelector(node);
       try {
         await api.post(`/api/devices/${deviceId}/highlight`, { selector, duration: 3000 });
       } catch {
         /* ignore */
       }
     },
-    [deviceId, node],
+    [deviceId, selector],
+  );
+
+  const handleSelect = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onSelect?.(selector);
+      if (hasChildren) setExpanded((v) => !v);
+    },
+    [selector, hasChildren, onSelect],
   );
 
   return (
-    <div
-      style={{ marginLeft: indent }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div style={{ marginLeft: indent }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       {/* Opening tag */}
       <div
         style={{
           ...nodeStyles.row,
-          cursor: hasChildren ? 'pointer' : 'default',
-          backgroundColor: hovered ? 'rgba(0,120,212,0.06)' : undefined,
+          cursor: 'pointer',
+          backgroundColor: isSelected
+            ? 'rgba(0,122,204,0.25)'
+            : hovered
+              ? 'rgba(0,120,212,0.06)'
+              : undefined,
           borderRadius: '3px',
         }}
-        onClick={() => hasChildren && setExpanded((e) => !e)}
+        onClick={handleSelect}
       >
         {hasChildren && <span style={nodeStyles.arrow}>{expanded ? '▾' : '▸'}</span>}
         {!hasChildren && <span style={nodeStyles.arrowPlaceholder} />}
@@ -94,7 +106,7 @@ function DOMNodeView({ node, depth = 0, deviceId }: DOMNodeViewProps) {
           <span style={nodeStyles.text}> {node.text.slice(0, 80)}</span>
         )}
 
-        {/* Highlight button (shown on hover) */}
+        {/* Action buttons (shown on hover) */}
         {hovered && deviceId && (
           <button
             title="在设备上高亮此元素"
@@ -116,7 +128,16 @@ function DOMNodeView({ node, depth = 0, deviceId }: DOMNodeViewProps) {
       {/* Children */}
       {expanded &&
         node.children &&
-        node.children.map((child, i) => <DOMNodeView key={i} node={child} depth={depth + 1} deviceId={deviceId} />)}
+        node.children.map((child, i) => (
+          <DOMNodeView
+            key={i}
+            node={child}
+            depth={depth + 1}
+            deviceId={deviceId}
+            selectedSelector={selectedSelector}
+            onSelect={onSelect}
+          />
+        ))}
 
       {/* Truncation notice */}
       {expanded && node.childCount && node.children && node.childCount > node.children.length && (
@@ -131,10 +152,91 @@ function DOMNodeView({ node, depth = 0, deviceId }: DOMNodeViewProps) {
   );
 }
 
+/** Right-side computed styles panel */
+function ComputedStylesPanel({
+  deviceId,
+  selector,
+}: {
+  deviceId: string;
+  selector: string;
+}) {
+  const [styles, setStyles] = useState<Record<string, string> | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selector) return;
+    setLoading(true);
+    setStyles(null);
+
+    let cancelled = false;
+    let pollTimer: ReturnType<typeof setTimeout>;
+
+    const poll = async () => {
+      const result = await api.getComputedStyles(deviceId);
+      if (cancelled) return;
+      if (result && result.selector === selector) {
+        setStyles(result.styles);
+        setLoading(false);
+        return;
+      }
+      pollTimer = setTimeout(poll, 300);
+    };
+
+    api.requestComputedStyles(deviceId, selector).then(() => {
+      if (!cancelled) pollTimer = setTimeout(poll, 200);
+    });
+
+    // Timeout after 5s
+    const timeout = setTimeout(() => {
+      cancelled = true;
+      clearTimeout(pollTimer);
+      setLoading(false);
+    }, 5000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(pollTimer);
+      clearTimeout(timeout);
+    };
+  }, [deviceId, selector]);
+
+  if (!selector) return null;
+
+  return (
+    <div style={computedStyles.panel}>
+      <div style={computedStyles.header}>
+        <span style={computedStyles.title}>Computed Styles</span>
+        <span style={computedStyles.selectorLabel} title={selector}>
+          {selector}
+        </span>
+      </div>
+      <div style={computedStyles.body}>
+        {loading && <div style={computedStyles.loading}>⏳ Loading…</div>}
+        {!loading && !styles && (
+          <div style={computedStyles.empty}>No styles available</div>
+        )}
+        {styles && (
+          <table style={computedStyles.table}>
+            <tbody>
+              {Object.entries(styles).map(([prop, val]) => (
+                <tr key={prop} style={computedStyles.row}>
+                  <td style={computedStyles.propCell}>{prop}</td>
+                  <td style={computedStyles.valCell}>{val || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function DOMPanel({ deviceId }: DOMPanelProps) {
   const { snapshot, loading, refresh } = useDOM(deviceId);
   const { t } = useI18n();
   const [viewMode, setViewMode] = useState<'tree' | 'source'>('tree');
+  const [selectedSelector, setSelectedSelector] = useState<string | undefined>(undefined);
 
   if (!deviceId) {
     return (
@@ -193,20 +295,35 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
         </button>
       </div>
 
-      {/* DOM Tree */}
-      <div style={styles.tree}>
-        {loading && <div style={styles.loadingWrap}>⏳ {t.common.loading}</div>}
-        {!loading && !snapshot && (
-          <div style={styles.emptyWrap}>
-            <span style={styles.emptyIcon}>📡</span>
-            <span>{t.domPanel.waitingHint}</span>
-          </div>
-        )}
-        {!loading && snapshot && viewMode === 'tree' && <DOMNodeView node={snapshot.dom} depth={0} deviceId={deviceId} />}
-        {!loading && snapshot && viewMode === 'source' && (
-          <pre style={styles.htmlSource}>
-            {snapshot.htmlSnapshot ?? '(HTML snapshot not available — upgrade SDK)'}
-          </pre>
+      {/* DOM Tree + Computed Styles side by side */}
+      <div style={styles.mainArea}>
+        <div style={styles.tree}>
+          {loading && <div style={styles.loadingWrap}>⏳ {t.common.loading}</div>}
+          {!loading && !snapshot && (
+            <div style={styles.emptyWrap}>
+              <span style={styles.emptyIcon}>📡</span>
+              <span>{t.domPanel.waitingHint}</span>
+            </div>
+          )}
+          {!loading && snapshot && viewMode === 'tree' && (
+            <DOMNodeView
+              node={snapshot.dom}
+              depth={0}
+              deviceId={deviceId}
+              selectedSelector={selectedSelector}
+              onSelect={setSelectedSelector}
+            />
+          )}
+          {!loading && snapshot && viewMode === 'source' && (
+            <pre style={styles.htmlSource}>
+              {snapshot.htmlSnapshot ?? '(HTML snapshot not available — upgrade SDK)'}
+            </pre>
+          )}
+        </div>
+
+        {/* Computed Styles panel — visible when a node is selected */}
+        {viewMode === 'tree' && selectedSelector && deviceId && (
+          <ComputedStylesPanel deviceId={deviceId} selector={selectedSelector} />
         )}
       </div>
     </div>
@@ -280,6 +397,11 @@ const styles: Record<string, CSSProperties> = {
   viewTabActive: {
     color: '#ccc',
     borderBottom: '2px solid #007acc',
+  },
+  mainArea: {
+    flex: 1,
+    display: 'flex',
+    overflow: 'hidden',
   },
   htmlSource: {
     margin: 0,
@@ -359,5 +481,79 @@ const nodeStyles: Record<string, CSSProperties> = {
     padding: '0 3px',
     opacity: 0.7,
     flexShrink: 0,
+  },
+};
+
+const computedStyles: Record<string, CSSProperties> = {
+  panel: {
+    width: '280px',
+    flexShrink: 0,
+    borderLeft: '1px solid #333',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: '#1e1e1e',
+  },
+  header: {
+    padding: '6px 10px',
+    borderBottom: '1px solid #2d2d2d',
+    backgroundColor: '#252526',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+    flexShrink: 0,
+  },
+  title: {
+    fontSize: '11px',
+    fontWeight: 600,
+    color: '#ccc',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  selectorLabel: {
+    fontSize: '11px',
+    color: '#4ec9b0',
+    fontFamily: 'monospace',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  body: {
+    flex: 1,
+    overflow: 'auto',
+    padding: '4px 0',
+  },
+  loading: {
+    padding: '20px 10px',
+    color: '#666',
+    fontSize: '12px',
+    textAlign: 'center',
+  },
+  empty: {
+    padding: '20px 10px',
+    color: '#555',
+    fontSize: '12px',
+    textAlign: 'center',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '11px',
+    fontFamily: 'monospace',
+  },
+  row: {
+    borderBottom: '1px solid #2a2a2a',
+  },
+  propCell: {
+    padding: '3px 10px',
+    color: '#9cdcfe',
+    verticalAlign: 'top',
+    width: '45%',
+    whiteSpace: 'nowrap',
+  },
+  valCell: {
+    padding: '3px 10px',
+    color: '#ce9178',
+    verticalAlign: 'top',
+    wordBreak: 'break-all',
   },
 };
