@@ -44,7 +44,9 @@ export type ServerToDeviceCommand =
   | { type: 'reload_page' }
   | { type: 'refresh_storage' }
   | { type: 'refresh_dom' }
-  | { type: 'set_storage'; storageType: 'local' | 'session' | 'cookie'; key: string; value: string }
+  | { type: 'set_storage'; storageType: 'local' | 'session'; key: string; value: string }
+  | { type: 'set_storage'; storageType: 'cookie'; key: string; value: string; path?: string; domain?: string; expires?: number; secure?: boolean; sameSite?: string }
+  | { type: 'delete_storage'; storageType: 'local' | 'session' | 'cookie'; key: string }
   | { type: 'clear_storage'; storageType: 'local' | 'session' | 'cookie' | 'all' }
   | { type: 'highlight_element'; selector: string; duration: number }
   | { type: 'zen_mode'; enabled: boolean }
@@ -55,7 +57,8 @@ export type ServerToDeviceCommand =
   | { type: 'remove_mock'; id: string }
   | { type: 'clear_mocks' }
   | { type: 'request_idb_snapshot' }
-  | { type: 'request_idb_store_data'; dbName: string; storeName: string; page: number; pageSize: number; reqId: string };
+  | { type: 'request_idb_store_data'; dbName: string; storeName: string; page: number; pageSize: number; reqId: string }
+  | { type: 'idb_clear_store'; dbName: string; storeName: string };
 
 export interface MockRule {
   id: string;

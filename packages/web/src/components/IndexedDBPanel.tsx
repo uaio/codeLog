@@ -357,6 +357,23 @@ function DatabaseBrowser({ deviceId }: { deviceId: string }) {
                   <span style={bs.storeIcon}>📋</span>
                   <span style={bs.storeName}>{store.name}</span>
                   <span style={bs.storeCount}>{store.count}</span>
+                  <button
+                    style={bs.clearStoreBtn}
+                    title={`清空 ${store.name} (${store.count} 条)`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm(`确认清空 "${db.name}" 中的 "${store.name}"？\n共 ${store.count} 条记录将被删除，此操作不可撤销。`)) {
+                        websocketManager.send({ type: 'idb_clear_store', deviceId, dbName: db.name, storeName: store.name });
+                        // Optimistically reset selection and refresh snapshot after a delay
+                        if (selectedStore?.dbName === db.name && selectedStore?.storeName === store.name) {
+                          setStoreData(null);
+                        }
+                        setTimeout(requestSnapshot, 1500);
+                      }
+                    }}
+                  >
+                    🗑
+                  </button>
                 </div>
               ))}
           </div>
@@ -633,6 +650,17 @@ const bs = {
   storeIcon: { fontSize: '12px', marginRight: '4px' },
   storeName: { flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const },
   storeCount: { fontSize: '10px', color: '#999', marginLeft: '4px' },
+  clearStoreBtn: {
+    border: 'none',
+    background: 'transparent',
+    cursor: 'pointer',
+    fontSize: '12px',
+    color: '#ff4d4f',
+    padding: '0 2px',
+    lineHeight: 1,
+    flexShrink: 0,
+    opacity: 0.7,
+  } as const,
   records: { flex: 1, display: 'flex', flexDirection: 'column' as const, overflow: 'hidden' },
   recordsEmpty: { flex: 1, display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', color: '#999', gap: '8px', fontSize: '13px' },
   recordsHeader: { display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: '1px solid #e8e8e8', backgroundColor: '#fafafa', fontSize: '12px', flexShrink: 0 },

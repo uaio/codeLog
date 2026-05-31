@@ -88,6 +88,72 @@ function EditableRow({
   );
 }
 
+function CookieEditableRow({
+  cookie,
+  onSave,
+  onDelete,
+}: {
+  cookie: CookieEntry;
+  onSave: (v: string) => void;
+  onDelete: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editVal, setEditVal] = useState(cookie.value ?? '');
+
+  const commit = () => {
+    if (editVal !== cookie.value) onSave(editVal);
+    setEditing(false);
+  };
+
+  return (
+    <tr style={styles.tr}>
+      <td style={{ ...styles.td, ...styles.keyCell }}>{cookie.name}</td>
+      <td
+        style={{ ...styles.td, ...styles.valueCell, cursor: editing ? 'auto' : 'text' }}
+        title={editing ? undefined : '点击编辑 Value'}
+        onClick={editing ? undefined : () => { setEditVal(cookie.value ?? ''); setEditing(true); }}
+      >
+        {editing ? (
+          <input
+            autoFocus
+            value={editVal}
+            onChange={(e) => setEditVal(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { e.preventDefault(); commit(); }
+              if (e.key === 'Escape') { setEditing(false); setEditVal(cookie.value ?? ''); }
+            }}
+            style={{
+              width: '100%',
+              fontFamily: 'monospace',
+              fontSize: '12px',
+              padding: '2px 4px',
+              border: '1px solid #1890ff',
+              borderRadius: '3px',
+            }}
+          />
+        ) : (
+          <span style={styles.valueText}>{cookie.value}</span>
+        )}
+      </td>
+      <td style={{ ...styles.td, ...styles.metaCell }}>{cookie.path ?? '/'}</td>
+      <td style={{ ...styles.td, ...styles.metaCell }}>{cookie.domain ?? ''}</td>
+      <td style={{ ...styles.td, ...styles.metaCell }}>
+        {cookie.expires
+          ? new Date(cookie.expires).toLocaleString()
+          : <span style={{ color: '#bbb' }}>Session</span>}
+      </td>
+      <td style={{ ...styles.td, ...styles.metaCell }}>
+        {cookie.secure ? <span style={{ color: '#52c41a' }}>✓</span> : ''}
+      </td>
+      <td style={{ ...styles.td, ...styles.metaCell }}>{cookie.sameSite ?? ''}</td>
+      <td style={{ ...styles.td, textAlign: 'center' }}>
+        <button onClick={onDelete} title={`删除 ${cookie.name}`} style={styles.deleteBtn}>🗑</button>
+      </td>
+    </tr>
+  );
+}
+
 export function StoragePanel({ deviceId }: StoragePanelProps) {
   const { snapshot, loading, refresh } = useStorage(deviceId);
   const [activeTab, setActiveTab] = useState<StorageTab>('localStorage');
@@ -158,6 +224,45 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
     }
   }, [deviceId, storageType, refresh]);
 
+  const handleSetCookie = useCallback(async () => {
+    if (!deviceId || !setKey.trim()) return;
+    setSetLoading(true);
+    try {
+      await api.post(`/api/devices/${deviceId}/storage/set`, {
+        key: setKey.trim(),
+        value: setValue,
+        storageType: 'cookie',
+        path: '/',
+      });
+      setTimeout(refresh, 600);
+      setSetKey('');
+      setSetValue('');
+    } catch {
+      /* ignore */
+    } finally {
+      setSetLoading(false);
+    }
+  }, [deviceId, setKey, setValue, refresh]);
+
+  const handleEditCookieValue = useCallback(async (cookie: CookieEntry, newValue: string) => {
+    if (!deviceId) return;
+    try {
+      await api.post(`/api/devices/${deviceId}/storage/set`, {
+        key: cookie.name,
+        value: newValue,
+        storageType: 'cookie',
+        path: cookie.path ?? '/',
+        domain: cookie.domain,
+        expires: cookie.expires,
+        secure: cookie.secure,
+        sameSite: cookie.sameSite,
+      });
+      setTimeout(refresh, 600);
+    } catch {
+      /* ignore */
+    }
+  }, [deviceId, refresh]);
+
   if (!deviceId) {
     return (
       <div style={styles.container}>
@@ -183,7 +288,9 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
     {
       id: 'cookies',
       label: 'Cookies',
-      count: snapshot?.cookies ? snapshot.cookies.split(';').filter(Boolean).length : undefined,
+      count: snapshot
+        ? (snapshot.cookieEntries?.length ?? snapshot.cookies?.split(';').filter(Boolean).length ?? 0)
+        : undefined,
     },
   ];
 
@@ -237,7 +344,7 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
           <div style={styles.sizeBar}>
             <span style={styles.countLabel}>{entries.length} 条 Cookie</span>
             <span style={{ ...styles.countLabel, fontSize: '11px', color: '#aaa' }}>
-              via cookieStore API
+              via cookieStore API · 双击 Value 可编辑
             </span>
           </div>
           <table style={styles.table}>
@@ -255,32 +362,12 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
             </thead>
             <tbody>
               {entries.map((c, i) => (
-                <tr key={i} style={styles.tr}>
-                  <td style={{ ...styles.td, ...styles.keyCell }}>{c.name}</td>
-                  <td style={{ ...styles.td, ...styles.valueCell }}>
-                    <span style={styles.valueText}>{c.value}</span>
-                  </td>
-                  <td style={{ ...styles.td, ...styles.metaCell }}>{c.path ?? '/'}</td>
-                  <td style={{ ...styles.td, ...styles.metaCell }}>{c.domain ?? ''}</td>
-                  <td style={{ ...styles.td, ...styles.metaCell }}>
-                    {c.expires
-                      ? new Date(c.expires).toLocaleString()
-                      : <span style={{ color: '#bbb' }}>Session</span>}
-                  </td>
-                  <td style={{ ...styles.td, ...styles.metaCell }}>
-                    {c.secure ? <span style={{ color: '#52c41a' }}>✓</span> : ''}
-                  </td>
-                  <td style={{ ...styles.td, ...styles.metaCell }}>{c.sameSite ?? ''}</td>
-                  <td style={{ ...styles.td, textAlign: 'center' }}>
-                    <button
-                      onClick={() => handleDeleteCookie(c.name)}
-                      title={`删除 ${c.name}`}
-                      style={styles.deleteBtn}
-                    >
-                      🗑
-                    </button>
-                  </td>
-                </tr>
+                <CookieEditableRow
+                  key={i}
+                  cookie={c}
+                  onSave={(newVal) => handleEditCookieValue(c, newVal)}
+                  onDelete={() => handleDeleteCookie(c.name)}
+                />
               ))}
             </tbody>
           </table>
@@ -321,21 +408,13 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
           </thead>
           <tbody>
             {fallbackEntries.map(({ key, value }, i) => (
-              <tr key={i} style={styles.tr}>
-                <td style={{ ...styles.td, ...styles.keyCell }}>{key}</td>
-                <td style={{ ...styles.td, ...styles.valueCell }}>
-                  <span style={styles.valueText}>{value}</span>
-                </td>
-                <td style={{ ...styles.td, textAlign: 'center' }}>
-                  <button
-                    onClick={() => handleDeleteCookie(key)}
-                    title={`删除 ${key}`}
-                    style={styles.deleteBtn}
-                  >
-                    🗑
-                  </button>
-                </td>
-              </tr>
+              <EditableRow
+                key={i}
+                rowKey={key}
+                value={value}
+                onSave={(v) => handleEditCookieValue({ name: key, value } as CookieEntry, v)}
+                onDelete={() => handleDeleteCookie(key)}
+              />
             ))}
           </tbody>
         </table>
@@ -414,33 +493,33 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
         ))}
       </div>
 
-      {/* 写入 / 清空操作栏（仅 localStorage / sessionStorage） */}
-      {activeTab !== 'cookies' && (
-        <div style={styles.actionBar}>
-          <input
-            style={styles.actionInput}
-            placeholder="Key"
-            value={setKey}
-            onChange={(e) => setSetKey(e.target.value)}
-          />
-          <input
-            style={{ ...styles.actionInput, flex: 2 }}
-            placeholder="Value"
-            value={setValue}
-            onChange={(e) => setSetValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSetItem()}
-          />
-          <button
-            style={{
-              ...styles.btn,
-              borderColor: '#1890ff',
-              color: setLoading || !setKey.trim() ? '#999' : '#1890ff',
-            }}
-            disabled={setLoading || !setKey.trim() || !deviceId}
-            onClick={handleSetItem}
-          >
-            写入
-          </button>
+      {/* 写入 / 清空操作栏 */}
+      <div style={styles.actionBar}>
+        <input
+          style={styles.actionInput}
+          placeholder={activeTab === 'cookies' ? 'Cookie Name' : 'Key'}
+          value={setKey}
+          onChange={(e) => setSetKey(e.target.value)}
+        />
+        <input
+          style={{ ...styles.actionInput, flex: 2 }}
+          placeholder="Value"
+          value={setValue}
+          onChange={(e) => setSetValue(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && (activeTab === 'cookies' ? handleSetCookie() : handleSetItem())}
+        />
+        <button
+          style={{
+            ...styles.btn,
+            borderColor: '#1890ff',
+            color: setLoading || !setKey.trim() ? '#999' : '#1890ff',
+          }}
+          disabled={setLoading || !setKey.trim() || !deviceId}
+          onClick={activeTab === 'cookies' ? handleSetCookie : handleSetItem}
+        >
+          {activeTab === 'cookies' ? '设 Cookie' : '写入'}
+        </button>
+        {activeTab !== 'cookies' && (
           <button
             style={{ ...styles.btn, borderColor: '#ff4d4f', color: !deviceId ? '#999' : '#ff4d4f' }}
             disabled={!deviceId}
@@ -449,8 +528,8 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
           >
             清空
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Content */}
       <div style={styles.content}>{renderContent()}</div>

@@ -83,8 +83,35 @@ export class Reporter {
           }
           if (data.type === 'set_storage') {
             try {
-              const store = data.storageType === 'session' ? sessionStorage : localStorage;
-              store.setItem(data.key, data.value ?? '');
+              if (data.storageType === 'cookie') {
+                const setCookieValue = async () => {
+                  const name = data.key;
+                  const value = data.value ?? '';
+                  // Prefer cookieStore API (preserves all attributes) when available
+                  if (typeof (window as any).cookieStore?.set === 'function') {
+                    const opts: Record<string, unknown> = { name, value };
+                    if (data.path) opts.path = data.path;
+                    if (data.domain) opts.domain = data.domain;
+                    if (data.expires) opts.expires = data.expires;
+                    if (data.secure !== undefined) opts.secure = data.secure;
+                    if (data.sameSite) opts.sameSite = data.sameSite;
+                    await (window as any).cookieStore.set(opts);
+                  } else {
+                    // Fallback: document.cookie string
+                    let cookieStr = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+                    cookieStr += `; path=${data.path ?? '/'}`;
+                    if (data.domain) cookieStr += `; domain=${data.domain}`;
+                    if (data.expires) cookieStr += `; expires=${new Date(data.expires).toUTCString()}`;
+                    if (data.secure) cookieStr += `; Secure`;
+                    if (data.sameSite) cookieStr += `; SameSite=${data.sameSite}`;
+                    document.cookie = cookieStr;
+                  }
+                };
+                void setCookieValue();
+              } else {
+                const store = data.storageType === 'session' ? sessionStorage : localStorage;
+                store.setItem(data.key, data.value ?? '');
+              }
             } catch {
               /* ignore */
             }
@@ -154,6 +181,24 @@ export class Reporter {
               data.pageSize ?? 50,
               data.reqId ?? '',
             );
+          }
+          if (data.type === 'idb_clear_store' && data.dbName && data.storeName) {
+            try {
+              const req = indexedDB.open(data.dbName);
+              req.onsuccess = () => {
+                const db = req.result;
+                try {
+                  const tx = db.transaction(data.storeName, 'readwrite');
+                  tx.objectStore(data.storeName).clear();
+                  tx.oncomplete = () => { db.close(); };
+                  tx.onerror = () => { db.close(); };
+                } catch {
+                  db.close();
+                }
+              };
+            } catch {
+              /* ignore */
+            }
           }
           if (data.type === 'get_computed_styles' && data.selector) {
             this.onGetComputedStylesCallback?.(data.selector);

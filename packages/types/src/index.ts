@@ -26,10 +26,21 @@ export type {
   EventPayloadMap,
   // Console
   ConsolePayload,
+  SerializedValue,
   // Network
   NetworkPayload,
   // Storage
   StoragePayload,
+  CookieEntry,
+  // System
+  SystemPayload,
+  SystemBatteryInfo,
+  SystemConnectionInfo,
+  // IDB
+  IDBSnapshotPayload,
+  IDBStoreDataPayload,
+  IDBDatabaseInfo,
+  IDBStoreSchema,
   // DOM
   DOMPayload,
   DOMNode,

@@ -104,12 +104,21 @@ export function createWebSocketServer(
             sendToDevice(message.deviceId, { type: 'reload_page' });
           }
           if (message.type === 'set_storage' && message.deviceId && message.key !== undefined) {
-            sendToDevice(message.deviceId, {
+            const payload: Record<string, unknown> = {
               type: 'set_storage',
               storageType: message.storageType || 'local',
               key: message.key,
               value: message.value ?? '',
-            });
+            };
+            // Pass cookie-specific attributes through when present
+            if (message.storageType === 'cookie') {
+              if (message.path !== undefined) payload.path = message.path;
+              if (message.domain !== undefined) payload.domain = message.domain;
+              if (message.expires !== undefined) payload.expires = message.expires;
+              if (message.secure !== undefined) payload.secure = message.secure;
+              if (message.sameSite !== undefined) payload.sameSite = message.sameSite;
+            }
+            sendToDevice(message.deviceId, payload as any);
           }
           if (message.type === 'clear_storage' && message.deviceId) {
             sendToDevice(message.deviceId, {
@@ -167,6 +176,13 @@ export function createWebSocketServer(
               page: message.page ?? 0,
               pageSize: message.pageSize ?? 50,
               reqId: message.reqId ?? '',
+            });
+          }
+          if (message.type === 'idb_clear_store' && message.deviceId && message.dbName && message.storeName) {
+            sendToDevice(message.deviceId, {
+              type: 'idb_clear_store',
+              dbName: message.dbName,
+              storeName: message.storeName,
             });
           }
           // DOM computed styles
