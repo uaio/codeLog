@@ -38,11 +38,27 @@ export interface DeviceMockMatchMessage {
   url: string;
 }
 
+/** SDK 广播已安装插件列表 */
+export interface DevicePluginAnnounceMessage {
+  type: 'plugin_announce';
+  deviceId: string;
+  plugins: PluginInfo[];
+}
+
+export interface PluginInfo {
+  name: string;
+  panelTitle?: string;
+  panelIcon?: string;
+  version?: string;
+  state: 'enabled' | 'disabled';
+}
+
 export type DeviceToServerMessage =
   | DeviceRegisterMessage
   | DeviceDataMessage
   | DeviceHeartbeatMessage
-  | DeviceMockMatchMessage;
+  | DeviceMockMatchMessage
+  | DevicePluginAnnounceMessage;
 
 // ─── Server → Device（指令下发）────────────────────────────────────────────────
 

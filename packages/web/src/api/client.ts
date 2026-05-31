@@ -211,6 +211,12 @@ export const api = {
     });
     return handleResponse(res, url);
   },
+
+  async getPlugins(deviceId: string): Promise<Array<{ name: string; panelTitle?: string; panelIcon?: string; version?: string; state: 'enabled' | 'disabled' }>> {
+    const url = `${API_BASE}/devices/${deviceId}/plugins`;
+    const res = await fetch(url);
+    return handleResponse(res, url);
+  },
 };
 
 export { ApiClientError };

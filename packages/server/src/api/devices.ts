@@ -16,6 +16,7 @@ import {
   ComputedStylesStore,
 } from '../store/index.js';
 import { sendToDevice } from '../ws/handlers.js';
+import { pluginStore } from '../store/plugins.js';
 
 export function createDeviceRoutes(
   deviceStore: DeviceStore,
@@ -446,6 +447,12 @@ export function createDeviceRoutes(
       if (!selector || !attr) return res.status(400).json({ error: 'selector and attr are required' });
       sendToDevice(deviceId, { type: 'set_element_attr', selector, attr, value: value ?? '' });
       return res.json({ ok: true });
+    },
+
+    getPlugins: (req: Request, res: Response) => {
+      const { deviceId } = req.params;
+      const plugins = pluginStore.get(deviceId);
+      return res.json(plugins);
     },
   };
 }

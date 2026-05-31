@@ -14,6 +14,12 @@ export interface PluginContext {
 export interface CodeLogPlugin {
   /** Unique plugin name — used for conflict detection */
   readonly name: string;
+  /** Human-readable tab label in the web panel (defaults to name) */
+  readonly panelTitle?: string;
+  /** Emoji or short icon string for the tab (defaults to '🔌') */
+  readonly panelIcon?: string;
+  /** Semantic version string (e.g. '1.0.0') */
+  readonly version?: string;
   /** Called when the plugin is installed (CodeLog constructor). */
   install(ctx: PluginContext): void | Promise<void>;
   /** Called when the plugin is enabled after being disabled. */
@@ -99,9 +105,12 @@ export class PluginManager {
   }
 
   /** List installed plugins with their states */
-  list(): Array<{ name: string; state: PluginState }> {
+  list(): Array<{ name: string; panelTitle?: string; panelIcon?: string; version?: string; state: PluginState }> {
     return Array.from(this.plugins.entries()).map(([name, r]) => ({
       name,
+      panelTitle: r.plugin.panelTitle,
+      panelIcon: r.plugin.panelIcon,
+      version: r.plugin.version,
       state: r.state,
     }));
   }

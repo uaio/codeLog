@@ -74,6 +74,9 @@ export type {
   DeviceRegisterMessage,
   DeviceDataMessage,
   DeviceHeartbeatMessage,
+  DeviceMockMatchMessage,
+  DevicePluginAnnounceMessage,
+  PluginInfo,
   // Server → Device
   ServerToDeviceCommand,
   MockRule,

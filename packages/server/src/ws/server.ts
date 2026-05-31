@@ -17,6 +17,7 @@ import {
   ComputedStylesStore,
   Persistence,
 } from '../store/index.js';
+import { pluginStore } from '../store/plugins.js';
 import {
   handlers,
   type MessageContext,
@@ -214,6 +215,15 @@ export function createWebSocketServer(
           const deviceId = deviceIds.get(ws);
           if (deviceId) {
             mockStore.incrementMatch(deviceId, message.ruleId);
+          }
+          return;
+        }
+
+        // plugin_announce: device advertises installed plugins
+        if (message.type === 'plugin_announce' && Array.isArray(message.plugins)) {
+          const deviceId = deviceIds.get(ws) ?? message.deviceId;
+          if (deviceId) {
+            pluginStore.set(deviceId, message.plugins);
           }
           return;
         }

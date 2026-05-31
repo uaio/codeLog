@@ -504,6 +504,13 @@ export class CodeLog {
     for (const plugin of options.plugins ?? []) {
       void this.pluginManager.use(plugin);
     }
+    // Announce plugins to server once reporter is ready
+    const announcePluginsToServer = () => {
+      const list = this.pluginManager.list();
+      if (list.length > 0) this.reporter.announcePlugins(list);
+    };
+    // Announce after a short delay to ensure connection is established
+    setTimeout(announcePluginsToServer, 2000);
   }
 
   private async initEruda(config?: ErudaConfig): Promise<void> {
@@ -1297,23 +1304,27 @@ export class CodeLog {
   }
 
   /** Install a plugin dynamically at runtime */
-  use(plugin: CodeLogPlugin): Promise<void> {
-    return this.pluginManager.use(plugin);
+  async use(plugin: CodeLogPlugin): Promise<void> {
+    await this.pluginManager.use(plugin);
+    this.reporter.announcePlugins(this.pluginManager.list());
   }
 
   /** Enable a previously disabled plugin */
   enablePlugin(name: string): void {
     this.pluginManager.enable(name);
+    this.reporter.announcePlugins(this.pluginManager.list());
   }
 
   /** Disable a plugin without uninstalling it */
   disablePlugin(name: string): void {
     this.pluginManager.disable(name);
+    this.reporter.announcePlugins(this.pluginManager.list());
   }
 
   /** Remove and uninstall a plugin */
   removePlugin(name: string): void {
     this.pluginManager.remove(name);
+    this.reporter.announcePlugins(this.pluginManager.list());
   }
 
   /** List all installed plugins */

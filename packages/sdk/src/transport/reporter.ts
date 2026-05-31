@@ -467,6 +467,21 @@ export class Reporter {
     });
   }
 
+  announcePlugins(plugins: Array<{ name: string; panelTitle?: string; panelIcon?: string; version?: string; state: string }>): void {
+    if (!this.remoteEnabled || !this.transport) return;
+    this.transport.send(JSON.stringify({
+      type: 'plugin_announce',
+      deviceId: this.deviceInfo.deviceId,
+      plugins: plugins.map((p) => ({
+        name: p.name,
+        panelTitle: p.panelTitle,
+        panelIcon: p.panelIcon,
+        version: p.version,
+        state: p.state === 'enabled' ? 'enabled' : 'disabled',
+      })),
+    }));
+  }
+
   private sendEnvelope(type: string, data: unknown): void {
     this.send({
       v: '1',
