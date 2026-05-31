@@ -5,7 +5,9 @@ import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 export default defineConfig({
   build: {
     commonjsOptions: {
-      transformMixedEsModules: true
+      transformMixedEsModules: true,
+      // eruda is a workspace symlink resolving outside node_modules; include it explicitly
+      include: [/packages\/eruda/, /node_modules/]
     },
     lib: {
       entry: './src/index.ts',
