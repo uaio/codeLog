@@ -525,16 +525,19 @@ export class CodeLog {
           tool: config?.tool,
           autoScale: config?.autoScale ?? true,
           useShadowDom: true,
-          defaults: {
-            ...config?.defaults,
-            // 禁用 Eruda 自身的 console override：
-            // DataBus 已是唯一采集源，ErudaPlugin 负责将数据推入 Eruda 面板。
-            // 若保留 overrideConsole，Eruda 会二次 patch 我们的 patch，导致：
-            //   1. 数据双重采集
-            //   2. DataBus emit 不再"第一时间"（Eruda 先于 DataBus 触发）
-            overrideConsole: false,
-          },
+          defaults: config?.defaults,
         });
+
+        // eruda.init() 默认会调用 overrideConsole()，把自身的 wrapper 叠加到 console 上。
+        // defaults.overrideConsole:false 不能阻止这一点（该字段只影响 DevTools 级别的配置）。
+        // 必须在 init 后立即调用 restoreConsole() 撤销 eruda 的覆盖，
+        // 使 SDK 的拦截器成为唯一的 console 数据来源，避免 ErudaPlugin.forwardToEruda 与
+        // eruda 自身拦截产生双重日志。
+        const consolePanel = this.eruda.get?.('console') as
+          | { restoreConsole?: () => void }
+          | null
+          | undefined;
+        consolePanel?.restoreConsole?.();
 
         // 绑定 ErudaPlugin：订阅 DataBus → 将日志推入 Eruda console 面板
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
