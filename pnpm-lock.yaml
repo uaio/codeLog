@@ -37,7 +37,7 @@ importers:
         version: 1.6.4(@algolia/client-search@5.50.2)(@types/node@20.19.37)(@types/react@18.3.28)(postcss@8.5.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.98.0)(search-insights@2.17.3)(terser@5.46.1)(typescript@5.9.3)
       vitest:
         specifier: ^1.6.0
-        version: 1.6.0(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1)
+        version: 1.6.0(@types/node@20.19.37)(happy-dom@20.9.0)(sass@1.98.0)(terser@5.46.1)
 
   packages/cli:
     dependencies:
@@ -56,7 +56,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.6.0
-        version: 1.6.0(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1)
+        version: 1.6.0(@types/node@20.19.37)(happy-dom@20.9.0)(sass@1.98.0)(terser@5.46.1)
 
   packages/demo:
     dependencies:
@@ -272,7 +272,7 @@ importers:
         version: 8.18.1
       vitest:
         specifier: ^1.6.0
-        version: 1.6.0(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1)
+        version: 1.6.0(@types/node@20.19.37)(happy-dom@20.9.0)(sass@1.98.0)(terser@5.46.1)
       zod:
         specifier: ^3.25.0
         version: 3.25.76
@@ -289,6 +289,12 @@ importers:
       '@codelog/types':
         specifier: workspace:*
         version: link:../types
+      fake-indexeddb:
+        specifier: ^6.2.5
+        version: 6.2.5
+      happy-dom:
+        specifier: ^20.9.0
+        version: 20.9.0
       vite:
         specifier: ^5.0.0
         version: 5.4.21(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1)
@@ -297,7 +303,7 @@ importers:
         version: 3.9.1(@types/node@20.19.37)(rollup@4.59.0)(typescript@5.9.3)(vite@5.4.21(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1))
       vitest:
         specifier: ^1.6.0
-        version: 1.6.0(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1)
+        version: 1.6.0(@types/node@20.19.37)(happy-dom@20.9.0)(sass@1.98.0)(terser@5.46.1)
       web-vitals:
         specifier: ^5.2.0
         version: 5.2.0
@@ -334,7 +340,7 @@ importers:
         version: 8.18.1
       vitest:
         specifier: ^1.6.0
-        version: 1.6.0(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1)
+        version: 1.6.0(@types/node@20.19.37)(happy-dom@20.9.0)(sass@1.98.0)(terser@5.46.1)
 
   packages/types:
     devDependencies:
@@ -1950,6 +1956,9 @@ packages:
   '@types/web-bluetooth@0.0.21':
     resolution: {integrity: sha512-oIQLCGWtcFZy2JW77j9k8nHzAOpqMHLQejDA48XXMWH6tjCQHz5RCFz1bzsmROyL6PUm+LLnUiI4BCn221inxA==}
 
+  '@types/whatwg-mimetype@3.0.2':
+    resolution: {integrity: sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA==}
+
   '@types/wrap-ansi@3.0.0':
     resolution: {integrity: sha512-ltIpx+kM7g/MLRZfkbL7EsCEjfzCcScLpkg37eXEtx5kmrAKBkTJwd1GIAjDSL8wTpM6Hzn5YO4pSb91BEwu1g==}
 
@@ -3199,6 +3208,10 @@ packages:
     resolution: {integrity: sha512-hMQ4CX1p1izmuLYyZqLMO/qGNw10wSv9QDCPfzXfyFrOaCSSoRfqE1Kf1s5an66J5JZC62NewG+mK49jOCtQew==}
     engines: {node: '>=4'}
 
+  fake-indexeddb@6.2.5:
+    resolution: {integrity: sha512-CGnyrvbhPlWYMngksqrSSUT1BAVP49dZocrHuK0SvtR0D5TMs5wP0o3j7jexDJW01KSadjBp1M/71o/KR3nD1w==}
+    engines: {node: '>=18'}
+
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -3419,6 +3432,10 @@ packages:
 
   handle-thing@2.0.1:
     resolution: {integrity: sha512-9Qn4yBxelxoh2Ow62nP+Ka/kMnOXRi8BXnRaUwezLNhqelnN49xKz4F/dPP8OYLxLxq6JDtZb2i9XznUQbNPTg==}
+
+  happy-dom@20.9.0:
+    resolution: {integrity: sha512-GZZ9mKe8r646NUAf/zemnGbjYh4Bt8/MqASJY+pSm5ZDtc3YQox+4gsLI7yi1hba6o+eCsGxpHn5+iEVn31/FQ==}
+    engines: {node: '>=20.0.0'}
 
   has-flag@3.0.0:
     resolution: {integrity: sha512-sKJf1+ceQBr4SMkvQnBDNDtf4TXpVhVGateu0t918bl30FnbE2m4vNLX+VWe/dpjlb+HugGYzW7uQXH98HPEYw==}
@@ -5621,6 +5638,10 @@ packages:
     resolution: {integrity: sha512-OqedPIGOfsDlo31UNwYbCFMSaO9m9G/0faIHj5/dZFDMFqPTcx6UwqyOy3COEaEOg/9VsGIpdqn62W5KhoKSpg==}
     engines: {node: '>=0.8.0'}
 
+  whatwg-mimetype@3.0.0:
+    resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
+    engines: {node: '>=12'}
+
   which@1.3.1:
     resolution: {integrity: sha512-HxJdYWq1MTIQbJ3nw0cqssHoTNU267KlrDuGZ1WYlxDStUtKUhOaJmh112/TZmHxxUfuJqPXSOm7tDyas0OSIQ==}
     hasBin: true
@@ -7553,6 +7574,8 @@ snapshots:
 
   '@types/web-bluetooth@0.0.21': {}
 
+  '@types/whatwg-mimetype@3.0.2': {}
+
   '@types/wrap-ansi@3.0.0': {}
 
   '@types/ws@8.18.1':
@@ -9011,6 +9034,8 @@ snapshots:
       iconv-lite: 0.4.24
       tmp: 0.0.33
 
+  fake-indexeddb@6.2.5: {}
+
   fast-deep-equal@3.1.3: {}
 
   fast-glob@3.3.3:
@@ -9235,6 +9260,18 @@ snapshots:
       duplexer: 0.1.2
 
   handle-thing@2.0.1: {}
+
+  happy-dom@20.9.0:
+    dependencies:
+      '@types/node': 20.19.37
+      '@types/whatwg-mimetype': 3.0.2
+      '@types/ws': 8.18.1
+      entities: 7.0.1
+      whatwg-mimetype: 3.0.0
+      ws: 8.19.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   has-flag@3.0.0: {}
 
@@ -11505,7 +11542,7 @@ snapshots:
       - typescript
       - universal-cookie
 
-  vitest@1.6.0(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1):
+  vitest@1.6.0(@types/node@20.19.37)(happy-dom@20.9.0)(sass@1.98.0)(terser@5.46.1):
     dependencies:
       '@vitest/expect': 1.6.0
       '@vitest/runner': 1.6.0
@@ -11529,6 +11566,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.37
+      happy-dom: 20.9.0
     transitivePeerDependencies:
       - less
       - lightningcss
@@ -11718,6 +11756,8 @@ snapshots:
       websocket-extensions: 0.1.4
 
   websocket-extensions@0.1.4: {}
+
+  whatwg-mimetype@3.0.0: {}
 
   which@1.3.1:
     dependencies:

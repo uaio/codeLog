@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>codeLog SDK — E2E Demo</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    h1 { color: #333; }
+    h2 { color: #555; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+    button {
+      padding: 10px 16px;
+      background: #0969da;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #0758c8; }
+    button.green { background: #1a7f37; }
+    button.green:hover { background: #176030; }
+    button.red { background: #cf222e; }
+    button.red:hover { background: #a40e26; }
+    #log {
+      background: #f6f8fa;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      padding: 12px;
+      min-height: 120px;
+      font-family: monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      max-height: 300px;
+    }
+    .status { font-size: 13px; color: #888; margin-bottom: 8px; }
+    input[type=text] {
+      padding: 8px 12px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🔬 codeLog SDK — E2E Demo</h1>
+<p class="status" id="status">SDK not connected. Start the server and update SERVER_URL below, then click Init.</p>
+
+<h2>0 · Setup</h2>
+<input type="text" id="serverUrl" value="http://localhost:3000" placeholder="Server URL">
+<div class="grid">
+  <button onclick="initSDK()">Init SDK</button>
+  <button class="red" onclick="stopSDK()">Stop SDK</button>
+  <button onclick="clearLog()">Clear Log</button>
+</div>
+
+<h2>1 · Console</h2>
+<div class="grid">
+  <button onclick="console.log('hello from demo', {a:1, b:[2,3]})">log(object)</button>
+  <button onclick="console.warn('warning!')">warn()</button>
+  <button onclick="console.error('error!', new Error('boom'))">error(Error)</button>
+  <button onclick="console.info('info message')">info()</button>
+  <button onclick="console.debug('debug data', null, undefined)">debug(null/undef)</button>
+  <button onclick="console.table([{x:1},{x:2}])">table()</button>
+</div>
+
+<h2>2 · Network — Fetch</h2>
+<div class="grid">
+  <button onclick="doFetch('GET')">fetch GET</button>
+  <button onclick="doFetch('POST')">fetch POST</button>
+  <button onclick="doFetchFail()">fetch 404</button>
+</div>
+
+<h2>3 · Network — XHR</h2>
+<div class="grid">
+  <button onclick="doXHR('GET')">XHR GET</button>
+  <button onclick="doXHR('POST')">XHR POST</button>
+</div>
+
+<h2>4 · Mock API</h2>
+<div class="grid">
+  <button class="green" onclick="addMockRule()">Add mock rule (/api/mock)</button>
+  <button onclick="testMockFetch()">fetch /api/mock</button>
+  <button class="red" onclick="clearMocks()">Clear mocks</button>
+</div>
+
+<h2>5 · WebSocket</h2>
+<div class="grid">
+  <button onclick="openWS()">Open WS</button>
+  <button onclick="sendWS()">Send message</button>
+  <button onclick="closeWS()">Close WS</button>
+</div>
+
+<h2>6 · IndexedDB</h2>
+<div class="grid">
+  <button onclick="idbWrite()">Write records</button>
+  <button onclick="idbRead()">Read records</button>
+  <button onclick="idbDelete()">Delete record</button>
+</div>
+
+<h2>7 · Storage</h2>
+<div class="grid">
+  <button onclick="storageOps()">Set localStorage / sessionStorage</button>
+  <button onclick="cookieOps()">Set cookies</button>
+</div>
+
+<h2>8 · Performance</h2>
+<div class="grid">
+  <button onclick="triggerLongTask()">Long task (200ms)</button>
+  <button onclick="triggerResourceLoad()">Load image resource</button>
+</div>
+
+<h2>9 · Screenshot</h2>
+<div class="grid">
+  <button onclick="takeScreenshot()">Request screenshot</button>
+</div>
+
+<h2>📋 Local Event Log</h2>
+<div id="log">Waiting for events…</div>
+
+<!-- Load the built IIFE SDK -->
+<script src="../../dist/codelog.iife.js"></script>
+<script>
+  // ── state ──────────────────────────────────────────────────────────────────
+  let sdk = null;
+  let ws = null;
+
+  function log(msg) {
+    const el = document.getElementById('log');
+    const ts = new Date().toISOString().slice(11, 23);
+    el.textContent += `[${ts}] ${msg}\n`;
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function clearLog() {
+    document.getElementById('log').textContent = '';
+  }
+
+  function setStatus(msg, ok = true) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.style.color = ok ? '#1a7f37' : '#cf222e';
+  }
+
+  // ── 0 · Init ───────────────────────────────────────────────────────────────
+  function initSDK() {
+    const serverUrl = document.getElementById('serverUrl').value.trim();
+    if (!window.CodeLog) {
+      log('ERROR: CodeLog global not found. Rebuild the SDK (pnpm build) first.');
+      setStatus('SDK bundle not loaded', false);
+      return;
+    }
+    try {
+      sdk = new window.CodeLog({ serverUrl, projectId: 'e2e-demo' });
+      sdk.start();
+      setStatus(`SDK initialized → ${serverUrl}`);
+      log(`SDK started. deviceId: ${sdk.getDeviceId?.() ?? '(use getDeviceId())'}`);
+    } catch (e) {
+      log(`Init error: ${e.message}`);
+      setStatus('Init failed: ' + e.message, false);
+    }
+  }
+
+  function stopSDK() {
+    if (sdk) { sdk.stop(); sdk = null; setStatus('SDK stopped', false); log('SDK stopped.'); }
+    else log('SDK was not running.');
+  }
+
+  // ── 2 · Fetch ──────────────────────────────────────────────────────────────
+  async function doFetch(method) {
+    try {
+      const url = 'https://jsonplaceholder.typicode.com/todos/1';
+      const opts = method === 'POST'
+        ? { method: 'POST', body: JSON.stringify({ title: 'test', userId: 1 }), headers: { 'Content-Type': 'application/json' } }
+        : {};
+      const res = await fetch(url, opts);
+      const data = await res.json();
+      log(`fetch ${method} ${url} → ${res.status}, id=${data.id ?? '?'}`);
+    } catch (e) {
+      log(`fetch error: ${e.message}`);
+    }
+  }
+
+  async function doFetchFail() {
+    try {
+      const res = await fetch('https://jsonplaceholder.typicode.com/todos/99999');
+      log(`fetch 404 test → ${res.status}`);
+    } catch (e) {
+      log(`fetch fail: ${e.message}`);
+    }
+  }
+
+  // ── 3 · XHR ───────────────────────────────────────────────────────────────
+  function doXHR(method) {
+    const xhr = new XMLHttpRequest();
+    const url = 'https://jsonplaceholder.typicode.com/todos/1';
+    xhr.open(method, url);
+    xhr.onload = () => log(`XHR ${method} → ${xhr.status}`);
+    xhr.onerror = () => log(`XHR error`);
+    if (method === 'POST') {
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify({ title: 'test' }));
+    } else {
+      xhr.send();
+    }
+  }
+
+  // ── 4 · Mock API ───────────────────────────────────────────────────────────
+  function addMockRule() {
+    if (!sdk) { log('Init SDK first'); return; }
+    const mock = sdk.getMockAPI?.();
+    if (!mock) { log('MockAPI not available on sdk.getMockAPI()'); return; }
+    mock.addRule({ name: 'demo-mock', pattern: '/api/mock', method: 'GET', status: 200, body: '{"mocked":true}', enabled: true, headers: { 'X-Mocked': 'yes' } });
+    log('Mock rule added for /api/mock');
+  }
+
+  async function testMockFetch() {
+    try {
+      const res = await fetch('/api/mock');
+      const text = await res.text();
+      log(`Mock fetch → status=${res.status} X-Mocked=${res.headers.get('X-Mocked')} body=${text}`);
+    } catch (e) {
+      log(`Mock fetch error: ${e.message}`);
+    }
+  }
+
+  function clearMocks() {
+    if (!sdk) { log('Init SDK first'); return; }
+    sdk.getMockAPI?.()?.clearRules();
+    log('All mock rules cleared');
+  }
+
+  // ── 5 · WebSocket ──────────────────────────────────────────────────────────
+  function openWS() {
+    if (ws) { log('WS already open'); return; }
+    try {
+      ws = new WebSocket('wss://echo.websocket.org');
+      ws.onopen = () => log('WS open (echo.websocket.org)');
+      ws.onmessage = (e) => log(`WS recv: ${e.data}`);
+      ws.onerror = () => log('WS error');
+      ws.onclose = (e) => { log(`WS closed (${e.code})`); ws = null; };
+    } catch (e) {
+      log(`WS open error: ${e.message}`);
+    }
+  }
+
+  function sendWS() {
+    if (!ws || ws.readyState !== WebSocket.OPEN) { log('WS not open'); return; }
+    const msg = `hello at ${Date.now()}`;
+    ws.send(msg);
+    log(`WS sent: ${msg}`);
+  }
+
+  function closeWS() {
+    if (!ws) { log('No WS'); return; }
+    ws.close(1000, 'bye');
+  }
+
+  // ── 6 · IndexedDB ─────────────────────────────────────────────────────────
+  const IDB_NAME = 'e2e-demo-db';
+  const IDB_STORE = 'records';
+
+  function openIDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(IDB_STORE, { keyPath: 'id' });
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function idbWrite() {
+    try {
+      const db = await openIDB();
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      const store = tx.objectStore(IDB_STORE);
+      store.put({ id: 'rec1', value: 'hello', ts: Date.now() });
+      store.put({ id: 'rec2', value: 'world', ts: Date.now() });
+      tx.oncomplete = () => { db.close(); log('IDB: wrote rec1, rec2'); };
+    } catch (e) { log(`IDB write error: ${e.message}`); }
+  }
+
+  async function idbRead() {
+    try {
+      const db = await openIDB();
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).getAll();
+      req.onsuccess = () => { db.close(); log(`IDB: ${JSON.stringify(req.result)}`); };
+    } catch (e) { log(`IDB read error: ${e.message}`); }
+  }
+
+  async function idbDelete() {
+    try {
+      const db = await openIDB();
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete('rec1');
+      tx.oncomplete = () => { db.close(); log('IDB: deleted rec1'); };
+    } catch (e) { log(`IDB delete error: ${e.message}`); }
+  }
+
+  // ── 7 · Storage ───────────────────────────────────────────────────────────
+  function storageOps() {
+    localStorage.setItem('demo-key', `value-${Date.now()}`);
+    sessionStorage.setItem('session-key', `sess-${Date.now()}`);
+    log(`Storage: localStorage and sessionStorage updated`);
+  }
+
+  function cookieOps() {
+    document.cookie = `demo-cookie=val-${Date.now()}; path=/`;
+    log(`Cookie set: demo-cookie`);
+  }
+
+  // ── 8 · Performance ───────────────────────────────────────────────────────
+  function triggerLongTask() {
+    const start = Date.now();
+    while (Date.now() - start < 200) { /* busy wait */ }
+    log('Long task (200ms) completed');
+  }
+
+  function triggerResourceLoad() {
+    const img = new Image();
+    img.onload = () => log(`Resource loaded: ${img.src}`);
+    img.onerror = () => log('Resource load failed (CORS ok — still captured)');
+    img.src = `https://via.placeholder.com/1x1?t=${Date.now()}`;
+  }
+
+  // ── 9 · Screenshot ────────────────────────────────────────────────────────
+  function takeScreenshot() {
+    if (!sdk) { log('Init SDK first'); return; }
+    if (typeof sdk.takeScreenshot === 'function') {
+      sdk.takeScreenshot().then(() => log('Screenshot taken')).catch((e) => log(`Screenshot error: ${e.message}`));
+    } else {
+      log('sdk.takeScreenshot() not exposed — use the web UI to trigger');
+    }
+  }
+</script>
+</body>
+</html>
