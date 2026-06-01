@@ -13,6 +13,11 @@ const en: Locale = {
     dom: 'DOM',
     system: 'System',
     indexeddb: 'IndexedDB',
+    errors: 'Errors',
+    perfRun: 'Benchmark',
+    offlineLogs: 'Offline Logs',
+    screenshot: 'Screenshot',
+    plugins: 'Plugins',
   },
   common: {
     title: 'codeLog Web Viewer',
@@ -28,6 +33,7 @@ const en: Locale = {
     error: 'Error',
     warning: 'Warning',
     selectDevice: 'Select a device from the list',
+    selectDeviceHint: 'Select a device from the left to start debugging',
     online: 'Online',
     offline: 'Offline',
     connected: 'Connected',
@@ -36,6 +42,8 @@ const en: Locale = {
     operationFailed: 'Operation failed',
     unknownError: 'Unknown error',
     all: 'All',
+    brandSub: 'Remote Debugger',
+    langToggle: '中',
   },
   deviceList: {
     title: 'Devices',

@@ -15,8 +15,39 @@ interface ErudaInfoPanel {
 }
 
 interface ErudaInstance {
-  get: (name: string) => ErudaConsolePanel | ErudaInfoPanel | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get: (name?: string) => any;
+  on?: (event: string, fn: () => void) => void;
+  off?: (event: string, fn: () => void) => void;
 }
+
+type Lang = 'zh' | 'en';
+
+const LABELS: Record<Lang, {
+  pageId: string;
+  perf: string;
+  perfStart: string;
+  perfStop: string;
+  langToggle: string;
+  copied: string;
+}> = {
+  zh: {
+    pageId: '页面 ID',
+    perf: '⚡ 跑分',
+    perfStart: '🏁 开始跑分',
+    perfStop: '⏹ 停止',
+    langToggle: 'EN',
+    copied: '✓ 已复制',
+  },
+  en: {
+    pageId: 'Page ID',
+    perf: '⚡ Perf',
+    perfStart: '🏁 Start',
+    perfStop: '⏹ Stop',
+    langToggle: '中',
+    copied: '✓ copied',
+  },
+};
 
 /**
  * Eruda 本地展示插件
@@ -25,24 +56,26 @@ interface ErudaInstance {
  *  - 订阅 DataBus 的 console 事件，将日志推送到 Eruda 面板（保留原始 args 富文本渲染）
  *  - Eruda 以 overrideConsole: false 初始化，禁用其自身的 console 拦截，
  *    避免与 DataBus 采集层重复，确保"单一数据来源"
- *
- * 手机端 vs PC 端差异：
- *  - 手机端：console / 错误 / 基础 network（Eruda 自带 Network 面板保留）
- *  - PC 端：完整性能图表 + DOM 树 + 详细网络瀑布流（在 packages/web 实现）
  */
 export class ErudaPlugin {
   private eruda: ErudaInstance | null = null;
   private unsubscribers: Array<() => void> = [];
+  private lang: Lang = 'zh';
+  private pageId: string | null = null;
+  private codelog: { startPerfRun(): void; stopPerfRun(): Promise<unknown> } | null = null;
+  private perfRunning = false;
 
   /** 将 Eruda 实例与 DataBus 绑定（可在 Eruda 异步加载完成后调用） */
   attach(
     eruda: ErudaInstance,
     bus: DataBus,
-    codelog?: { startPerfRun(): void; stopPerfRun(): Promise<any> },
+    codelog?: { startPerfRun(): void; stopPerfRun(): Promise<unknown> },
     pageId?: string,
   ): void {
     this.eruda = eruda;
-    this.detach(); // 避免重复订阅
+    this.codelog = codelog ?? null;
+    this.pageId = pageId ?? null;
+    this.detach();
 
     // 订阅 console 事件 → 推入 Eruda console 面板
     this.unsubscribers.push(
@@ -51,12 +84,9 @@ export class ErudaPlugin {
       }),
     );
 
-    if (codelog && typeof document !== 'undefined') {
-      this.injectPerfRunButton(codelog);
-    }
-
-    if (pageId && typeof document !== 'undefined') {
-      this.injectPageIdBadge(pageId);
+    if (typeof document !== 'undefined') {
+      setTimeout(() => this.renderInfoPanel(), 1200);
+      setTimeout(() => this.customizeEntryButton(), 1200);
     }
   }
 
@@ -70,14 +100,13 @@ export class ErudaPlugin {
 
   private forwardToEruda(entry: DataBusConsoleEntry): void {
     if (!this.eruda) return;
-    const panel = this.eruda.get('console');
+    const panel = this.eruda.get('console') as ErudaConsolePanel | null;
     if (!panel) return;
 
     const method = entry.level as keyof ErudaConsolePanel;
     const fn = panel[method];
     if (typeof fn !== 'function') return;
 
-    // 优先使用原始 args（保留 Eruda 的对象/数组富文本渲染）
     if (entry.args && entry.args.length > 0) {
       fn.call(panel, ...entry.args);
     } else {
@@ -85,65 +114,138 @@ export class ErudaPlugin {
     }
   }
 
-  /** Get the shadow root of the #eruda host (useShadowDom: true) */
   private getErudaShadowRoot(): ShadowRoot | null {
     return (document.getElementById('eruda') as HTMLElement | null)?.shadowRoot ?? null;
   }
 
-  private injectPerfRunButton(codelog: {
-    startPerfRun(): void;
-    stopPerfRun(): Promise<any>;
-  }): void {
-    // Add a run button to the Eruda Info panel via official API
+  /** Render (or re-render) all CodeLog-injected Info panel items with current language */
+  private renderInfoPanel(): void {
     const infoPanel = this.eruda?.get('info') as ErudaInfoPanel | null;
     if (!infoPanel || typeof infoPanel.add !== 'function') return;
-    infoPanel.add('⚡ Perf', '<span id="codelog-perf-btn" style="cursor:pointer;padding:2px 8px;background:#000;color:#fff;border-radius:4px;font-size:12px;">🏁 开始跑分</span>');
 
-    // Attach click handler after DOM settles
-    const tryBind = () => {
-      const shadowRoot = this.getErudaShadowRoot();
-      const el = shadowRoot?.getElementById('codelog-perf-btn');
-      if (!el) { setTimeout(tryBind, 500); return; }
-      let running = false;
-      el.addEventListener('click', async () => {
-        if (running) {
-          running = false;
-          el.textContent = '🏁 开始跑分';
-          await codelog.stopPerfRun();
-        } else {
-          running = true;
-          el.textContent = '⏹ 停止';
-          codelog.startPerfRun();
-        }
-      });
-    };
-    setTimeout(tryBind, 1200);
+    const L = LABELS[this.lang];
+
+    // Remove stale entries
+    try { infoPanel.remove(LABELS.zh.pageId); } catch { /* ignore */ }
+    try { infoPanel.remove(LABELS.en.pageId); } catch { /* ignore */ }
+    try { infoPanel.remove(LABELS.zh.perf); } catch { /* ignore */ }
+    try { infoPanel.remove(LABELS.en.perf); } catch { /* ignore */ }
+    try { infoPanel.remove('🌐'); } catch { /* ignore */ }
+
+    // Page ID
+    if (this.pageId) {
+      const shortId = this.pageId.slice(-8);
+      infoPanel.add(
+        L.pageId,
+        `<span id="codelog-pageid-info" title="${this.lang === 'zh' ? '点击复制' : 'Click to copy'}" style="cursor:pointer;font-family:monospace;color:#3b5bdb;">#${shortId}</span>`,
+      );
+    }
+
+    // Perf run button
+    if (this.codelog) {
+      const btnLabel = this.perfRunning ? L.perfStop : L.perfStart;
+      infoPanel.add(
+        L.perf,
+        `<span id="codelog-perf-btn" style="cursor:pointer;padding:2px 8px;background:#111;color:#fff;border-radius:4px;font-size:12px;">${btnLabel}</span>`,
+      );
+    }
+
+    // Language toggle
+    infoPanel.add(
+      '🌐',
+      `<span id="codelog-lang-toggle" style="cursor:pointer;padding:2px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;font-weight:600;">${L.langToggle}</span>`,
+    );
+
+    // Bind event handlers after DOM settles
+    setTimeout(() => this.bindInfoPanelHandlers(), 400);
   }
 
-  private injectPageIdBadge(pageId: string): void {
-    const shortId = pageId.slice(-8);
+  private bindInfoPanelHandlers(): void {
+    const shadowRoot = this.getErudaShadowRoot();
+    if (!shadowRoot) {
+      setTimeout(() => this.bindInfoPanelHandlers(), 400);
+      return;
+    }
 
-    // Add to Eruda Info panel via official API (visible in Info tab)
-    const infoPanel = this.eruda?.get('info') as ErudaInfoPanel | null;
-    if (infoPanel && typeof infoPanel.add === 'function') {
-      infoPanel.add(
-        'Page ID',
-        `<span id="codelog-pageid-info" title="Click to copy" style="cursor:pointer;font-family:monospace;color:#3b5bdb;">#${shortId}</span>`,
+    // Page ID copy
+    const pageIdEl = shadowRoot.getElementById('codelog-pageid-info');
+    if (pageIdEl && this.pageId) {
+      const shortId = this.pageId.slice(-8);
+      pageIdEl.addEventListener('click', () =>
+        this.copyToClipboard(this.pageId!, pageIdEl, `#${shortId}`),
       );
-      const tryBindInfo = () => {
-        const shadowRoot = this.getErudaShadowRoot();
-        const el = shadowRoot?.getElementById('codelog-pageid-info');
-        if (!el) { setTimeout(tryBindInfo, 500); return; }
-        el.addEventListener('click', () => this.copyToClipboard(pageId, el, `#${shortId}`));
-      };
-      setTimeout(tryBindInfo, 1200);
+    }
+
+    // Perf run toggle
+    const perfBtn = shadowRoot.getElementById('codelog-perf-btn');
+    if (perfBtn && this.codelog) {
+      const L = LABELS[this.lang];
+      perfBtn.addEventListener('click', async () => {
+        if (this.perfRunning) {
+          this.perfRunning = false;
+          perfBtn.textContent = L.perfStart;
+          await this.codelog!.stopPerfRun();
+        } else {
+          this.perfRunning = true;
+          perfBtn.textContent = L.perfStop;
+          this.codelog!.startPerfRun();
+        }
+      });
+    }
+
+    // Language toggle
+    const langBtn = shadowRoot.getElementById('codelog-lang-toggle');
+    if (langBtn) {
+      langBtn.addEventListener('click', () => {
+        this.lang = this.lang === 'zh' ? 'en' : 'zh';
+        this.renderInfoPanel();
+      });
+    }
+  }
+
+  /** Inject toolbox icon and open/close state toggle into entry button */
+  private customizeEntryButton(): void {
+    const shadowRoot = this.getErudaShadowRoot();
+    if (!shadowRoot) {
+      setTimeout(() => this.customizeEntryButton(), 500);
+      return;
+    }
+
+    // Inject CSS to replace icon font char with toolbox emoji
+    const styleId = 'codelog-entry-style';
+    if (!shadowRoot.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        .eruda-entry-btn .eruda-icon-tool::before {
+          content: "🧰" !important;
+          font-family: initial !important;
+          font-size: 18px !important;
+        }
+        .eruda-entry-btn.codelog-open .eruda-icon-tool::before {
+          content: "🛠️" !important;
+        }
+      `;
+      shadowRoot.appendChild(style);
+    }
+
+    // Listen to DevTools show/hide to toggle open icon state
+    const devTools = this.eruda?.get() as { on?: (e: string, fn: () => void) => void } | null;
+    if (devTools?.on) {
+      devTools.on('show', () => {
+        shadowRoot.querySelector('.eruda-entry-btn')?.classList.add('codelog-open');
+      });
+      devTools.on('hide', () => {
+        shadowRoot.querySelector('.eruda-entry-btn')?.classList.remove('codelog-open');
+      });
     }
   }
 
   private copyToClipboard(text: string, el: HTMLElement, resetLabel: string): void {
+    const L = LABELS[this.lang];
     const restore = () => { setTimeout(() => { el.textContent = resetLabel; }, 1500); };
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => { el.textContent = '✓ copied'; restore(); });
+      navigator.clipboard.writeText(text).then(() => { el.textContent = L.copied; restore(); });
     } else {
       const tmp = document.createElement('input');
       tmp.value = text;
@@ -151,7 +253,7 @@ export class ErudaPlugin {
       tmp.select();
       document.execCommand('copy');
       document.body.removeChild(tmp);
-      el.textContent = '✓ copied';
+      el.textContent = L.copied;
       restore();
     }
   }

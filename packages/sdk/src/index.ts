@@ -513,8 +513,15 @@ export class CodeLog {
     setTimeout(announcePluginsToServer, 2000);
   }
 
-  private async initEruda(config?: ErudaConfig, lang?: 'zh' | 'en'): Promise<void> {
+  private async initEruda(config?: ErudaConfig, _lang?: 'zh' | 'en'): Promise<void> {
     try {
+      // Clear all eruda localStorage entries so settings/position don't persist across loads
+      if (typeof localStorage !== 'undefined') {
+        Object.keys(localStorage)
+          .filter((k) => k.startsWith('eruda'))
+          .forEach((k) => localStorage.removeItem(k));
+      }
+
       // 动态导入 eruda UMD 模块
       const erudaModule = await import('eruda');
       // @ts-ignore - eruda is UMD module, default export is the eruda object
@@ -527,6 +534,18 @@ export class CodeLog {
           useShadowDom: true,
           defaults: config?.defaults,
         });
+
+        // Clear eruda localStorage again after init (eruda writes defaults during init)
+        if (typeof localStorage !== 'undefined') {
+          Object.keys(localStorage)
+            .filter((k) => k.startsWith('eruda'))
+            .forEach((k) => localStorage.removeItem(k));
+        }
+
+        // Disable entry button position persistence if API is available
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const entryBtn = (this.eruda as any).get?.('entryBtn');
+        entryBtn?.config?.set?.('rememberPos', false);
 
         // eruda.init() 默认会调用 overrideConsole()，把自身的 wrapper 叠加到 console 上。
         // defaults.overrideConsole:false 不能阻止这一点（该字段只影响 DevTools 级别的配置）。

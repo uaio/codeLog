@@ -29,7 +29,7 @@ function App() {
   const [wsState, setWsState] = useState(websocketManager.getConnectionState());
   const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
   const [badges, setBadges] = useState<Record<string, number>>({});
-  const { t } = useI18n();
+  const { t, setLang, lang } = useI18n();
 
   useEffect(() => {
     return websocketManager.onStateChange(setWsState);
@@ -93,7 +93,7 @@ function App() {
         <div style={styles.placeholder}>
           <div style={styles.placeholderIcon}>📱</div>
           <div style={styles.placeholderText}>{t.common.selectDevice}</div>
-          <div style={styles.placeholderHint}>从左侧选择一个设备开始调试</div>
+          <div style={styles.placeholderHint}>{t.common.selectDeviceHint}</div>
         </div>
       ),
     },
@@ -106,7 +106,7 @@ function App() {
     },
     {
       id: 'errors',
-      label: '错误',
+      label: t.tabs.errors,
       icon: '🐛',
       badge: badges['errors'],
       content: <ErrorPanel deviceId={selectedDevice?.deviceId} />,
@@ -133,7 +133,7 @@ function App() {
     },
     {
       id: 'perf_run',
-      label: '性能跑分',
+      label: t.tabs.perfRun,
       icon: '🏁',
       content: <PerfRunPanel deviceId={selectedDevice?.deviceId} />,
     },
@@ -164,7 +164,7 @@ function App() {
     },
     {
       id: 'offline-logs',
-      label: '离线日志',
+      label: t.tabs.offlineLogs,
       icon: '📦',
       content: <OfflineLogsPanel />,
     },
@@ -176,13 +176,13 @@ function App() {
     },
     {
       id: 'screenshot',
-      label: '截图',
+      label: t.tabs.screenshot,
       icon: '📷',
       content: <ScreenshotPanel deviceId={selectedDevice?.deviceId} />,
     },
     {
       id: 'plugins',
-      label: '插件',
+      label: t.tabs.plugins,
       icon: '🔌',
       content: <PluginsPanel deviceId={selectedDevice?.deviceId} />,
     },
@@ -209,7 +209,7 @@ function App() {
           <span style={styles.brandIcon}>📡</span>
           <span style={styles.brandName}>codeLog</span>
           <span style={styles.brandDivider} />
-          <span style={styles.brandSub}>Remote Debugger</span>
+          <span style={styles.brandSub}>{t.common.brandSub}</span>
         </div>
 
         <div style={styles.headerCenter}>
@@ -233,6 +233,13 @@ function App() {
                 : t.common.disconnected}
           </span>
         </div>
+        <button
+          style={styles.langToggle}
+          onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}
+          title={lang === 'zh' ? 'Switch to English' : '切换为中文'}
+        >
+          {t.common.langToggle}
+        </button>
       </header>
 
       {/* ── Body ── */}
@@ -349,6 +356,18 @@ const styles = {
   statusLabel: {
     fontSize: '12px',
     fontWeight: 600,
+  },
+  langToggle: {
+    padding: '4px 10px',
+    borderRadius: '12px',
+    border: '1px solid rgba(255,255,255,0.2)',
+    background: 'rgba(255,255,255,0.08)',
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: '12px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    flexShrink: 0,
+    letterSpacing: '0.5px',
   },
   // ── Body ────────────────────────────────────────
   body: {

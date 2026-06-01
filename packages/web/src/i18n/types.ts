@@ -12,6 +12,11 @@ export interface Locale {
     mock: string;
     system: string;
     indexeddb: string;
+    errors: string;
+    perfRun: string;
+    offlineLogs: string;
+    screenshot: string;
+    plugins: string;
   };
   // Common
   common: {
@@ -28,6 +33,7 @@ export interface Locale {
     error: string;
     warning: string;
     selectDevice: string;
+    selectDeviceHint: string;
     online: string;
     offline: string;
     connected: string;
@@ -36,6 +42,8 @@ export interface Locale {
     operationFailed: string;
     unknownError: string;
     all: string;
+    brandSub: string;
+    langToggle: string;
   };
   // Device list
   deviceList: {

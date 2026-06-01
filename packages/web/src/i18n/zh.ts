@@ -13,6 +13,11 @@ const zh: Locale = {
     dom: 'DOM',
     system: '系统',
     indexeddb: 'IndexedDB',
+    errors: '错误',
+    perfRun: '性能跑分',
+    offlineLogs: '离线日志',
+    screenshot: '截图',
+    plugins: '插件',
   },
   common: {
     title: 'codeLog Web 调试面板',
@@ -28,6 +33,7 @@ const zh: Locale = {
     error: '错误',
     warning: '警告',
     selectDevice: '请从左侧选择一个设备',
+    selectDeviceHint: '从左侧选择一个设备开始调试',
     online: '在线',
     offline: '离线',
     connected: '已连接',
@@ -36,6 +42,8 @@ const zh: Locale = {
     operationFailed: '操作失败',
     unknownError: '未知错误',
     all: '全部',
+    brandSub: '远程调试',
+    langToggle: 'EN',
   },
   deviceList: {
     title: '设备列表',
