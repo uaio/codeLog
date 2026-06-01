@@ -533,7 +533,7 @@ export class CodeLog {
           autoScale: config?.autoScale ?? true,
           useShadowDom: true,
           defaults: config?.defaults,
-          lang: lang ?? 'zh',
+          lang: lang === 'en' ? 'en' : 'zh-CN',
         });
 
         // Clear eruda localStorage again after init (eruda writes defaults during init)
@@ -561,7 +561,7 @@ export class CodeLog {
 
         // 绑定 ErudaPlugin：订阅 DataBus → 将日志推入 Eruda console 面板
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.erudaPlugin.attach(this.eruda as any, this.dataBus, this, this.deviceInfo.deviceId, this.deviceInfo.url);
+        this.erudaPlugin.attach(this.eruda as any, this.dataBus, this, this.deviceInfo.deviceId);
         this.erudaInitialized = true;
       } else {
         console.warn('codeLog: Eruda 初始化失败 - 无效的 eruda 模块');

@@ -26,7 +26,6 @@ type Lang = 'zh' | 'en';
 
 const LABELS: Record<Lang, {
   pageId: string;
-  pageUrl: string;
   perf: string;
   perfStart: string;
   perfStop: string;
@@ -35,7 +34,6 @@ const LABELS: Record<Lang, {
 }> = {
   zh: {
     pageId: '页面 ID',
-    pageUrl: '页面地址',
     perf: '⚡ 跑分',
     perfStart: '🏁 开始跑分',
     perfStop: '⏹ 停止',
@@ -44,7 +42,6 @@ const LABELS: Record<Lang, {
   },
   en: {
     pageId: 'Page ID',
-    pageUrl: 'Page URL',
     perf: '⚡ Perf',
     perfStart: '🏁 Start',
     perfStop: '⏹ Stop',
@@ -66,7 +63,6 @@ export class ErudaPlugin {
   private unsubscribers: Array<() => void> = [];
   private lang: Lang = 'zh';
   private pageId: string | null = null;
-  private pageUrl: string | null = null;
   private codelog: { startPerfRun(): void; stopPerfRun(): Promise<unknown> } | null = null;
   private perfRunning = false;
   private onDevToolsShow: (() => void) | null = null;
@@ -78,12 +74,10 @@ export class ErudaPlugin {
     bus: DataBus,
     codelog?: { startPerfRun(): void; stopPerfRun(): Promise<unknown> },
     pageId?: string,
-    pageUrl?: string,
   ): void {
     this.eruda = eruda;
     this.codelog = codelog ?? null;
     this.pageId = pageId ?? null;
-    this.pageUrl = pageUrl ?? (typeof location !== 'undefined' ? location.href : null);
     this.langSettingAdded = false;
     this.detach();
 
@@ -176,7 +170,7 @@ export class ErudaPlugin {
     const L = LABELS[this.lang];
 
     // Remove stale entries (all possible label variants)
-    for (const key of [LABELS.zh.pageId, LABELS.en.pageId, LABELS.zh.pageUrl, LABELS.en.pageUrl, LABELS.zh.perf, LABELS.en.perf]) {
+    for (const key of [LABELS.zh.pageId, LABELS.en.pageId, LABELS.zh.perf, LABELS.en.perf]) {
       try { infoPanel.remove(key); } catch { /* ignore */ }
     }
 
@@ -188,22 +182,6 @@ export class ErudaPlugin {
       infoPanel.add(
         L.pageId,
         `<span id="codelog-pageid-info" title="${L.clickCopy}" style="cursor:pointer;font-family:monospace;font-size:11px;color:#3b5bdb;word-break:break-all;">${displayId}</span>`,
-      );
-    }
-
-    // Page URL — truncated display, copy full URL on click
-    if (this.pageUrl) {
-      let displayUrl: string;
-      try {
-        const u = new URL(this.pageUrl);
-        displayUrl = u.pathname + (u.search ? '?' + u.search.slice(1, 20) + (u.search.length > 20 ? '…' : '') : '');
-        if (displayUrl.length > 30) displayUrl = displayUrl.slice(0, 28) + '…';
-      } catch {
-        displayUrl = this.pageUrl.slice(0, 30) + (this.pageUrl.length > 30 ? '…' : '');
-      }
-      infoPanel.add(
-        L.pageUrl,
-        `<span id="codelog-pageurl-info" title="${L.clickCopy}: ${this.pageUrl}" style="cursor:pointer;font-size:11px;color:#555;word-break:break-all;">${displayUrl}</span>`,
       );
     }
 
@@ -220,7 +198,7 @@ export class ErudaPlugin {
     setTimeout(() => this.bindInfoPanelHandlers(), 300);
   }
 
-  /** Add language select to the Settings panel (called once after attach) */
+  /** Add language select to the top of the Settings panel (called once after attach) */
   private addLangSetting(): void {
     if (this.langSettingAdded) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -237,9 +215,31 @@ export class ErudaPlugin {
       },
     };
 
-    settings.separator();
+    // Append at the end first, then move to top via DOM
     settings.select(langConfig, 'lang', '语言 / Language', ['zh-CN', 'en']);
+    settings.separator();
     this.langSettingAdded = true;
+
+    // Move the lang select + separator to be the first items in the settings list
+    setTimeout(() => this.moveLangSettingToTop(), 300);
+  }
+
+  /** Move the lang select (last 2 DOM children) to the top of the Settings panel */
+  private moveLangSettingToTop(): void {
+    const shadowRoot = this.getErudaShadowRoot();
+    if (!shadowRoot) return;
+    // luna-setting renders items as direct children of its host element
+    const settingsContainer = shadowRoot.querySelector('.luna-setting');
+    if (!settingsContainer) return;
+    const children = Array.from(settingsContainer.children);
+    if (children.length < 2) return;
+    // Our items: select = second-to-last, separator = last
+    const selectItem = children[children.length - 2];
+    const separatorItem = children[children.length - 1];
+    if (selectItem && separatorItem) {
+      settingsContainer.insertBefore(separatorItem, settingsContainer.firstChild);
+      settingsContainer.insertBefore(selectItem, settingsContainer.firstChild);
+    }
   }
 
   private bindInfoPanelHandlers(): void {
@@ -257,21 +257,6 @@ export class ErudaPlugin {
         : this.pageId;
       pageIdEl.addEventListener('click', () =>
         this.copyToClipboard(this.pageId!, pageIdEl, displayId),
-      );
-    }
-
-    // Page URL copy — full URL
-    const pageUrlEl = shadowRoot.getElementById('codelog-pageurl-info');
-    if (pageUrlEl && this.pageUrl) {
-      let displayUrl: string;
-      try {
-        const u = new URL(this.pageUrl);
-        displayUrl = u.pathname.slice(0, 28) + (u.pathname.length > 28 ? '…' : '');
-      } catch {
-        displayUrl = this.pageUrl.slice(0, 28) + (this.pageUrl.length > 28 ? '…' : '');
-      }
-      pageUrlEl.addEventListener('click', () =>
-        this.copyToClipboard(this.pageUrl!, pageUrlEl, displayUrl),
       );
     }
 
