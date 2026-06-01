@@ -203,30 +203,12 @@ export class ErudaPlugin {
     }
   }
 
-  /** Inject toolbox icon and open/close state toggle into entry button */
+  /** Listen to DevTools show/hide for potential future use */
   private customizeEntryButton(): void {
     const shadowRoot = this.getErudaShadowRoot();
     if (!shadowRoot) {
       setTimeout(() => this.customizeEntryButton(), 500);
       return;
-    }
-
-    // Inject CSS to replace icon font char with toolbox emoji
-    const styleId = 'codelog-entry-style';
-    if (!shadowRoot.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = `
-        .eruda-entry-btn .eruda-icon-tool::before {
-          content: "🧰" !important;
-          font-family: initial !important;
-          font-size: 18px !important;
-        }
-        .eruda-entry-btn.codelog-open .eruda-icon-tool::before {
-          content: "🛠️" !important;
-        }
-      `;
-      shadowRoot.appendChild(style);
     }
 
     // Listen to DevTools show/hide to toggle open icon state
