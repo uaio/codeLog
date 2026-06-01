@@ -71,29 +71,26 @@ stop_monitor          list_monitors
 
 ## 🚀 快速开始
 
-### 一、启动服务（零安装）
-
 ```bash
-npx @codelog/cli
-# 启动后终端会打印所有局域网 IP 和 SDK 接入代码，直接复制使用
-# 指定端口：npx @codelog/cli -p 8080
-# 公网/云端部署：npx @codelog/cli --host myapp.example.com
+npx @codelog/cli -o
 ```
 
-### 二、配置 AI 工具（自动检测）
+一条命令完成全部：
+1. **启动**监控服务（WebSocket + PC 面板）
+2. **自动打开**浏览器面板
+3. **打印 SDK 接入代码**（含当前局域网 IP，直接复制粘贴到 H5 页面）
+4. **引导配置 AI 工具**（检测到 Claude / Cursor / Windsurf / VS Code 时自动提示）
 
+> 不需要 AI 工具？去掉 `-o` 直接运行 `npx @codelog/cli` 即可。
+
+**其他选项：**
 ```bash
-npx @codelog/cli init
-# 自动检测已安装的 AI 工具（Claude Code / Cursor / Windsurf）
-# 一键写入 MCP 配置 + Claude Code slash commands，重启 AI 工具即可
-
-# 指定工具：
-npx @codelog/cli init --for=claude
-npx @codelog/cli init --for=cursor
-npx @codelog/cli init --for=windsurf
+npx @codelog/cli -p 8080            # 指定端口
+npx @codelog/cli --host example.com # 公网/云端部署
+npx @codelog/cli init --for=claude  # 单独配置 AI 工具
 ```
 
-`init` 对 Claude Code 额外写入 `~/.claude/commands/codelog/`，安装后可直接使用：
+**Claude Code slash commands**（`init` 时自动写入 `~/.claude/commands/codelog/`）：
 
 | Slash Command | 功能 |
 |---|---|
@@ -105,38 +102,6 @@ npx @codelog/cli init --for=windsurf
 | `/codelog:screenshot` | 截取当前页面截图 |
 | `/codelog:clean` | 清除代码中所有 `@codelog` 调试日志 |
 
-### 三、接入移动端 SDK
-
-```html
-<!-- CDN 方式（推荐）——服务启动后终端直接输出以下代码 -->
-<script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
-<script>
-  CodeLog.init({
-    projectId: 'my-app',
-    server: 'ws://192.168.x.x:38291',  // 服务启动时会打印正确 IP
-    lang: 'zh'
-  })
-</script>
-
-<!-- 纯本地模式（无需服务器，仅 Eruda 调试面板）-->
-<script>
-  CodeLog.init({ projectId: 'my-app', lang: 'zh' })
-</script>
-```
-
-```bash
-# npm 方式
-npm install @codelog/sdk
-```
-
-```javascript
-import CodeLog from '@codelog/sdk'
-new CodeLog({ projectId: 'my-app', server: 'ws://192.168.x.x:38291', lang: 'zh' })
-```
-
-### 四、访问 PC 监控面板
-
-浏览器打开 `http://localhost:38291`，从左侧设备列表选择设备即可。
 
 ---
 

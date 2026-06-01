@@ -71,29 +71,26 @@ stop_monitor          list_monitors
 
 ## 🚀 Quick Start
 
-### 1. Start the Server (Zero Install)
-
 ```bash
-npx @codelog/cli
-# Terminal prints all LAN IPs and SDK snippet — just copy and use
-# Custom port: npx @codelog/cli -p 8080
-# Public/cloud deployment: npx @codelog/cli --host myapp.example.com
+npx @codelog/cli -o
 ```
 
-### 2. Configure AI Tools (Auto-detection)
+One command does everything:
+1. **Starts** the monitoring server (WebSocket + PC panel)
+2. **Opens** the browser panel automatically
+3. **Prints the SDK snippet** (with your current LAN IP — copy and paste into your H5 page)
+4. **Guides AI tool setup** (prompts when Claude / Cursor / Windsurf / VS Code is detected)
 
+> Don't need AI tools? Just run `npx @codelog/cli` without `-o`.
+
+**Other options:**
 ```bash
-npx @codelog/cli init
-# Auto-detects installed AI tools (Claude Code / Cursor / Windsurf)
-# Writes MCP config + Claude Code slash commands in one step
-
-# Specify tool:
-npx @codelog/cli init --for=claude
-npx @codelog/cli init --for=cursor
-npx @codelog/cli init --for=windsurf
+npx @codelog/cli -p 8080            # custom port
+npx @codelog/cli --host example.com # public/cloud deployment
+npx @codelog/cli init --for=claude  # configure AI tools separately
 ```
 
-For Claude Code, `init` also writes `~/.claude/commands/codelog/` — available immediately:
+**Claude Code slash commands** (written to `~/.claude/commands/codelog/` by `init`):
 
 | Slash Command | Function |
 |---|---|
@@ -104,39 +101,6 @@ For Claude Code, `init` also writes `~/.claude/commands/codelog/` — available 
 | `/codelog:logs` | View logs + checkpoint trace |
 | `/codelog:screenshot` | Capture current page screenshot |
 | `/codelog:clean` | Remove all `@codelog` debug logs from code |
-
-### 3. Integrate the Mobile SDK
-
-```html
-<!-- CDN (recommended) — server prints this snippet on startup -->
-<script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
-<script>
-  CodeLog.init({
-    projectId: 'my-app',
-    server: 'ws://192.168.x.x:38291',  // Correct IP is printed on server start
-    lang: 'en'
-  })
-</script>
-
-<!-- Local-only mode (no server needed, Eruda panel only) -->
-<script>
-  CodeLog.init({ projectId: 'my-app', lang: 'en' })
-</script>
-```
-
-```bash
-# npm install
-npm install @codelog/sdk
-```
-
-```javascript
-import CodeLog from '@codelog/sdk'
-new CodeLog({ projectId: 'my-app', server: 'ws://192.168.x.x:38291', lang: 'en' })
-```
-
-### 4. Open the PC Panel
-
-Open `http://localhost:38291` in your browser, select a device from the sidebar.
 
 ---
 

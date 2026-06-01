@@ -223,39 +223,9 @@ export async function start(options: CLIOptions = {}) {
       }
 
       console.log(`
-┌─────────────────────────────────────────────────────┐
-│              codeLog  已启动 🚀                      │
-├─────────────────────────────────────────────────────┤
-│  PC 监控面板                                         │
-│    本机:   ${localUrl}
-${
-  useHost
-    ? `│    公网:   ${panelUrl}`
-    : `│  局域网（所有可用网卡）：\n${networkLines
-        .split('\n')
-        .map((l) => `│    ${l}`)
-        .join('\n')}`
-}
-├─────────────────────────────────────────────────────┤
-│  SDK 接入（复制以下代码到 H5 页面）                   │
-│                                                     │
-│  <script src="https://unpkg.com/@codelog/sdk@latest  │
-│    /dist/codelog.iife.js"></script>                 │
-│  <script>                                           │
-│    CodeLog.init({                                   │
-│      projectId: 'my-app',                           │
-│      server: '${primaryWs}',
-│      lang: 'zh'                                     │
-│    })                                               │
-│  </script>                                         │
-│                                                     │
-${
-  useHost
-    ? `│  ✅ 已配置公网地址，任何网络下的设备均可连接          │`
-    : `│  ⚠️  手机与电脑不在同一 WiFi？                        │\n│     从上方局域网列表选择手机可达的网卡地址替换 server │`
-}
-└─────────────────────────────────────────────────────┘
-  按 Ctrl+C 停止   端口: ${port}   (切换端口: npx @codelog/cli -p <port>)
+✅ codeLog 已启动  端口: ${port}
+   PC 面板  →  ${localUrl}${useHost ? `\n   公网    →  ${panelUrl}` : ''}
+   按 Ctrl+C 停止
 `);
 
       resolve();
@@ -272,7 +242,7 @@ ${
 
       // MCP setup wizard — only when running interactively (TTY)
       if (process.stdout.isTTY) {
-        await runMcpWizard(port);
+        await runOnboardingGuide({ port, primaryWs, allIpv4 });
       }
     });
   });
@@ -296,21 +266,41 @@ function detectAITools(): string[] {
 }
 
 /**
- * Post-start MCP setup wizard.
- * If MCP is not yet configured, detect AI tools and offer interactive setup.
+ * Post-start onboarding guide.
+ * Step 1: Show SDK snippet (always).
+ * Step 2: Offer MCP setup if AI tools detected and not yet configured.
  */
-async function runMcpWizard(port: number): Promise<void> {
+async function runOnboardingGuide(opts: {
+  port: number;
+  primaryWs: string;
+  allIpv4: { name: string; address: string }[];
+}): Promise<void> {
+  const { port, primaryWs, allIpv4 } = opts;
+
+  // Build network address list for multi-NIC hint
+  const nicLines =
+    allIpv4.length > 1
+      ? '\n   不在同一 WiFi？换成手机可达的网卡地址：\n' +
+        allIpv4.map(({ name, address }) => `     ${name.padEnd(10)} ws://${address}:${port}`).join('\n')
+      : '';
+
+  // ── Step 1: SDK snippet ──────────────────────────────────────────
+  console.log(`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 接入你的 H5 页面（粘贴到 <head> 或 </body> 前）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  <script src="https://unpkg.com/@codelog/sdk@latest/dist/codelog.iife.js"></script>
+  <script>CodeLog.init({ projectId: 'my-app', server: '${primaryWs}', lang: 'zh' })</script>
+${nicLines}
+`);
+
+  // ── Step 2: MCP setup (optional) ────────────────────────────────
   if (isMcpConfigured()) return;
 
   const tools = detectAITools();
-
-  console.log('─────────────────────────────────────────────────────');
-  if (tools.length > 0) {
-    console.log(`\n🔧 检测到 AI 工具: ${tools.join(', ')}`);
-    console.log('   MCP 尚未配置。配置后 AI 可直接调用 codeLog 调试工具。\n');
-    console.log('   现在配置? [Y/n] ', { end: '' } as never);
-  } else {
-    console.log('\n💡 提示: 运行 npx @codelog/cli init 可将 MCP 配置到 Claude/Cursor/Windsurf\n');
+  if (tools.length === 0) {
+    console.log(`  💡 使用 Claude / Cursor / Windsurf？运行 npx @codelog/cli init 接入 AI。\n`);
     return;
   }
 
@@ -319,7 +309,7 @@ async function runMcpWizard(port: number): Promise<void> {
     const rl = createInterface({ input: process.stdin, output: process.stdout });
 
     const answer = await new Promise<string>((res) => {
-      process.stdout.write('   现在配置 MCP? [Y/n] ');
+      process.stdout.write(`  🤖 检测到 ${tools.join(' / ')}，配置 MCP 让 AI 直接调用调试工具？[Y/n] `);
       rl.once('line', (line) => {
         rl.close();
         res(line.trim().toLowerCase());
@@ -331,10 +321,9 @@ async function runMcpWizard(port: number): Promise<void> {
       const { init } = await import('./init.js');
       await init({ port });
     } else {
-      console.log(`\n   跳过。稍后运行: npx @codelog/cli init\n`);
+      console.log(`\n  稍后运行: npx @codelog/cli init\n`);
     }
   } catch {
-    // Non-interactive or readline unavailable — show hint and continue
-    console.log(`\n   运行 npx @codelog/cli init 配置 MCP\n`);
+    console.log(`\n  运行 npx @codelog/cli init 配置 MCP\n`);
   }
 }
