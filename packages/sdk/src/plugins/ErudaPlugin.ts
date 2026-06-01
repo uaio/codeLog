@@ -80,12 +80,22 @@ export class ErudaPlugin {
     }
   }
 
+  /** Find the Eruda toolbar, handling both shadow DOM (useShadowDom: true) and regular DOM */
+  private getErudaToolbar(): HTMLElement | null {
+    const shadowHost = document.getElementById('eruda');
+    if (shadowHost?.shadowRoot) {
+      const el = shadowHost.shadowRoot.querySelector('.eruda-toolbar') as HTMLElement | null;
+      if (el) return el;
+    }
+    return document.querySelector('.eruda-toolbar') as HTMLElement | null;
+  }
+
   private injectPerfRunButton(codelog: {
     startPerfRun(): void;
     stopPerfRun(): Promise<any>;
   }): void {
     const tryInject = () => {
-      const toolbar = document.querySelector('.eruda-toolbar') as HTMLElement | null;
+      const toolbar = this.getErudaToolbar();
       if (!toolbar) {
         setTimeout(tryInject, 500);
         return;
@@ -115,12 +125,11 @@ export class ErudaPlugin {
   private injectPageIdBadge(pageId: string): void {
     const shortId = pageId.slice(-8);
     const tryInject = () => {
-      const toolbar = document.querySelector('.eruda-toolbar') as HTMLElement | null;
+      const toolbar = this.getErudaToolbar();
       if (!toolbar) {
         setTimeout(tryInject, 500);
         return;
       }
-      // Avoid duplicate injection
       if (toolbar.querySelector('[data-codelog-pageid]')) return;
 
       const badge = document.createElement('div');
@@ -139,7 +148,6 @@ export class ErudaPlugin {
             setTimeout(() => { badge.textContent = `#${shortId}`; }, 1500);
           });
         } else {
-          // Fallback: select via temp input
           const tmp = document.createElement('input');
           tmp.value = pageId;
           document.body.appendChild(tmp);

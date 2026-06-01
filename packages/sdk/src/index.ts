@@ -1373,6 +1373,13 @@ export function init(options: CodeLogOptions): CodeLog {
   if (_instance) {
     _instance.destroy();
     _instance = null;
+  } else {
+    // HMR scenario: module was reloaded (clearing _instance) but globalThis key may still
+    // hold a stale instance from the previous module load. Destroy it to suppress the warning.
+    const stale = (globalThis as Record<symbol, unknown>)[CODELOG_INSTANCE_KEY] as CodeLog | undefined;
+    if (stale && typeof stale.destroy === 'function') {
+      stale.destroy();
+    }
   }
   _instance = new CodeLog(options);
   return _instance;
