@@ -533,7 +533,16 @@ export class CodeLog {
           autoScale: config?.autoScale ?? true,
           useShadowDom: true,
           defaults: config?.defaults,
-          lang: lang === 'en' ? 'en' : 'zh-CN',
+          lang: (() => {
+            // User's in-app language selection (saved by ErudaPlugin) takes priority over SDK init option
+            try {
+              const stored =
+                typeof localStorage !== 'undefined' && localStorage.getItem('codelog-lang');
+              if (stored === 'en') return 'en';
+              if (stored === 'zh') return 'zh-CN';
+            } catch { /* ignore */ }
+            return lang === 'en' ? 'en' : 'zh-CN';
+          })(),
         });
 
         // Clear eruda localStorage again after init (eruda writes defaults during init)

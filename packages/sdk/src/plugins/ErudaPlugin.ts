@@ -66,7 +66,8 @@ export class ErudaPlugin {
   private codelog: { startPerfRun(): void; stopPerfRun(): Promise<unknown> } | null = null;
   private perfRunning = false;
   private onDevToolsShow: (() => void) | null = null;
-  private langSettingAdded = false;
+  private settingsItemsAdded = false;
+  private settingsItemCount = 0;
 
   /** 将 Eruda 实例与 DataBus 绑定（可在 Eruda 异步加载完成后调用） */
   attach(
@@ -78,7 +79,8 @@ export class ErudaPlugin {
     this.eruda = eruda;
     this.codelog = codelog ?? null;
     this.pageId = pageId ?? null;
-    this.langSettingAdded = false;
+    this.settingsItemsAdded = false;
+    this.settingsItemCount = 0;
     this.detach();
 
     // Sync initial language from web panel preference or SDK init option
@@ -104,9 +106,9 @@ export class ErudaPlugin {
         };
         devTools.on('show', this.onDevToolsShow);
       }
-      // Render once after init + add lang setting to Settings panel
+      // Render once after init + add settings items to Settings panel
       setTimeout(() => this.renderInfoPanel(), 1200);
-      setTimeout(() => this.addLangSetting(), 1200);
+      setTimeout(() => this.addSettingsItems(), 1200);
       setTimeout(() => this.customizeEntryButton(), 1200);
     }
   }
@@ -198,47 +200,67 @@ export class ErudaPlugin {
     setTimeout(() => this.bindInfoPanelHandlers(), 300);
   }
 
-  /** Add language select to the top of the Settings panel (called once after attach) */
-  private addLangSetting(): void {
-    if (this.langSettingAdded) return;
+  /** Add language + theme selects to top of Settings panel (called once after attach) */
+  private addSettingsItems(): void {
+    if (this.settingsItemsAdded) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const settings = this.eruda?.get('settings') as any;
     if (!settings || typeof settings.select !== 'function') return;
 
-    // Non-persisting config object — routes changes to eruda.i18n without localStorage
+    let count = 0;
+
+    // --- Language select ---
+    // Uses display labels '中文'/'English' as option values so the dropdown renders correctly.
+    // On change: save to localStorage then reload so eruda re-inits with the new language.
     const langConfig = {
-      get: (_key: string) => this.lang === 'zh' ? 'zh-CN' : 'en',
+      get: (_key: string) => (this.lang === 'zh' ? '中文' : 'English'),
       set: (_key: string, val: string) => {
-        this.lang = val === 'zh-CN' ? 'zh' : 'en';
-        this.syncErudaLang(this.lang);
-        this.renderInfoPanel();
+        const newLang: Lang = val === '中文' ? 'zh' : 'en';
+        try { localStorage.setItem('codelog-lang', newLang); } catch { /* ignore */ }
+        location.reload();
       },
     };
+    settings.select(langConfig, 'lang', '语言 / Language', ['中文', 'English']);
+    count++;
 
-    // Append at the end first, then move to top via DOM
-    settings.select(langConfig, 'lang', '语言 / Language', ['zh-CN', 'en']);
+    // --- Theme select (Light / Dark) ---
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const devTools = this.eruda?.get() as any;
+    if (devTools?.config) {
+      const DARK_THEMES = ['Dark', 'Material Oceanic', 'Material Darker', 'Material Palenight',
+        'Material Deep Ocean', 'Monokai Pro', 'Dracula', 'Arc Dark', 'Atom One Dark',
+        'Solarized Dark', 'Night Owl', 'AMOLED'];
+      const themeConfig = {
+        get: (_key: string) => DARK_THEMES.includes(devTools.config.get('theme')) ? 'Dark' : 'Light',
+        set: (_key: string, val: string) => { devTools.config.set('theme', val); },
+      };
+      settings.select(themeConfig, 'theme', '主题 / Theme', ['Light', 'Dark']);
+      count++;
+    }
+
+    // --- Separator after our items, before eruda's built-in items ---
     settings.separator();
-    this.langSettingAdded = true;
+    count++;
 
-    // Move the lang select + separator to be the first items in the settings list
-    setTimeout(() => this.moveLangSettingToTop(), 300);
+    this.settingsItemCount = count;
+    this.settingsItemsAdded = true;
+    setTimeout(() => this.moveSettingsItemsToTop(), 300);
   }
 
-  /** Move the lang select (last 2 DOM children) to the top of the Settings panel */
-  private moveLangSettingToTop(): void {
+  /** Move our injected settings items (last N children) to the top of the Settings panel */
+  private moveSettingsItemsToTop(): void {
     const shadowRoot = this.getErudaShadowRoot();
     if (!shadowRoot) return;
-    // luna-setting renders items as direct children of its host element
     const settingsContainer = shadowRoot.querySelector('.luna-setting');
     if (!settingsContainer) return;
     const children = Array.from(settingsContainer.children);
-    if (children.length < 2) return;
-    // Our items: select = second-to-last, separator = last
-    const selectItem = children[children.length - 2];
-    const separatorItem = children[children.length - 1];
-    if (selectItem && separatorItem) {
-      settingsContainer.insertBefore(separatorItem, settingsContainer.firstChild);
-      settingsContainer.insertBefore(selectItem, settingsContainer.firstChild);
+    const count = this.settingsItemCount;
+    if (children.length < count) return;
+    // Items to move are the last `count` children; move them to front in original order.
+    // Inserting in reverse order (last→first) via insertBefore(x, firstChild) keeps order intact.
+    const itemsToMove = children.slice(-count);
+    for (let i = itemsToMove.length - 1; i >= 0; i--) {
+      settingsContainer.insertBefore(itemsToMove[i]!, settingsContainer.firstChild);
     }
   }
 
