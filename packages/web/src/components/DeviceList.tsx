@@ -41,6 +41,17 @@ function parseUA(ua: string): { platform: string; browser: string; icon: string 
   return { platform, browser, icon };
 }
 
+/** Extract a readable page label from a URL like "https://example.com/some/path" */
+function parsePageLabel(url: string | undefined): { pathname: string; origin: string } {
+  if (!url) return { pathname: '/', origin: '' };
+  try {
+    const u = new URL(url);
+    return { pathname: u.pathname || '/', origin: u.hostname };
+  } catch {
+    return { pathname: url, origin: '' };
+  }
+}
+
 function formatTime(ms: number): string {
   const diff = Date.now() - ms;
   if (diff < 60_000) return '刚刚';
@@ -107,10 +118,12 @@ export function DeviceList({ projectId, onSelectDevice, selectedDeviceId }: Devi
               {groupDevices.map((device) => {
                 const isSelected = currentSelectedId === device.deviceId;
                 const ua = parseUA(device.ua);
+                const page = parsePageLabel(device.url);
                 return (
                   <div
                     key={device.deviceId}
                     onClick={() => handleSelect(device)}
+                    title={device.url || device.ua}
                     style={{
                       ...styles.card,
                       ...(isSelected ? styles.cardSelected : styles.cardDefault),
@@ -133,8 +146,12 @@ export function DeviceList({ projectId, onSelectDevice, selectedDeviceId }: Devi
 
                     {/* Info */}
                     <div style={styles.cardBody}>
-                      <div style={styles.cardPlatform}>{ua.platform || ua.browser}</div>
-                      <div style={styles.cardBrowser}>{ua.platform ? ua.browser : ''}</div>
+                      {/* Primary: page path */}
+                      <div style={styles.cardPlatform}>{page.pathname}</div>
+                      {/* Secondary: hostname + browser */}
+                      <div style={styles.cardBrowser}>
+                        {page.origin ? `${page.origin} · ` : ''}{ua.browser}
+                      </div>
                       <div style={styles.cardMeta}>
                         <span style={styles.metaChip}>{device.screen}</span>
                         <span style={styles.metaChip}>{device.language}</span>

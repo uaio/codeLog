@@ -544,7 +544,7 @@ export class CodeLog {
 
         // 绑定 ErudaPlugin：订阅 DataBus → 将日志推入 Eruda console 面板
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.erudaPlugin.attach(this.eruda as any, this.dataBus, this);
+        this.erudaPlugin.attach(this.eruda as any, this.dataBus, this, this.deviceInfo.deviceId);
         this.erudaInitialized = true;
       } else {
         console.warn('codeLog: Eruda 初始化失败 - 无效的 eruda 模块');

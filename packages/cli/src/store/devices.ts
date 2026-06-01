@@ -7,6 +7,7 @@ export interface Device {
   screen: string;
   pixelRatio: number;
   language: string;
+  url: string;
   connectTime: number;
   lastActiveTime: number;
   activeTabs: number;
@@ -31,6 +32,7 @@ export class DeviceStore {
           screen: d.screen,
           pixelRatio: d.pixelRatio,
           language: d.language,
+          url: d.url ?? '',
           connectTime: d.firstSeen,
           lastActiveTime: d.lastSeen,
           activeTabs: 0,
@@ -62,6 +64,7 @@ export class DeviceStore {
       screen: info.screen,
       pixelRatio: info.pixelRatio,
       language: info.language,
+      url: info.url,
     });
   }
 

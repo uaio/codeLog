@@ -54,6 +54,7 @@ export const handlers: Record<string, MessageHandler> = {
       screen: String(deviceInfo.screen || ''),
       pixelRatio: Number(deviceInfo.pixelRatio) || 1,
       language: String(deviceInfo.language || ''),
+      url: String(deviceInfo.url || ''),
     };
 
     deviceStore.register(deviceId, {

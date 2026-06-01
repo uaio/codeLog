@@ -29,6 +29,7 @@ export class Persistence {
     this.db.pragma('synchronous = NORMAL');
 
     this.initSchema();
+    this.migrate();
     this.cleanup();
 
     // Run cleanup every hour
@@ -44,6 +45,7 @@ export class Persistence {
         screen TEXT NOT NULL DEFAULT '',
         pixel_ratio REAL NOT NULL DEFAULT 1,
         language TEXT NOT NULL DEFAULT '',
+        url TEXT NOT NULL DEFAULT '',
         first_seen INTEGER NOT NULL,
         last_seen INTEGER NOT NULL
       );
@@ -96,6 +98,15 @@ export class Persistence {
     `);
   }
 
+  private migrate(): void {
+    // Add url column to existing databases that predate this column
+    try {
+      this.db.exec(`ALTER TABLE devices ADD COLUMN url TEXT NOT NULL DEFAULT ''`);
+    } catch {
+      // Column already exists — safe to ignore
+    }
+  }
+
   /** Remove data older than retentionDays */
   cleanup(): void {
     const cutoff = Date.now() - this.retentionDays * 24 * 60 * 60 * 1000;
@@ -114,18 +125,20 @@ export class Persistence {
     screen: string;
     pixelRatio: number;
     language: string;
+    url?: string;
   }): void {
     const now = Date.now();
     this.db
       .prepare(
-        `INSERT INTO devices (device_id, project_id, ua, screen, pixel_ratio, language, first_seen, last_seen)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `INSERT INTO devices (device_id, project_id, ua, screen, pixel_ratio, language, url, first_seen, last_seen)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(device_id) DO UPDATE SET
            project_id = excluded.project_id,
            ua = excluded.ua,
            screen = excluded.screen,
            pixel_ratio = excluded.pixel_ratio,
            language = excluded.language,
+           url = excluded.url,
            last_seen = excluded.last_seen`,
       )
       .run(
@@ -135,6 +148,7 @@ export class Persistence {
         device.screen,
         device.pixelRatio,
         device.language,
+        device.url ?? '',
         now,
         now,
       );
@@ -153,6 +167,7 @@ export class Persistence {
     screen: string;
     pixelRatio: number;
     language: string;
+    url: string;
     firstSeen: number;
     lastSeen: number;
   }> {
@@ -166,6 +181,7 @@ export class Persistence {
       screen: r.screen as string,
       pixelRatio: r.pixel_ratio as number,
       language: r.language as string,
+      url: (r.url as string) ?? '',
       firstSeen: r.first_seen as number,
       lastSeen: r.last_seen as number,
     }));

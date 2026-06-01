@@ -24,6 +24,7 @@ export interface Device {
   screen: string;
   pixelRatio: number;
   language: string;
+  url?: string;
   connectTime: number;
   lastActiveTime: number;
   activeTabs: number;

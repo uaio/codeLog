@@ -93,6 +93,7 @@ function routeToStore(env: any, ctx: IngestContext): void {
       screen: device.screen ?? 'unknown',
       pixelRatio: device.pixelRatio ?? 1,
       language: device.language ?? 'unknown',
+      url: device.url ?? '',
       connectTime: ts,
       lastActiveTime: ts,
     });

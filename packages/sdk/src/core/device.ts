@@ -1,6 +1,6 @@
 import type { DeviceInfo } from '../types/index.js';
 import type { PlatformAdapter } from '../platform/types.js';
-import { hashString } from './utils/hash.js';
+import { hashString, fnv1a } from './utils/hash.js';
 import { generateTabId } from './utils/id.js';
 import { getOrCreateFingerprint } from './fingerprint.js';
 
@@ -18,17 +18,22 @@ export { generateTabId };
  */
 export function generateDeviceId(projectId: string, platform: PlatformAdapter): string {
   try {
-    // Browser environment: use stable multi-signal fingerprint
+    // Browser environment: use stable multi-signal fingerprint + page path
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       const fp = getOrCreateFingerprint();
-      return `${hashString(projectId)}-${fp}`;
+      // Include page path (origin+pathname) so each page URL becomes a distinct device entry.
+      // query params / hash fragments are excluded to keep the ID stable within the same route.
+      const rawUrl = platform.device.getUrl();
+      const pageHash = fnv1a(rawUrl); // getUrl() already returns origin+pathname
+      return `${hashString(projectId)}-${fp}-${pageHash}`;
     }
   } catch {
     // fall through to legacy path
   }
-  // Non-browser or fingerprint blocked: hash UA + projectId (old behaviour)
+  // Non-browser or fingerprint blocked: hash UA + projectId + url
   const ua = platform.device.getUserAgent();
-  return hashString(ua + projectId);
+  const url = platform.device.getUrl();
+  return hashString(ua + projectId + url);
 }
 
 /** 获取设备信息 */

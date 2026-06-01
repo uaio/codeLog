@@ -488,6 +488,7 @@ export class Reporter {
         screen: this.deviceInfo.screen,
         pixelRatio: this.deviceInfo.pixelRatio,
         language: this.deviceInfo.language,
+        url: this.deviceInfo.url,
       },
     });
   }

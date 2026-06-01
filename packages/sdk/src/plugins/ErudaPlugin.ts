@@ -34,6 +34,7 @@ export class ErudaPlugin {
     eruda: ErudaInstance,
     bus: DataBus,
     codelog?: { startPerfRun(): void; stopPerfRun(): Promise<any> },
+    pageId?: string,
   ): void {
     this.eruda = eruda;
     this.detach(); // 避免重复订阅
@@ -47,6 +48,10 @@ export class ErudaPlugin {
 
     if (codelog && typeof document !== 'undefined') {
       this.injectPerfRunButton(codelog);
+    }
+
+    if (pageId && typeof document !== 'undefined') {
+      this.injectPageIdBadge(pageId);
     }
   }
 
@@ -103,6 +108,50 @@ export class ErudaPlugin {
         }
       });
       toolbar.appendChild(btn);
+    };
+    setTimeout(tryInject, 1000);
+  }
+
+  private injectPageIdBadge(pageId: string): void {
+    const shortId = pageId.slice(-8);
+    const tryInject = () => {
+      const toolbar = document.querySelector('.eruda-toolbar') as HTMLElement | null;
+      if (!toolbar) {
+        setTimeout(tryInject, 500);
+        return;
+      }
+      // Avoid duplicate injection
+      if (toolbar.querySelector('[data-codelog-pageid]')) return;
+
+      const badge = document.createElement('div');
+      badge.setAttribute('data-codelog-pageid', '1');
+      badge.title = `Page ID: ${pageId}\nClick to copy`;
+      badge.style.cssText =
+        'padding:3px 7px;cursor:pointer;font-size:11px;font-family:monospace;' +
+        'border:1px solid rgba(59,91,219,0.35);border-radius:3px;' +
+        'background:#eef2ff;color:#3b5bdb;margin-left:4px;user-select:none;';
+      badge.textContent = `#${shortId}`;
+
+      badge.addEventListener('click', () => {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(pageId).then(() => {
+            badge.textContent = '✓ copied';
+            setTimeout(() => { badge.textContent = `#${shortId}`; }, 1500);
+          });
+        } else {
+          // Fallback: select via temp input
+          const tmp = document.createElement('input');
+          tmp.value = pageId;
+          document.body.appendChild(tmp);
+          tmp.select();
+          document.execCommand('copy');
+          document.body.removeChild(tmp);
+          badge.textContent = '✓ copied';
+          setTimeout(() => { badge.textContent = `#${shortId}`; }, 1500);
+        }
+      });
+
+      toolbar.appendChild(badge);
     };
     setTimeout(tryInject, 1000);
   }
