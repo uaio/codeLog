@@ -516,19 +516,16 @@ export class CodeLog {
   private async initEruda(config?: ErudaConfig, lang?: 'zh' | 'en'): Promise<void> {
     try {
       // 动态导入 eruda UMD 模块
-      const erudaModule = await import('@codelog/eruda');
+      const erudaModule = await import('eruda');
       // @ts-ignore - eruda is UMD module, default export is the eruda object
       this.eruda = erudaModule.default || erudaModule;
 
       if (this.eruda && typeof this.eruda.init === 'function') {
-        // Map SDK lang codes to eruda's BCP 47 locale codes
-        const erudaLang = lang === 'zh' ? 'zh-CN' : lang === 'en' ? 'en-US' : undefined;
         this.eruda.init({
           tool: config?.tool,
           autoScale: config?.autoScale ?? true,
           useShadowDom: true,
           defaults: config?.defaults,
-          ...(erudaLang ? { lang: erudaLang } : {}),
         });
 
         // eruda.init() 默认会调用 overrideConsole()，把自身的 wrapper 叠加到 console 上。
