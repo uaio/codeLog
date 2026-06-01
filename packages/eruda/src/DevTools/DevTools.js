@@ -207,13 +207,6 @@ export default class DevTools extends Emitter {
       }
     })
 
-    settings
-      .separator()
-      .select(cfg, 'theme', i18n.t('devTools.theme'), [
-        i18n.t('devTools.systemPreference'),
-        ...keys(evalCss.getThemes()),
-      ])
-
     if (!this._inline) {
       settings
         .range(cfg, 'transparency', i18n.t('devTools.transparency'), {
