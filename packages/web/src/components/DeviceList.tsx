@@ -160,6 +160,23 @@ export function DeviceList({ projectId, onSelectDevice, selectedDeviceId }: Devi
                             {device.activeTabs} tabs
                           </span>
                         )}
+                        {/* Copyable page ID */}
+                        <span
+                          title={`Page ID: ${device.deviceId}\nClick to copy`}
+                          style={{ ...styles.metaChip, ...styles.metaChipId, cursor: 'pointer' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (navigator.clipboard) {
+                              navigator.clipboard.writeText(device.deviceId);
+                            }
+                            const el = e.currentTarget as HTMLSpanElement;
+                            const orig = el.textContent;
+                            el.textContent = '✓';
+                            setTimeout(() => { el.textContent = orig; }, 1500);
+                          }}
+                        >
+                          #{device.deviceId.slice(-8)}
+                        </span>
                       </div>
                     </div>
 
@@ -365,6 +382,11 @@ const styles = {
   metaChipBlue: {
     color: '#818cf8',
     backgroundColor: 'rgba(99,102,241,0.12)',
+  },
+  metaChipId: {
+    color: '#60a5fa',
+    backgroundColor: 'rgba(96,165,250,0.12)',
+    fontFamily: 'monospace',
   },
   cardRight: {
     display: 'flex',
