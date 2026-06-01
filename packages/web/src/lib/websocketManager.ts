@@ -18,7 +18,7 @@ class WebSocketManager {
   }
 
   connect() {
-    if (this.ws?.readyState === WebSocket.OPEN) {
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
       return;
     }
 
