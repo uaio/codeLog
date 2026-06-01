@@ -123,14 +123,13 @@ export class ErudaPlugin {
   private injectPageIdBadge(pageId: string): void {
     const shortId = pageId.slice(-8);
 
-    // 1. Add to Eruda Info panel via official API (always visible in Info tab)
+    // Add to Eruda Info panel via official API (visible in Info tab)
     const infoPanel = this.eruda?.get('info') as ErudaInfoPanel | null;
     if (infoPanel && typeof infoPanel.add === 'function') {
       infoPanel.add(
         'Page ID',
         `<span id="codelog-pageid-info" title="Click to copy" style="cursor:pointer;font-family:monospace;color:#3b5bdb;">#${shortId}</span>`,
       );
-      // Attach copy handler once the shadow DOM settles
       const tryBindInfo = () => {
         const shadowRoot = this.getErudaShadowRoot();
         const el = shadowRoot?.getElementById('codelog-pageid-info');
@@ -139,31 +138,6 @@ export class ErudaPlugin {
       };
       setTimeout(tryBindInfo, 1200);
     }
-
-    // 2. Floating badge above the entry button (always visible without opening Eruda)
-    const tryInjectBadge = () => {
-      const shadowRoot = this.getErudaShadowRoot();
-      if (!shadowRoot) { setTimeout(tryInjectBadge, 500); return; }
-      const entryBtn = shadowRoot.querySelector('.eruda-entry-btn') as HTMLElement | null;
-      if (!entryBtn) { setTimeout(tryInjectBadge, 500); return; }
-      if (shadowRoot.querySelector('[data-codelog-pageid]')) return;
-
-      const badge = document.createElement('div');
-      badge.setAttribute('data-codelog-pageid', '1');
-      badge.title = `Page ID: ${pageId}\nClick to copy`;
-      badge.style.cssText =
-        'position:absolute;bottom:48px;left:50%;transform:translateX(-50%);' +
-        'white-space:nowrap;padding:2px 6px;cursor:pointer;font-size:10px;' +
-        'font-family:monospace;border-radius:3px;background:rgba(59,91,219,0.85);' +
-        'color:#fff;user-select:none;z-index:10001;';
-      badge.textContent = `#${shortId}`;
-      badge.addEventListener('click', () => this.copyToClipboard(pageId, badge, `#${shortId}`));
-
-      // entry-btn uses position:relative, so absolute child works
-      entryBtn.style.overflow = 'visible';
-      entryBtn.appendChild(badge);
-    };
-    setTimeout(tryInjectBadge, 1000);
   }
 
   private copyToClipboard(text: string, el: HTMLElement, resetLabel: string): void {
