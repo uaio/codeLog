@@ -30,7 +30,6 @@ const LABELS: Record<Lang, {
   perf: string;
   perfStart: string;
   perfStop: string;
-  langToggle: string;
   copied: string;
   clickCopy: string;
 }> = {
@@ -40,7 +39,6 @@ const LABELS: Record<Lang, {
     perf: '⚡ 跑分',
     perfStart: '🏁 开始跑分',
     perfStop: '⏹ 停止',
-    langToggle: 'EN',
     copied: '✓ 已复制',
     clickCopy: '点击复制',
   },
@@ -50,7 +48,6 @@ const LABELS: Record<Lang, {
     perf: '⚡ Perf',
     perfStart: '🏁 Start',
     perfStop: '⏹ Stop',
-    langToggle: '中',
     copied: '✓ Copied',
     clickCopy: 'Click to copy',
   },
@@ -73,6 +70,7 @@ export class ErudaPlugin {
   private codelog: { startPerfRun(): void; stopPerfRun(): Promise<unknown> } | null = null;
   private perfRunning = false;
   private onDevToolsShow: (() => void) | null = null;
+  private langSettingAdded = false;
 
   /** 将 Eruda 实例与 DataBus 绑定（可在 Eruda 异步加载完成后调用） */
   attach(
@@ -86,9 +84,10 @@ export class ErudaPlugin {
     this.codelog = codelog ?? null;
     this.pageId = pageId ?? null;
     this.pageUrl = pageUrl ?? (typeof location !== 'undefined' ? location.href : null);
+    this.langSettingAdded = false;
     this.detach();
 
-    // Sync initial language from web panel preference
+    // Sync initial language from web panel preference or SDK init option
     this.lang = this.detectInitialLang();
     this.syncErudaLang(this.lang);
 
@@ -111,8 +110,9 @@ export class ErudaPlugin {
         };
         devTools.on('show', this.onDevToolsShow);
       }
-      // Also render once after init in case panel is already open
+      // Render once after init + add lang setting to Settings panel
       setTimeout(() => this.renderInfoPanel(), 1200);
+      setTimeout(() => this.addLangSetting(), 1200);
       setTimeout(() => this.customizeEntryButton(), 1200);
     }
   }
@@ -176,7 +176,7 @@ export class ErudaPlugin {
     const L = LABELS[this.lang];
 
     // Remove stale entries (all possible label variants)
-    for (const key of [LABELS.zh.pageId, LABELS.en.pageId, LABELS.zh.pageUrl, LABELS.en.pageUrl, LABELS.zh.perf, LABELS.en.perf, '🌐']) {
+    for (const key of [LABELS.zh.pageId, LABELS.en.pageId, LABELS.zh.pageUrl, LABELS.en.pageUrl, LABELS.zh.perf, LABELS.en.perf]) {
       try { infoPanel.remove(key); } catch { /* ignore */ }
     }
 
@@ -216,14 +216,30 @@ export class ErudaPlugin {
       );
     }
 
-    // Language toggle
-    infoPanel.add(
-      '🌐',
-      `<span id="codelog-lang-toggle" style="cursor:pointer;padding:2px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;font-weight:600;">${L.langToggle}</span>`,
-    );
-
     // Bind event handlers after DOM settles
     setTimeout(() => this.bindInfoPanelHandlers(), 300);
+  }
+
+  /** Add language select to the Settings panel (called once after attach) */
+  private addLangSetting(): void {
+    if (this.langSettingAdded) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const settings = this.eruda?.get('settings') as any;
+    if (!settings || typeof settings.select !== 'function') return;
+
+    // Non-persisting config object — routes changes to eruda.i18n without localStorage
+    const langConfig = {
+      get: (_key: string) => this.lang === 'zh' ? 'zh-CN' : 'en',
+      set: (_key: string, val: string) => {
+        this.lang = val === 'zh-CN' ? 'zh' : 'en';
+        this.syncErudaLang(this.lang);
+        this.renderInfoPanel();
+      },
+    };
+
+    settings.separator();
+    settings.select(langConfig, 'lang', '语言 / Language', ['zh-CN', 'en']);
+    this.langSettingAdded = true;
   }
 
   private bindInfoPanelHandlers(): void {
@@ -273,16 +289,6 @@ export class ErudaPlugin {
           perfBtn.textContent = L.perfStop;
           this.codelog!.startPerfRun();
         }
-      });
-    }
-
-    // Language toggle — switches both our labels and eruda's built-in i18n
-    const langBtn = shadowRoot.getElementById('codelog-lang-toggle');
-    if (langBtn) {
-      langBtn.addEventListener('click', () => {
-        this.lang = this.lang === 'zh' ? 'en' : 'zh';
-        this.syncErudaLang(this.lang);
-        this.renderInfoPanel();
       });
     }
   }
