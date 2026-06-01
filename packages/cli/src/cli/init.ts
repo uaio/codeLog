@@ -4,6 +4,7 @@ import { networkInterfaces, homedir } from 'os';
 
 export interface InitOptions {
   forTool?: string;
+  port?: number;
 }
 
 interface AIToolConfig {
@@ -191,10 +192,29 @@ const AI_TOOLS: AIToolConfig[] = [
       console.log(`  ✅ 已写入 ~/.codeium/windsurf/mcp_config.json`);
     },
   },
+  {
+    name: 'VS Code / Copilot',
+    configPath: '.vscode/mcp.json',
+    detect: () =>
+      existsSync(join(process.cwd(), '.vscode')) ||
+      existsSync(join(homedir(), '.vscode')),
+    write(mcpEntry, _port) {
+      // VS Code 1.99+ supports workspace-level MCP via .vscode/mcp.json
+      const configDir = join(process.cwd(), '.vscode');
+      const configFile = join(configDir, 'mcp.json');
+      mkdirSync(configDir, { recursive: true });
+      const config = existsSync(configFile) ? JSON.parse(readFileSync(configFile, 'utf-8')) : {};
+      config.servers = config.servers ?? {};
+      config.servers.codelog = mcpEntry;
+      writeFileSync(configFile, JSON.stringify(config, null, 2));
+      console.log(`  ✅ 已写入 .vscode/mcp.json`);
+      console.log(`     VS Code 1.99+ 会自动识别，在 MCP 面板中启用 "codelog"`);
+    },
+  },
 ];
 
 export async function init(options: InitOptions = {}) {
-  const port = parseInt(process.env.CODELOG_PORT ?? '38291', 10);
+  const port = options.port ?? parseInt(process.env.CODELOG_PORT ?? '38291', 10);
   const networkIp = getNetworkIp();
   const mcpEntry = getMcpEntry(port);
 
@@ -204,8 +224,8 @@ export async function init(options: InitOptions = {}) {
   let targets: AIToolConfig[] = [];
 
   if (options.forTool) {
-    const name = options.forTool.toLowerCase();
-    const found = AI_TOOLS.find((t) => t.name.toLowerCase().includes(name));
+    const name = options.forTool.toLowerCase().replace(/[^a-z]/g, '');
+    const found = AI_TOOLS.find((t) => t.name.toLowerCase().replace(/[^a-z]/g, '').includes(name));
     if (!found) {
       console.error(`  ❌ 未知 AI 工具: ${options.forTool}`);
       console.log(`  支持: ${AI_TOOLS.map((t) => t.name).join(' | ')}`);
@@ -244,6 +264,8 @@ export async function init(options: InitOptions = {}) {
 ─────────────────────────────────────────────────
 ✅ MCP 配置完成！重启 AI 工具后即可使用 codelog MCP。
 
+💡 在 AI 中输入 /codelog:setup 即可一键完成全部初始化。
+
 📱 移动端 SDK 接入（粘贴到你的 H5 页面）：
 
   可用局域网地址（手机与电脑不在同一 WiFi？选对应网卡）：
@@ -264,13 +286,13 @@ ${networkIpLines}
     CodeLog.init({ projectId: 'my-app', lang: 'zh' })
   </script>
 
-  <!-- 选项 C：npm -->
+  <!-- npm -->
   import CodeLog from '@codelog/sdk'
   new CodeLog({ projectId: 'my-app', server: 'ws://${primaryIp}:${port}', lang: 'zh' })
 
 🖥️  启动 PC 监控面板：
   npx @codelog/cli             打开 http://localhost:${port}
-  npx @codelog/cli -p 8080     自定义端口
+  npx @codelog/cli -o          启动并自动打开浏览器
 ─────────────────────────────────────────────────
 `);
 }
@@ -292,14 +314,16 @@ function printManualConfig(mcpEntry: object, port: number) {
   }
 
 支持的配置文件位置：
-  Claude Code  →  .claude.json（项目根目录）
-  Cursor       →  .cursor/mcp.json
-  Windsurf     →  ~/.codeium/windsurf/mcp_config.json
+  Claude Code      →  .claude.json（项目根目录）
+  Cursor           →  .cursor/mcp.json
+  Windsurf         →  ~/.codeium/windsurf/mcp_config.json
+  VS Code/Copilot  →  .vscode/mcp.json（需要 VS Code 1.99+）
 
 指定工具：
   npx @codelog/cli init --for=claude
   npx @codelog/cli init --for=cursor
   npx @codelog/cli init --for=windsurf
+  npx @codelog/cli init --for=vscode
 
 可用局域网地址（手机与电脑不在同一 WiFi？选对应网卡）：
 ${networkIpLines}

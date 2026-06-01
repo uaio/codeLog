@@ -6,9 +6,10 @@ import { createAuthMiddleware } from '../middleware/auth.js';
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
-import { networkInterfaces } from 'os';
+import { networkInterfaces, homedir } from 'os';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { existsSync, readFileSync } from 'fs';
 
 export interface CLIOptions {
   port?: number;
@@ -19,6 +20,29 @@ export interface CLIOptions {
   persist?: boolean;
   dbPath?: string;
   retentionDays?: number;
+  /** Auto-open the PC panel in the default browser after server starts */
+  open?: boolean;
+}
+
+/** Check if MCP is already configured for any known AI tool in the current project */
+function isMcpConfigured(): boolean {
+  const cwd = process.cwd();
+  const home = homedir();
+  const checks = [
+    join(cwd, '.claude.json'),
+    join(cwd, '.cursor', 'mcp.json'),
+    join(home, '.codeium', 'windsurf', 'mcp_config.json'),
+    join(cwd, '.vscode', 'settings.json'),
+  ];
+  return checks.some((f) => {
+    if (!existsSync(f)) return false;
+    try {
+      const content = readFileSync(f, 'utf-8');
+      return content.includes('codelog');
+    } catch {
+      return false;
+    }
+  });
 }
 
 export async function start(options: CLIOptions = {}) {
@@ -155,7 +179,7 @@ export async function start(options: CLIOptions = {}) {
       }
     });
 
-    server.listen(port, '0.0.0.0', () => {
+    server.listen(port, '0.0.0.0', async () => {
       // 列出所有可用的 IPv4 地址（跳过 loopback）
       const allIpv4 = Object.entries(networkInterfaces()).flatMap(([name, ifaces]) =>
         (ifaces ?? [])
@@ -230,16 +254,87 @@ ${
     ? `│  ✅ 已配置公网地址，任何网络下的设备均可连接          │`
     : `│  ⚠️  手机与电脑不在同一 WiFi？                        │\n│     从上方局域网列表选择手机可达的网卡地址替换 server │`
 }
-├─────────────────────────────────────────────────────┤
-│  MCP 配置（AI 工具接入）                             │
-│    运行: npx @codelog/cli init  自动写入 MCP 配置     │
 └─────────────────────────────────────────────────────┘
   按 Ctrl+C 停止   端口: ${port}   (切换端口: npx @codelog/cli -p <port>)
 `);
 
       resolve();
+
+      // Auto-open browser panel if requested
+      if (options.open) {
+        try {
+          const { default: openBrowser } = await import('open');
+          await openBrowser(localUrl);
+        } catch {
+          // open is optional — don't fail if unavailable
+        }
+      }
+
+      // MCP setup wizard — only when running interactively (TTY)
+      if (process.stdout.isTTY) {
+        await runMcpWizard(port);
+      }
     });
   });
 
   return server;
+}
+
+/** Detect installed AI tools by checking known config paths */
+function detectAITools(): string[] {
+  const cwd = process.cwd();
+  const home = homedir();
+  const found: string[] = [];
+  if (existsSync(join(cwd, '.claude.json')) || existsSync(join(cwd, '.claude'))) found.push('Claude Code');
+  if (existsSync(join(cwd, '.cursor'))) found.push('Cursor');
+  if (existsSync(join(home, '.codeium', 'windsurf'))) found.push('Windsurf');
+  if (
+    existsSync(join(home, '.vscode')) ||
+    existsSync(join(cwd, '.vscode'))
+  ) found.push('VS Code / Copilot');
+  return found;
+}
+
+/**
+ * Post-start MCP setup wizard.
+ * If MCP is not yet configured, detect AI tools and offer interactive setup.
+ */
+async function runMcpWizard(port: number): Promise<void> {
+  if (isMcpConfigured()) return;
+
+  const tools = detectAITools();
+
+  console.log('─────────────────────────────────────────────────────');
+  if (tools.length > 0) {
+    console.log(`\n🔧 检测到 AI 工具: ${tools.join(', ')}`);
+    console.log('   MCP 尚未配置。配置后 AI 可直接调用 codeLog 调试工具。\n');
+    console.log('   现在配置? [Y/n] ', { end: '' } as never);
+  } else {
+    console.log('\n💡 提示: 运行 npx @codelog/cli init 可将 MCP 配置到 Claude/Cursor/Windsurf\n');
+    return;
+  }
+
+  try {
+    const { createInterface } = await import('readline');
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+    const answer = await new Promise<string>((res) => {
+      process.stdout.write('   现在配置 MCP? [Y/n] ');
+      rl.once('line', (line) => {
+        rl.close();
+        res(line.trim().toLowerCase());
+      });
+    });
+
+    if (answer === '' || answer === 'y' || answer === 'yes') {
+      console.log('');
+      const { init } = await import('./init.js');
+      await init({ port });
+    } else {
+      console.log(`\n   跳过。稍后运行: npx @codelog/cli init\n`);
+    }
+  } catch {
+    // Non-interactive or readline unavailable — show hint and continue
+    console.log(`\n   运行 npx @codelog/cli init 配置 MCP\n`);
+  }
 }
