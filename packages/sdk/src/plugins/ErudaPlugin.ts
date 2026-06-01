@@ -19,33 +19,40 @@ interface ErudaInstance {
   get: (name?: string) => any;
   on?: (event: string, fn: () => void) => void;
   off?: (event: string, fn: () => void) => void;
+  i18n?: { setLang: (lang: string) => void; getLang: () => string };
 }
 
 type Lang = 'zh' | 'en';
 
 const LABELS: Record<Lang, {
   pageId: string;
+  pageUrl: string;
   perf: string;
   perfStart: string;
   perfStop: string;
   langToggle: string;
   copied: string;
+  clickCopy: string;
 }> = {
   zh: {
     pageId: '页面 ID',
+    pageUrl: '页面地址',
     perf: '⚡ 跑分',
     perfStart: '🏁 开始跑分',
     perfStop: '⏹ 停止',
     langToggle: 'EN',
     copied: '✓ 已复制',
+    clickCopy: '点击复制',
   },
   en: {
     pageId: 'Page ID',
+    pageUrl: 'Page URL',
     perf: '⚡ Perf',
     perfStart: '🏁 Start',
     perfStop: '⏹ Stop',
     langToggle: '中',
-    copied: '✓ copied',
+    copied: '✓ Copied',
+    clickCopy: 'Click to copy',
   },
 };
 
@@ -62,8 +69,10 @@ export class ErudaPlugin {
   private unsubscribers: Array<() => void> = [];
   private lang: Lang = 'zh';
   private pageId: string | null = null;
+  private pageUrl: string | null = null;
   private codelog: { startPerfRun(): void; stopPerfRun(): Promise<unknown> } | null = null;
   private perfRunning = false;
+  private onDevToolsShow: (() => void) | null = null;
 
   /** 将 Eruda 实例与 DataBus 绑定（可在 Eruda 异步加载完成后调用） */
   attach(
@@ -71,11 +80,17 @@ export class ErudaPlugin {
     bus: DataBus,
     codelog?: { startPerfRun(): void; stopPerfRun(): Promise<unknown> },
     pageId?: string,
+    pageUrl?: string,
   ): void {
     this.eruda = eruda;
     this.codelog = codelog ?? null;
     this.pageId = pageId ?? null;
+    this.pageUrl = pageUrl ?? (typeof location !== 'undefined' ? location.href : null);
     this.detach();
+
+    // Sync initial language from web panel preference
+    this.lang = this.detectInitialLang();
+    this.syncErudaLang(this.lang);
 
     // 订阅 console 事件 → 推入 Eruda console 面板
     this.unsubscribers.push(
@@ -85,6 +100,18 @@ export class ErudaPlugin {
     );
 
     if (typeof document !== 'undefined') {
+      // Re-render info panel each time DevTools opens (reliable, always fresh)
+      const devTools = eruda.get() as { on?: (e: string, fn: () => void) => void } | null;
+      if (devTools?.on) {
+        this.onDevToolsShow = () => {
+          setTimeout(() => {
+            this.renderInfoPanel();
+            this.bindInfoPanelHandlers();
+          }, 150);
+        };
+        devTools.on('show', this.onDevToolsShow);
+      }
+      // Also render once after init in case panel is already open
       setTimeout(() => this.renderInfoPanel(), 1200);
       setTimeout(() => this.customizeEntryButton(), 1200);
     }
@@ -92,6 +119,12 @@ export class ErudaPlugin {
 
   /** 解绑（清理订阅，不影响 DataBus 本身） */
   detach(): void {
+    // Remove DevTools show listener
+    if (this.onDevToolsShow && this.eruda) {
+      const devTools = this.eruda.get() as { off?: (e: string, fn: () => void) => void } | null;
+      devTools?.off?.('show', this.onDevToolsShow);
+      this.onDevToolsShow = null;
+    }
     for (const unsub of this.unsubscribers) {
       unsub();
     }
@@ -118,6 +151,23 @@ export class ErudaPlugin {
     return (document.getElementById('eruda') as HTMLElement | null)?.shadowRoot ?? null;
   }
 
+  /** Detect initial language from web panel preference stored in localStorage */
+  private detectInitialLang(): Lang {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem('codelog-lang');
+        if (stored === 'zh' || stored === 'en') return stored;
+      }
+    } catch { /* ignore */ }
+    return 'zh';
+  }
+
+  /** Sync eruda's built-in UI language via the fork's i18n module */
+  private syncErudaLang(lang: Lang): void {
+    const erudaLang = lang === 'zh' ? 'zh-CN' : 'en';
+    this.eruda?.i18n?.setLang(erudaLang);
+  }
+
   /** Render (or re-render) all CodeLog-injected Info panel items with current language */
   private renderInfoPanel(): void {
     const infoPanel = this.eruda?.get('info') as ErudaInfoPanel | null;
@@ -125,19 +175,35 @@ export class ErudaPlugin {
 
     const L = LABELS[this.lang];
 
-    // Remove stale entries
-    try { infoPanel.remove(LABELS.zh.pageId); } catch { /* ignore */ }
-    try { infoPanel.remove(LABELS.en.pageId); } catch { /* ignore */ }
-    try { infoPanel.remove(LABELS.zh.perf); } catch { /* ignore */ }
-    try { infoPanel.remove(LABELS.en.perf); } catch { /* ignore */ }
-    try { infoPanel.remove('🌐'); } catch { /* ignore */ }
+    // Remove stale entries (all possible label variants)
+    for (const key of [LABELS.zh.pageId, LABELS.en.pageId, LABELS.zh.pageUrl, LABELS.en.pageUrl, LABELS.zh.perf, LABELS.en.perf, '🌐']) {
+      try { infoPanel.remove(key); } catch { /* ignore */ }
+    }
 
-    // Page ID
+    // Page ID — show truncated display, copy full ID on click
     if (this.pageId) {
-      const shortId = this.pageId.slice(-8);
+      const displayId = this.pageId.length > 20
+        ? `${this.pageId.slice(0, 10)}…${this.pageId.slice(-6)}`
+        : this.pageId;
       infoPanel.add(
         L.pageId,
-        `<span id="codelog-pageid-info" title="${this.lang === 'zh' ? '点击复制' : 'Click to copy'}" style="cursor:pointer;font-family:monospace;color:#3b5bdb;">#${shortId}</span>`,
+        `<span id="codelog-pageid-info" title="${L.clickCopy}" style="cursor:pointer;font-family:monospace;font-size:11px;color:#3b5bdb;word-break:break-all;">${displayId}</span>`,
+      );
+    }
+
+    // Page URL — truncated display, copy full URL on click
+    if (this.pageUrl) {
+      let displayUrl: string;
+      try {
+        const u = new URL(this.pageUrl);
+        displayUrl = u.pathname + (u.search ? '?' + u.search.slice(1, 20) + (u.search.length > 20 ? '…' : '') : '');
+        if (displayUrl.length > 30) displayUrl = displayUrl.slice(0, 28) + '…';
+      } catch {
+        displayUrl = this.pageUrl.slice(0, 30) + (this.pageUrl.length > 30 ? '…' : '');
+      }
+      infoPanel.add(
+        L.pageUrl,
+        `<span id="codelog-pageurl-info" title="${L.clickCopy}: ${this.pageUrl}" style="cursor:pointer;font-size:11px;color:#555;word-break:break-all;">${displayUrl}</span>`,
       );
     }
 
@@ -157,22 +223,39 @@ export class ErudaPlugin {
     );
 
     // Bind event handlers after DOM settles
-    setTimeout(() => this.bindInfoPanelHandlers(), 400);
+    setTimeout(() => this.bindInfoPanelHandlers(), 300);
   }
 
   private bindInfoPanelHandlers(): void {
     const shadowRoot = this.getErudaShadowRoot();
     if (!shadowRoot) {
-      setTimeout(() => this.bindInfoPanelHandlers(), 400);
+      setTimeout(() => this.bindInfoPanelHandlers(), 300);
       return;
     }
 
-    // Page ID copy
+    // Page ID copy — full ID
     const pageIdEl = shadowRoot.getElementById('codelog-pageid-info');
     if (pageIdEl && this.pageId) {
-      const shortId = this.pageId.slice(-8);
+      const displayId = this.pageId.length > 20
+        ? `${this.pageId.slice(0, 10)}…${this.pageId.slice(-6)}`
+        : this.pageId;
       pageIdEl.addEventListener('click', () =>
-        this.copyToClipboard(this.pageId!, pageIdEl, `#${shortId}`),
+        this.copyToClipboard(this.pageId!, pageIdEl, displayId),
+      );
+    }
+
+    // Page URL copy — full URL
+    const pageUrlEl = shadowRoot.getElementById('codelog-pageurl-info');
+    if (pageUrlEl && this.pageUrl) {
+      let displayUrl: string;
+      try {
+        const u = new URL(this.pageUrl);
+        displayUrl = u.pathname.slice(0, 28) + (u.pathname.length > 28 ? '…' : '');
+      } catch {
+        displayUrl = this.pageUrl.slice(0, 28) + (this.pageUrl.length > 28 ? '…' : '');
+      }
+      pageUrlEl.addEventListener('click', () =>
+        this.copyToClipboard(this.pageUrl!, pageUrlEl, displayUrl),
       );
     }
 
@@ -193,17 +276,18 @@ export class ErudaPlugin {
       });
     }
 
-    // Language toggle
+    // Language toggle — switches both our labels and eruda's built-in i18n
     const langBtn = shadowRoot.getElementById('codelog-lang-toggle');
     if (langBtn) {
       langBtn.addEventListener('click', () => {
         this.lang = this.lang === 'zh' ? 'en' : 'zh';
+        this.syncErudaLang(this.lang);
         this.renderInfoPanel();
       });
     }
   }
 
-  /** Listen to DevTools show/hide for potential future use */
+  /** Attach open/close CSS class to entry button for styling hooks */
   private customizeEntryButton(): void {
     const shadowRoot = this.getErudaShadowRoot();
     if (!shadowRoot) {
@@ -211,7 +295,6 @@ export class ErudaPlugin {
       return;
     }
 
-    // Listen to DevTools show/hide to toggle open icon state
     const devTools = this.eruda?.get() as { on?: (e: string, fn: () => void) => void } | null;
     if (devTools?.on) {
       devTools.on('show', () => {
