@@ -14,7 +14,7 @@ codeLog is a real-time mobile H5 debugging tool that helps developers monitor co
                                           │
                                    ┌──────▼──────┐
                                    │  MCP Server  │
-                                   │  @codelog/mcp│
+                                   │  @codelog/cli (mcp)│
                                    └─────────────┘
 ```
 
@@ -26,7 +26,7 @@ codeLog is a real-time mobile H5 debugging tool that helps developers monitor co
 | `@codelog/sdk` | Client SDK injected into H5 pages |
 | `@codelog/server` | WebSocket + HTTP server for data collection |
 | `@codelog/web` | PC debug panel (React) served by the server |
-| `@codelog/mcp` | MCP server for AI-powered debugging |
+| `@codelog/cli (mcp)` | MCP server for AI-powered debugging |
 | `@codelog/cli` | CLI tool to start the server (`npx @codelog/cli`) and configure AI tools |
 | `@codelog/eruda` | Bundled Eruda build used internally by the SDK (private) |
 | `@codelog/demo` | Demo & test pages for development |

@@ -44,6 +44,9 @@ importers:
       '@codelog/types':
         specifier: workspace:*
         version: link:../types
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.29.0
+        version: 1.29.0(zod@3.25.76)
       better-sqlite3:
         specifier: ^12.9.0
         version: 12.9.0
@@ -53,9 +56,15 @@ importers:
       express:
         specifier: ^4.18.0
         version: 4.22.1
+      open:
+        specifier: ^10.0.0
+        version: 10.2.0
       ws:
         specifier: ^8.16.0
         version: 8.19.0
+      zod:
+        specifier: ^3.25.0
+        version: 3.25.76
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.13
@@ -266,37 +275,6 @@ importers:
       webpack-dev-server:
         specifier: ^5.0.4
         version: 5.2.3(tslib@2.8.1)(webpack-cli@5.1.4)(webpack@5.105.4)
-
-  packages/mcp:
-    dependencies:
-      '@codelog/cli':
-        specifier: workspace:*
-        version: link:../cli
-      '@codelog/types':
-        specifier: workspace:*
-        version: link:../types
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.29.0
-        version: 1.29.0(zod@3.25.76)
-      open:
-        specifier: ^10.0.0
-        version: 10.2.0
-      ws:
-        specifier: ^8.16.0
-        version: 8.19.0
-    devDependencies:
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.19.37
-      '@types/ws':
-        specifier: ^8.5.0
-        version: 8.18.1
-      vitest:
-        specifier: ^1.6.0
-        version: 1.6.0(@types/node@20.19.37)(happy-dom@20.9.0)(sass@1.98.0)(terser@5.46.1)
-      zod:
-        specifier: ^3.25.0
-        version: 3.25.76
 
   packages/sdk:
     dependencies:

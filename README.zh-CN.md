@@ -565,7 +565,7 @@ pnpm dev        # 开发模式（watch）
 
 # 单独运行某个包的测试：
 pnpm --filter @codelog/server test
-pnpm --filter @codelog/mcp test
+
 pnpm --filter @codelog/cli test
 pnpm --filter @codelog/sdk test
 ```

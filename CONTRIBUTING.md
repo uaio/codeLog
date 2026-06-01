@@ -37,7 +37,7 @@ packages/
 ├── sdk/        # Mobile SDK (@codelog/sdk)
 ├── cli/        # Server + CLI tool (@codelog/cli) — WebSocket hub, REST API, npx entry
 ├── web/        # PC debug panel (React, @codelog/web)
-├── mcp/        # MCP AI toolset (@codelog/mcp)
+├── mcp/        # MCP AI toolset (now merged into @codelog/cli)
 ├── eruda/      # Forked Eruda for on-device panel
 └── demo/       # Demo app for testing
 ```
@@ -78,7 +78,7 @@ pnpm --filter @codelog/web dev      # Web panel with HMR
 2. Open the demo page at `http://localhost:5274`
 3. The demo device should appear in the PC panel's device list
 4. Interact with the demo page — logs, network requests, and performance data stream in real-time
-5. Test MCP tools by running `npx @codelog/mcp` in a separate terminal
+5. Test MCP tools by running `npx --package @codelog/cli codelog-mcp` in a separate terminal
 
 ### Package-specific Development
 
@@ -87,7 +87,7 @@ pnpm --filter @codelog/web dev      # Web panel with HMR
 | `@codelog/cli` | `pnpm --filter @codelog/cli dev` | TypeScript watch mode (server + CLI) |
 | `@codelog/sdk` | `pnpm --filter @codelog/sdk dev` | Vite build watch |
 | `@codelog/web` | `pnpm --filter @codelog/web dev` | Vite HMR (port 5173) |
-| `@codelog/mcp` | Rebuild after changes | No watch mode |
+| `@codelog/cli` | `pnpm --filter @codelog/cli dev` | TypeScript watch mode (server + CLI + MCP) |
 | `docs` | `pnpm docs:dev` | VitePress dev server |
 
 ### Running the Full Build
@@ -145,7 +145,6 @@ pnpm test
 
 # Run tests for a specific package
 pnpm --filter @codelog/cli test
-pnpm --filter @codelog/mcp test
 pnpm --filter @codelog/sdk test
 ```
 

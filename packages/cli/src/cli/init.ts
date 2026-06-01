@@ -31,7 +31,7 @@ function getAllIpv4(): { name: string; address: string }[] {
 function getMcpEntry(port: number) {
   return {
     command: 'npx',
-    args: ['-y', '@codelog/mcp'],
+    args: ['-y', '--package', '@codelog/cli', 'codelog-mcp'],
     env: {
       CODELOG_API_BASE_URL: `http://localhost:${port}`,
     },

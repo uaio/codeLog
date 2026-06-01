@@ -23,7 +23,8 @@
   "homepage": "https://github.com/uaio/codeLog/tree/main/packages/cli",
   "type": "module",
   "bin": {
-    "codelog": "./bin/codelog.js"
+    "codelog": "./bin/codelog.js",
+    "codelog-mcp": "./bin/codelog-mcp.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -39,6 +40,10 @@
     "./cli/init": {
       "types": "./dist/cli/init.d.ts",
       "import": "./dist/cli/init.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js"
     }
   },
   "files": [
@@ -58,10 +63,13 @@
   },
   "dependencies": {
     "@codelog/types": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "better-sqlite3": "^12.9.0",
     "cors": "^2.8.6",
     "express": "^4.18.0",
-    "ws": "^8.16.0"
+    "open": "^10.0.0",
+    "ws": "^8.16.0",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

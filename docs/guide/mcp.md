@@ -5,7 +5,7 @@ codeLog includes a Model Context Protocol (MCP) server that enables AI assistant
 ## Setup
 
 ```bash
-npx @codelog/mcp
+npx --package @codelog/cli codelog-mcp
 ```
 
 Or add to your MCP client configuration:
@@ -15,7 +15,7 @@ Or add to your MCP client configuration:
   "mcpServers": {
     "codelog": {
       "command": "npx",
-      "args": ["@codelog/mcp"]
+      "args": ["--package", "@codelog/cli", "codelog-mcp"]
     }
   }
 }

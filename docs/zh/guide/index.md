@@ -14,7 +14,7 @@ codeLog 是一款实时移动端 H5 调试工具，帮助开发者通过 Web 仪
                                           │
                                    ┌──────▼──────┐
                                    │  MCP Server  │
-                                   │  @codelog/mcp│
+                                   │  @codelog/cli (mcp)│
                                    └─────────────┘
 ```
 
@@ -26,7 +26,7 @@ codeLog 是一款实时移动端 H5 调试工具，帮助开发者通过 Web 仪
 | `@codelog/sdk` | 注入到 H5 页面的客户端 SDK |
 | `@codelog/server` | 用于数据采集的 WebSocket + HTTP 服务器 |
 | `@codelog/web` | 由服务器托管的 PC 端调试面板 (React) |
-| `@codelog/mcp` | 用于 AI 驱动调试的 MCP 服务器 |
+| `@codelog/cli (mcp)` | 用于 AI 驱动调试的 MCP 服务器 |
 | `@codelog/cli` | 启动服务器 (`npx @codelog/cli`) 和配置 AI 工具的 CLI 工具 |
 | `@codelog/eruda` | SDK 内部使用的 Eruda 构建包，用于本地面板 |
 | `@codelog/demo` | 用于开发和测试的演示页面 |

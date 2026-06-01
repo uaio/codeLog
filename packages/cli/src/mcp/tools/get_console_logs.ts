@@ -1,4 +1,4 @@
-import type { ConsoleLog } from '@codelog/cli';
+import type { ConsoleLog } from '../../store/logs.js';
 import { API_BASE_URL } from '../config';
 
 export const getConsoleLogs = {

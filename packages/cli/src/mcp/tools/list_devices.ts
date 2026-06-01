@@ -1,4 +1,4 @@
-import type { Device } from '@codelog/cli';
+import type { Device } from '../../store/devices.js';
 import { API_BASE_URL } from '../config';
 import { sharedDeviceSelector } from '../lib/device-selector.js';
 

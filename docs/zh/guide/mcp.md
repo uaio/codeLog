@@ -5,7 +5,7 @@ codeLog 包含一个 Model Context Protocol（MCP）服务器，使 AI 助手能
 ## 设置
 
 ```bash
-npx @codelog/mcp
+npx --package @codelog/cli codelog-mcp
 ```
 
 或者添加到你的 MCP 客户端配置中：
@@ -15,7 +15,7 @@ npx @codelog/mcp
   "mcpServers": {
     "codelog": {
       "command": "npx",
-      "args": ["@codelog/mcp"]
+      "args": ["--package", "@codelog/cli", "codelog-mcp"]
     }
   }
 }
