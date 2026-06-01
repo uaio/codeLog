@@ -90,7 +90,7 @@ export function LogEntry({ log }: LogEntryProps) {
       case 'error': return '🔴';
       case 'warn': return '⚠️';
       case 'info': return 'ℹ️';
-      case 'repl-input': return '▶';
+      case 'repl-input': return '>';
       case 'repl-output': return '←';
       case 'table': return '📊';
       case 'group': return groupOpen ? '▼' : '▶';
@@ -168,23 +168,33 @@ export function LogEntry({ log }: LogEntryProps) {
           : log.level === 'assert'
           ? '#fff2f0'
           : isReplInput
-            ? '#e6f7ff'
+            ? '#e6f4ff'
             : isReplOutput
               ? '#f6ffed'
               : isGroup
                 ? '#f9f0ff'
                 : '#fff',
+        borderTop: isReplInput ? '1px solid #d0e8ff' : undefined,
       }}
     >
       <div style={styles.header}>
         <span
-          style={{ ...styles.icon, fontFamily: isReplInput || isReplOutput ? 'monospace' : undefined, cursor: isGroup ? 'pointer' : undefined }}
+          style={{
+            ...styles.icon,
+            fontFamily: isReplInput || isReplOutput ? 'monospace' : undefined,
+            color: isReplInput ? '#1890ff' : isReplOutput ? '#52c41a' : undefined,
+            fontWeight: isReplInput || isReplOutput ? 'bold' : undefined,
+            fontSize: isReplInput || isReplOutput ? 14 : undefined,
+            cursor: isGroup ? 'pointer' : undefined,
+          }}
           onClick={isGroup ? () => setGroupOpen((o) => !o) : undefined}
         >
           {isGlobalError ? '💥' : getLevelIcon(log.level)}
         </span>
-        <span style={styles.timestamp}>{formatTime(log.timestamp)}</span>
-        {getLevelLabel(log.level) && (
+        {!isReplInput && !isReplOutput && (
+          <span style={styles.timestamp}>{formatTime(log.timestamp)}</span>
+        )}
+        {!isReplInput && !isReplOutput && getLevelLabel(log.level) && (
           <span style={{ ...styles.levelTag, color: getLevelColor(log.level) }}>
             {getLevelLabel(log.level)}
           </span>

@@ -374,14 +374,16 @@ export class Reporter {
     try {
       // eslint-disable-next-line no-eval
       const result = (0, eval)(code); // indirect eval：在全局作用域运行，不影响当前 scope
-      const display = result === undefined ? 'undefined' : serializeArgs([result]);
-      // 执行结果（repl-output 类型，Web 端以绿色标注）
-      bus.emit('console', {
-        timestamp: Date.now(),
-        level: 'repl-output',
-        message: display,
-        args: result === undefined ? ['undefined'] : [result],
-      });
+      // Only emit repl-output when there's a meaningful return value.
+      // Suppressing `undefined` avoids noise for console.log() and void statements.
+      if (result !== undefined) {
+        bus.emit('console', {
+          timestamp: Date.now(),
+          level: 'repl-output',
+          message: serializeArgs([result]),
+          args: [result],
+        });
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       bus.emit('console', {
