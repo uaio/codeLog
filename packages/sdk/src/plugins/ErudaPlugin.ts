@@ -9,8 +9,13 @@ interface ErudaConsolePanel {
   restoreConsole?: () => void;
 }
 
+interface ErudaInfoPanel {
+  add: (name: string, val: string) => void;
+  remove: (name: string) => void;
+}
+
 interface ErudaInstance {
-  get: (name: string) => ErudaConsolePanel | null;
+  get: (name: string) => ErudaConsolePanel | ErudaInfoPanel | null;
 }
 
 /**
@@ -80,87 +85,100 @@ export class ErudaPlugin {
     }
   }
 
-  /** Find the Eruda toolbar, handling both shadow DOM (useShadowDom: true) and regular DOM */
-  private getErudaToolbar(): HTMLElement | null {
-    const shadowHost = document.getElementById('eruda');
-    if (shadowHost?.shadowRoot) {
-      const el = shadowHost.shadowRoot.querySelector('.eruda-toolbar') as HTMLElement | null;
-      if (el) return el;
-    }
-    return document.querySelector('.eruda-toolbar') as HTMLElement | null;
+  /** Get the shadow root of the #eruda host (useShadowDom: true) */
+  private getErudaShadowRoot(): ShadowRoot | null {
+    return (document.getElementById('eruda') as HTMLElement | null)?.shadowRoot ?? null;
   }
 
   private injectPerfRunButton(codelog: {
     startPerfRun(): void;
     stopPerfRun(): Promise<any>;
   }): void {
-    const tryInject = () => {
-      const toolbar = this.getErudaToolbar();
-      if (!toolbar) {
-        setTimeout(tryInject, 500);
-        return;
-      }
-      const btn = document.createElement('div');
-      btn.className = 'eruda-tool-btn';
-      btn.textContent = '🏁跑分';
-      btn.style.cssText =
-        'padding:4px 8px;cursor:pointer;font-size:12px;border:1px solid #ccc;border-radius:3px;background:#fff;margin-left:4px;';
+    // Add a run button to the Eruda Info panel via official API
+    const infoPanel = this.eruda?.get('info') as ErudaInfoPanel | null;
+    if (!infoPanel || typeof infoPanel.add !== 'function') return;
+    infoPanel.add('⚡ Perf', '<span id="codelog-perf-btn" style="cursor:pointer;padding:2px 8px;background:#000;color:#fff;border-radius:4px;font-size:12px;">🏁 开始跑分</span>');
+
+    // Attach click handler after DOM settles
+    const tryBind = () => {
+      const shadowRoot = this.getErudaShadowRoot();
+      const el = shadowRoot?.getElementById('codelog-perf-btn');
+      if (!el) { setTimeout(tryBind, 500); return; }
       let running = false;
-      btn.addEventListener('click', async () => {
+      el.addEventListener('click', async () => {
         if (running) {
           running = false;
-          btn.textContent = '🏁跑分';
+          el.textContent = '🏁 开始跑分';
           await codelog.stopPerfRun();
         } else {
           running = true;
-          btn.textContent = '⏹停止';
+          el.textContent = '⏹ 停止';
           codelog.startPerfRun();
         }
       });
-      toolbar.appendChild(btn);
     };
-    setTimeout(tryInject, 1000);
+    setTimeout(tryBind, 1200);
   }
 
   private injectPageIdBadge(pageId: string): void {
     const shortId = pageId.slice(-8);
-    const tryInject = () => {
-      const toolbar = this.getErudaToolbar();
-      if (!toolbar) {
-        setTimeout(tryInject, 500);
-        return;
-      }
-      if (toolbar.querySelector('[data-codelog-pageid]')) return;
+
+    // 1. Add to Eruda Info panel via official API (always visible in Info tab)
+    const infoPanel = this.eruda?.get('info') as ErudaInfoPanel | null;
+    if (infoPanel && typeof infoPanel.add === 'function') {
+      infoPanel.add(
+        'Page ID',
+        `<span id="codelog-pageid-info" title="Click to copy" style="cursor:pointer;font-family:monospace;color:#3b5bdb;">#${shortId}</span>`,
+      );
+      // Attach copy handler once the shadow DOM settles
+      const tryBindInfo = () => {
+        const shadowRoot = this.getErudaShadowRoot();
+        const el = shadowRoot?.getElementById('codelog-pageid-info');
+        if (!el) { setTimeout(tryBindInfo, 500); return; }
+        el.addEventListener('click', () => this.copyToClipboard(pageId, el, `#${shortId}`));
+      };
+      setTimeout(tryBindInfo, 1200);
+    }
+
+    // 2. Floating badge above the entry button (always visible without opening Eruda)
+    const tryInjectBadge = () => {
+      const shadowRoot = this.getErudaShadowRoot();
+      if (!shadowRoot) { setTimeout(tryInjectBadge, 500); return; }
+      const entryBtn = shadowRoot.querySelector('.eruda-entry-btn') as HTMLElement | null;
+      if (!entryBtn) { setTimeout(tryInjectBadge, 500); return; }
+      if (shadowRoot.querySelector('[data-codelog-pageid]')) return;
 
       const badge = document.createElement('div');
       badge.setAttribute('data-codelog-pageid', '1');
       badge.title = `Page ID: ${pageId}\nClick to copy`;
       badge.style.cssText =
-        'padding:3px 7px;cursor:pointer;font-size:11px;font-family:monospace;' +
-        'border:1px solid rgba(59,91,219,0.35);border-radius:3px;' +
-        'background:#eef2ff;color:#3b5bdb;margin-left:4px;user-select:none;';
+        'position:absolute;bottom:48px;left:50%;transform:translateX(-50%);' +
+        'white-space:nowrap;padding:2px 6px;cursor:pointer;font-size:10px;' +
+        'font-family:monospace;border-radius:3px;background:rgba(59,91,219,0.85);' +
+        'color:#fff;user-select:none;z-index:10001;';
       badge.textContent = `#${shortId}`;
+      badge.addEventListener('click', () => this.copyToClipboard(pageId, badge, `#${shortId}`));
 
-      badge.addEventListener('click', () => {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(pageId).then(() => {
-            badge.textContent = '✓ copied';
-            setTimeout(() => { badge.textContent = `#${shortId}`; }, 1500);
-          });
-        } else {
-          const tmp = document.createElement('input');
-          tmp.value = pageId;
-          document.body.appendChild(tmp);
-          tmp.select();
-          document.execCommand('copy');
-          document.body.removeChild(tmp);
-          badge.textContent = '✓ copied';
-          setTimeout(() => { badge.textContent = `#${shortId}`; }, 1500);
-        }
-      });
-
-      toolbar.appendChild(badge);
+      // entry-btn uses position:relative, so absolute child works
+      entryBtn.style.overflow = 'visible';
+      entryBtn.appendChild(badge);
     };
-    setTimeout(tryInject, 1000);
+    setTimeout(tryInjectBadge, 1000);
+  }
+
+  private copyToClipboard(text: string, el: HTMLElement, resetLabel: string): void {
+    const restore = () => { setTimeout(() => { el.textContent = resetLabel; }, 1500); };
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => { el.textContent = '✓ copied'; restore(); });
+    } else {
+      const tmp = document.createElement('input');
+      tmp.value = text;
+      document.body.appendChild(tmp);
+      tmp.select();
+      document.execCommand('copy');
+      document.body.removeChild(tmp);
+      el.textContent = '✓ copied';
+      restore();
+    }
   }
 }
