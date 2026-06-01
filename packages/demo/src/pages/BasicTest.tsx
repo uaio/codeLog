@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { initCodeLog } from '../codelog';
+import { initCodeLog, codelog } from '../codelog';
 
 interface LogItem {
   level: 'log' | 'info' | 'warn' | 'error' | 'checkpoint';
@@ -104,13 +104,7 @@ export default function BasicTest() {
 
   // ── Mock API 测试 ──────────────────────────────────────────
   const testAddMock = () => {
-    const sdk = window.__codelog__;
-    if (!sdk) { add('error', 'SDK 未初始化'); return; }
-    const mock = sdk.getMockAPI?.();
-    if (!mock) { add('error', 'getMockAPI() 不可用'); return; }
-    mock.addRule({
-      name: '拦截 /api/demo',
-      pattern: '/api/demo',
+    codelog.addMock('/api/demo', {
       method: 'GET',
       status: 200,
       body: JSON.stringify({ mocked: true, msg: 'codeLog mock 生效！' }),
@@ -131,9 +125,7 @@ export default function BasicTest() {
     }
   };
   const testClearMocks = () => {
-    const sdk = window.__codelog__;
-    if (!sdk) { add('error', 'SDK 未初始化'); return; }
-    sdk.getMockAPI?.()?.clearRules();
+    codelog.clearMocks();
     add('warn', '已清除所有 Mock 规则');
   };
 
@@ -254,7 +246,7 @@ export default function BasicTest() {
 
   // ── 截图 ──────────────────────────────────────────
   const testScreenshot = async () => {
-    const sdk = window.__codelog__;
+    const sdk = codelog;
     if (!sdk) { add('error', 'SDK 未初始化'); return; }
     add('info', '请求截图…');
     try {

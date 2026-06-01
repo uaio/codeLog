@@ -30,7 +30,7 @@ export default defineConfig({
     }
   },
   plugins: [
-    dts(),
+    dts({ rollupTypes: true }),
     cssInjectedByJsPlugin({ topExecutionPriority: false })
   ],
   test: {

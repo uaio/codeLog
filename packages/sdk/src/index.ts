@@ -436,7 +436,7 @@ export class CodeLog {
 
     // ⑥ Eruda 最后异步加载（加载完成后将其与 DataBus 绑定，避免重复采集）
     if (options.eruda?.enabled !== false) {
-      this.initEruda(options.eruda);
+      this.initEruda(options.eruda, options.lang);
     }
 
     // ⑦ Lifecycle 事件
@@ -513,7 +513,7 @@ export class CodeLog {
     setTimeout(announcePluginsToServer, 2000);
   }
 
-  private async initEruda(config?: ErudaConfig): Promise<void> {
+  private async initEruda(config?: ErudaConfig, lang?: 'zh' | 'en'): Promise<void> {
     try {
       // 动态导入 eruda UMD 模块
       const erudaModule = await import('@codelog/eruda');
@@ -521,11 +521,14 @@ export class CodeLog {
       this.eruda = erudaModule.default || erudaModule;
 
       if (this.eruda && typeof this.eruda.init === 'function') {
+        // Map SDK lang codes to eruda's BCP 47 locale codes
+        const erudaLang = lang === 'zh' ? 'zh-CN' : lang === 'en' ? 'en-US' : undefined;
         this.eruda.init({
           tool: config?.tool,
           autoScale: config?.autoScale ?? true,
           useShadowDom: true,
           defaults: config?.defaults,
+          ...(erudaLang ? { lang: erudaLang } : {}),
         });
 
         // eruda.init() 默认会调用 overrideConsole()，把自身的 wrapper 叠加到 console 上。
