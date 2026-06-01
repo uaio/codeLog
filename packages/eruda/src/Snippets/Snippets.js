@@ -71,7 +71,7 @@ export default class Snippets extends Tool {
     this._snippets[idx].fn.call(null)
   }
   _addDefSnippets() {
-    each(defSnippets, (snippet) => {
+    each(defSnippets(), (snippet) => {
       this.add(snippet.name, snippet.fn, snippet.desc)
     })
   }

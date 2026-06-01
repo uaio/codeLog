@@ -121,12 +121,12 @@ export default class DevTools extends Emitter {
     if (name === 'settings') {
       tab.append({
         id: name,
-        title: name,
+        title: i18n.t('tools.' + name) || name,
       })
     } else {
       tab.insert(tab.length - 1, {
         id: name,
-        title: name,
+        title: i18n.t('tools.' + name) || name,
       })
     }
 

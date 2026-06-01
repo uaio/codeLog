@@ -14,7 +14,8 @@ import evalCss from '../lib/evalCss'
 
 let style = null
 
-export default [
+export default function getDefSnippets() {
+  return [
   {
     name: i18n.t('snippets.borderAll'),
     fn() {
@@ -157,7 +158,8 @@ export default [
     },
     desc: i18n.t('snippets.loadTouchesPluginDesc'),
   },
-]
+  ]
+}
 
 evalCss(require('./searchText.scss'), document.head)
 
