@@ -513,7 +513,7 @@ export class CodeLog {
     setTimeout(announcePluginsToServer, 2000);
   }
 
-  private async initEruda(config?: ErudaConfig, _lang?: 'zh' | 'en'): Promise<void> {
+  private async initEruda(config?: ErudaConfig, lang?: 'zh' | 'en'): Promise<void> {
     try {
       // Clear all eruda localStorage entries so settings/position don't persist across loads
       if (typeof localStorage !== 'undefined') {
@@ -523,7 +523,7 @@ export class CodeLog {
       }
 
       // 动态导入 eruda UMD 模块
-      const erudaModule = await import('eruda');
+      const erudaModule = await import('@codelog/eruda');
       // @ts-ignore - eruda is UMD module, default export is the eruda object
       this.eruda = erudaModule.default || erudaModule;
 
@@ -533,6 +533,7 @@ export class CodeLog {
           autoScale: config?.autoScale ?? true,
           useShadowDom: true,
           defaults: config?.defaults,
+          lang: lang ?? 'zh',
         });
 
         // Clear eruda localStorage again after init (eruda writes defaults during init)

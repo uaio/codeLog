@@ -282,12 +282,12 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1
     devDependencies:
+      '@codelog/eruda':
+        specifier: workspace:*
+        version: link:../eruda
       '@codelog/types':
         specifier: workspace:*
         version: link:../types
-      eruda:
-        specifier: ^3.4.3
-        version: 3.4.3
       fake-indexeddb:
         specifier: ^6.2.5
         version: 6.2.5
@@ -2991,9 +2991,6 @@ packages:
 
   error-ex@1.3.4:
     resolution: {integrity: sha512-sqQamAnR14VgCr1A618A3sGrygcpK+HEbenA/HiEAkkUwcZIIB/tgWqHFxWgOyDh4nB4JCRimh79dR5Ywc9MDQ==}
-
-  eruda@3.4.3:
-    resolution: {integrity: sha512-J2TsF4dXSspOXev5bJ6mljv0dRrxj21wklrDzbvPmYaEmVoC+2psylyRi70nUPFh1mTQfIBsSusUtAMZtUN+/w==}
 
   es-check@6.2.1:
     resolution: {integrity: sha512-IPiRXUlwSTd2yMklIf9yEGe6GK5wCS8Sz1aTNHm1QSiYzI4aiq19giYbLi95tb+e0JJVKmcU0iQXQWW60a8V9A==}
@@ -8722,8 +8719,6 @@ snapshots:
   error-ex@1.3.4:
     dependencies:
       is-arrayish: 0.2.1
-
-  eruda@3.4.3: {}
 
   es-check@6.2.1:
     dependencies:

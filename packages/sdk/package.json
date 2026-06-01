@@ -43,7 +43,7 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "eruda": "^3.4.3",
+    "@codelog/eruda": "workspace:*",
     "@codelog/types": "workspace:*",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.9.0",
