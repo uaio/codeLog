@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client.js';
 import { useI18n } from '../i18n/index.js';
 import { websocketManager } from '../lib/websocketManager.js';
@@ -69,13 +69,9 @@ function MetricCard({ item }: { item: PerfScoreItem }) {
 }
 
 export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
-  const [running, setRunning] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
+  const [computing, setComputing] = useState(false);
   const [sessions, setSessions] = useState<PerfRunSession[]>([]);
   const [selected, setSelected] = useState<PerfRunSession | null>(null);
-  const [polling, setPolling] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { t } = useI18n();
 
   const loadSessions = useCallback(async () => {
@@ -94,65 +90,29 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
   useEffect(() => {
     setSessions([]);
     setSelected(null);
-    setRunning(false);
-    setElapsed(0);
+    setComputing(false);
   }, [deviceId]);
 
   useEffect(() => {
     loadSessions();
   }, [loadSessions]);
 
-  // WS: listen for perf_run results
+  // WS: listen for perf_run results pushed from server after device submits raw data
   useEffect(() => {
     const unsub = websocketManager.subscribe((msg: any) => {
       if (msg.type === 'perf_run' && msg.data?.deviceId === deviceId) {
         const session: PerfRunSession = msg.data;
         setSessions((prev) => [session, ...prev]);
         setSelected(session);
-        setPolling(false);
-        if (pollRef.current) {
-          clearInterval(pollRef.current);
-          pollRef.current = null;
-        }
+        setComputing(false);
+      }
+      // When the device starts a perf run, show computing indicator
+      if (msg.type === 'perf_run_raw' && msg.data?.tabId === deviceId) {
+        setComputing(true);
       }
     });
     return unsub;
   }, [deviceId]);
-
-  const handleStart = useCallback(async () => {
-    if (!deviceId || running) return;
-    try {
-      await api.post(`/api/devices/${deviceId}/perf-run/start`);
-      setRunning(true);
-      setElapsed(0);
-      timerRef.current = setInterval(() => setElapsed((e) => e + 1), 1000);
-    } catch (e: any) {
-      alert(t.perfRunPanel.startFailed + ': ' + e.message);
-    }
-  }, [deviceId, running]);
-
-  const handleStop = useCallback(async () => {
-    if (!deviceId || !running) return;
-    setRunning(false);
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    try {
-      await api.post(`/api/devices/${deviceId}/perf-run/stop`);
-      setPolling(true);
-      pollRef.current = setInterval(() => loadSessions(), 2000);
-      setTimeout(() => {
-        if (pollRef.current) {
-          clearInterval(pollRef.current);
-          pollRef.current = null;
-          setPolling(false);
-        }
-      }, 30000);
-    } catch (e: any) {
-      alert(t.perfRunPanel.stopFailed + ': ' + e.message);
-    }
-  }, [deviceId, running, loadSessions]);
 
   const handleExport = useCallback(() => {
     if (!selected) return;
@@ -198,47 +158,10 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
         }}
       >
         <span style={{ fontWeight: 'bold', fontSize: 14 }}>🏁 {t.perfRunPanel.title}</span>
-        {running && (
-          <span style={{ fontSize: 13, color: '#ff4d4f', fontVariantNumeric: 'tabular-nums' }}>
-            ⏱ {elapsed}s
-          </span>
-        )}
-        {polling && (
+        {computing && (
           <span style={{ fontSize: 12, color: '#888' }}>⏳ {t.perfRunPanel.running}</span>
         )}
         <div style={{ flex: 1 }} />
-        {!running ? (
-          <button
-            onClick={handleStart}
-            disabled={!deviceId}
-            style={{
-              padding: '5px 16px',
-              fontSize: 13,
-              border: '1px solid #52c41a',
-              borderRadius: 4,
-              backgroundColor: '#52c41a',
-              color: '#fff',
-              cursor: 'pointer',
-            }}
-          >
-            ▶ {t.perfRunPanel.start}
-          </button>
-        ) : (
-          <button
-            onClick={handleStop}
-            style={{
-              padding: '5px 16px',
-              fontSize: 13,
-              border: '1px solid #ff4d4f',
-              borderRadius: 4,
-              backgroundColor: '#ff4d4f',
-              color: '#fff',
-              cursor: 'pointer',
-            }}
-          >
-            ⏹ {t.perfRunPanel.stop}
-          </button>
-        )}
         {selected && (
           <button
             onClick={handleExport}
@@ -316,15 +239,15 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
                 color: '#999',
               }}
             >
-              {running ? (
+              {computing ? (
                 <>
-                  <div style={{ fontSize: 48 }}>⏱</div>
+                  <div style={{ fontSize: 48 }}>⏳</div>
                   <div>{t.perfRunPanel.running}</div>
                 </>
               ) : (
                 <>
                   <div style={{ fontSize: 48 }}>🏁</div>
-                  <div>{t.perfRunPanel.start}</div>
+                  <div>{t.perfRunPanel.waiting}</div>
                 </>
               )}
             </div>

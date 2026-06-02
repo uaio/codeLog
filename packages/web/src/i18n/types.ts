@@ -137,11 +137,8 @@ export interface Locale {
   // PerfRun panel
   perfRunPanel: {
     title: string;
-    start: string;
-    stop: string;
     history: string;
-    startFailed: string;
-    stopFailed: string;
+    waiting: string;
     running: string;
   };
 }

@@ -29,6 +29,7 @@ const LABELS: Record<Lang, {
   perf: string;
   perfStart: string;
   perfStop: string;
+  perfRunning: string;
   copied: string;
   clickCopy: string;
 }> = {
@@ -36,7 +37,8 @@ const LABELS: Record<Lang, {
     pageId: '页面 ID',
     perf: '⚡ 跑分',
     perfStart: '🏁 开始跑分',
-    perfStop: '⏹ 停止',
+    perfStop: '⏹ 停止跑分',
+    perfRunning: '⏳ 跑分中...',
     copied: '✓ 已复制',
     clickCopy: '点击复制',
   },
@@ -45,6 +47,7 @@ const LABELS: Record<Lang, {
     perf: '⚡ Perf',
     perfStart: '🏁 Start',
     perfStop: '⏹ Stop',
+    perfRunning: '⏳ Running...',
     copied: '✓ Copied',
     clickCopy: 'Click to copy',
   },
@@ -91,6 +94,14 @@ export class ErudaPlugin {
     this.unsubscribers.push(
       bus.on('console', (entry: DataBusConsoleEntry) => {
         this.forwardToEruda(entry);
+      }),
+    );
+
+    // 跑分完成 → 重置按钮状态
+    this.unsubscribers.push(
+      bus.on('perf_run_done', () => {
+        this.perfRunning = false;
+        this.renderInfoPanel();
       }),
     );
 
@@ -189,10 +200,14 @@ export class ErudaPlugin {
 
     // Perf run button
     if (this.codelog) {
-      const btnLabel = this.perfRunning ? L.perfStop : L.perfStart;
+      const isRunning = this.perfRunning;
+      const btnLabel = isRunning ? L.perfRunning : L.perfStart;
+      const btnStyle = isRunning
+        ? 'cursor:not-allowed;padding:2px 8px;background:#bbb;color:#fff;border-radius:4px;font-size:12px;border:none;pointer-events:none;'
+        : 'cursor:pointer;padding:2px 8px;background:#111;color:#fff;border-radius:4px;font-size:12px;border:none;';
       infoPanel.add(
         L.perf,
-        `<span id="codelog-perf-btn" style="cursor:pointer;padding:2px 8px;background:#111;color:#fff;border-radius:4px;font-size:12px;">${btnLabel}</span>`,
+        `<button id="codelog-perf-btn" ${isRunning ? 'disabled' : ''} style="${btnStyle}">${btnLabel}</button>`,
       );
     }
 
@@ -282,20 +297,17 @@ export class ErudaPlugin {
     }
 
     // Perf run toggle
-    const perfBtn = shadowRoot.getElementById('codelog-perf-btn');
+    const perfBtn = shadowRoot.getElementById('codelog-perf-btn') as HTMLButtonElement | null;
     if (perfBtn && this.codelog) {
       const L = LABELS[this.lang];
       // Use onclick to avoid duplicate handlers when bindInfoPanelHandlers is called multiple times
       perfBtn.onclick = async () => {
-        if (this.perfRunning) {
-          this.perfRunning = false;
-          perfBtn.textContent = L.perfStart;
-          await this.codelog!.stopPerfRun();
-        } else {
-          this.perfRunning = true;
-          perfBtn.textContent = L.perfStop;
-          this.codelog!.startPerfRun();
-        }
+        if (this.perfRunning) return; // already running, button should be disabled
+        this.perfRunning = true;
+        perfBtn.textContent = L.perfRunning;
+        perfBtn.disabled = true;
+        perfBtn.style.cssText = 'cursor:not-allowed;padding:2px 8px;background:#bbb;color:#fff;border-radius:4px;font-size:12px;border:none;pointer-events:none;';
+        this.codelog!.startPerfRun();
       };
     }
   }

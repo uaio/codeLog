@@ -5,7 +5,7 @@ const zh: Locale = {
     console: '控制台',
     network: '网络',
     storage: '存储',
-    perf: '性能',
+    perf: '性能监控',
     health: '健康',
     analysis: '智能分析',
     settings: '设置',
@@ -127,12 +127,9 @@ const zh: Locale = {
   },
   perfRunPanel: {
     title: '性能跑分',
-    start: '开始跑分',
-    stop: '停止',
     history: '历史记录',
-    startFailed: '启动跑分失败',
-    stopFailed: '停止跑分失败',
-    running: '运行中...',
+    waiting: '等待设备跑分结果...',
+    running: '计算中...',
   },
 };
 

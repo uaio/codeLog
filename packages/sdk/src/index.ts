@@ -275,6 +275,7 @@ export class CodeLog {
       this.stopPerfRun();
     });
     this.reporter.onPerfRunDone((score) => {
+      this.dataBus.emit('perf_run_done', score);
       const gradeEmoji: Record<string, string> = { A: '🏆', B: '🥈', C: '🥉', D: '⚠️', F: '❌' };
       const emoji = gradeEmoji[score.grade] ?? '🏁';
       this.dataBus.emit('console', {

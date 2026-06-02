@@ -5,7 +5,7 @@ const en: Locale = {
     console: 'Console',
     network: 'Network',
     storage: 'Storage',
-    perf: 'Performance',
+    perf: 'Performance Monitor',
     health: 'Health',
     analysis: 'Analysis',
     settings: 'Settings',
@@ -127,12 +127,9 @@ const en: Locale = {
   },
   perfRunPanel: {
     title: 'Performance Benchmark',
-    start: 'Start',
-    stop: 'Stop',
     history: 'History',
-    startFailed: 'Failed to start benchmark',
-    stopFailed: 'Failed to stop benchmark',
-    running: 'Running...',
+    waiting: 'Waiting for benchmark results from device...',
+    running: 'Computing...',
   },
 };
 

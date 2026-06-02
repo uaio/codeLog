@@ -345,9 +345,9 @@ class Se {
           if (t.type === "set_storage")
             try {
               t.storageType === "cookie" ? (async () => {
-                var I;
+                var R;
                 const v = t.key, k = t.value ?? "";
-                if (typeof ((I = window.cookieStore) == null ? void 0 : I.set) == "function") {
+                if (typeof ((R = window.cookieStore) == null ? void 0 : R.set) == "function") {
                   const C = { name: v, value: k };
                   t.path && (C.path = t.path), t.domain && (C.domain = t.domain), t.expires && (C.expires = t.expires), t.secure !== void 0 && (C.secure = t.secure), t.sameSite && (C.sameSite = t.sameSite), await window.cookieStore.set(C);
                 } else {
@@ -403,7 +403,7 @@ class Se {
               y.onsuccess = () => {
                 const v = y.result;
                 try {
-                  const k = v.transaction(t.storeName, "readwrite"), I = k.objectStore(t.storeName), C = I.keyPath !== null ? I.put(t.value) : I.put(t.value, t.key);
+                  const k = v.transaction(t.storeName, "readwrite"), R = k.objectStore(t.storeName), C = R.keyPath !== null ? R.put(t.value) : R.put(t.value, t.key);
                   C.onsuccess = () => {
                   }, k.oncomplete = () => {
                     v.close();
@@ -647,7 +647,7 @@ class Se {
 function z() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
-function R(i, e) {
+function I(i, e) {
   return !i || new TextEncoder().encode(i).length <= e ? i : i.slice(0, Math.floor(e / 2)) + "...[truncated]";
 }
 function q(i, e) {
@@ -730,12 +730,12 @@ class ve {
         return e.originalFetch.call(window, t, s);
       if (s && (s.headers && (s.headers instanceof Headers ? c = _(s.headers) : typeof s.headers == "object" && (c = s.headers)), s.body))
         if (typeof s.body == "string")
-          l = R(s.body, e.config.maxRequestBodySize);
+          l = I(s.body, e.config.maxRequestBodySize);
         else if (s.body instanceof FormData)
           l = "[FormData]";
         else
           try {
-            l = R(
+            l = I(
               JSON.stringify(s.body),
               e.config.maxRequestBodySize
             );
@@ -754,23 +754,23 @@ class ve {
           const p = f.clone(), g = (w == null ? void 0 : w["content-type"]) ?? "";
           if (g.includes("application/json")) {
             const m = await p.text();
-            S = R(m, e.config.maxResponseBodySize);
+            S = I(m, e.config.maxResponseBodySize);
           } else if (g.includes("text/")) {
             const m = await p.text();
-            S = R(m, e.config.maxResponseBodySize);
+            S = I(m, e.config.maxResponseBodySize);
           } else if (g) {
             const m = await p.blob();
             if (m.size <= e.config.maxResponseBodySize) {
               const y = await m.arrayBuffer(), v = new Uint8Array(y);
               let k = "";
-              v.forEach((I) => {
-                k += String.fromCharCode(I);
+              v.forEach((R) => {
+                k += String.fromCharCode(R);
               }), S = `[binary: ${m.type}, ${m.size}B] ` + btoa(k).slice(0, 200);
             } else
               S = `[binary: ${m.type}, ${m.size}B, EXCEED_SIZE]`;
           } else {
             const m = await p.text();
-            S = R(m, e.config.maxResponseBodySize);
+            S = I(m, e.config.maxResponseBodySize);
           }
         } catch {
         }
@@ -842,12 +842,12 @@ class ve {
         return e.originalXhrSend.call(this, s);
       if (n.startTime = Date.now(), s)
         if (typeof s == "string")
-          n.requestBody = R(s, e.config.maxRequestBodySize);
+          n.requestBody = I(s, e.config.maxRequestBodySize);
         else if (s instanceof FormData)
           n.requestBody = "[FormData]";
         else
           try {
-            n.requestBody = R(
+            n.requestBody = I(
               JSON.stringify(s),
               e.config.maxRequestBodySize
             );
@@ -874,7 +874,7 @@ class ve {
           const u = this.responseType;
           if (!u || u === "text" || u === "json") {
             const d = u === "json" ? JSON.stringify(this.response) : this.responseText;
-            d && (l = R(d, e.config.maxResponseBodySize));
+            d && (l = I(d, e.config.maxResponseBodySize));
           } else if (u === "arraybuffer" && this.response instanceof ArrayBuffer) {
             const d = new Uint8Array(this.response);
             if (d.byteLength <= e.config.maxResponseBodySize) {
@@ -1075,7 +1075,7 @@ class Ce {
     this.originalEventSource && (window.EventSource = this.originalEventSource, this.originalEventSource = null);
   }
 }
-class Ie {
+class Re {
   constructor(e) {
     this.originalSendBeacon = null, this.onReport = e;
   }
@@ -1114,7 +1114,7 @@ class Ie {
     this.originalSendBeacon && (navigator.sendBeacon = this.originalSendBeacon, this.originalSendBeacon = null);
   }
 }
-class Re {
+class Ie {
   constructor(e) {
     this.debounceTimer = null, this.origLocalSetItem = null, this.origLocalRemoveItem = null, this.origLocalClear = null, this.origSessionSetItem = null, this.origSessionRemoveItem = null, this.origSessionClear = null, this.cookieDescriptor = null, this.watching = !1, this.onReport = e;
   }
@@ -1956,7 +1956,8 @@ const E = {
     pageId: "页面 ID",
     perf: "⚡ 跑分",
     perfStart: "🏁 开始跑分",
-    perfStop: "⏹ 停止",
+    perfStop: "⏹ 停止跑分",
+    perfRunning: "⏳ 跑分中...",
     copied: "✓ 已复制",
     clickCopy: "点击复制"
   },
@@ -1965,6 +1966,7 @@ const E = {
     perf: "⚡ Perf",
     perfStart: "🏁 Start",
     perfStop: "⏹ Stop",
+    perfRunning: "⏳ Running...",
     copied: "✓ Copied",
     clickCopy: "Click to copy"
   }
@@ -1978,6 +1980,10 @@ class je {
     if (this.eruda = e, this.codelog = s ?? null, this.pageId = n ?? null, this.settingsItemsAdded = !1, this.settingsItemCount = 0, this.detach(), this.lang = this.detectInitialLang(), this.syncErudaLang(this.lang), this.unsubscribers.push(
       t.on("console", (o) => {
         this.forwardToEruda(o);
+      })
+    ), this.unsubscribers.push(
+      t.on("perf_run_done", () => {
+        this.perfRunning = !1, this.renderInfoPanel();
       })
     ), typeof document < "u") {
       const o = e.get();
@@ -2046,10 +2052,10 @@ class je {
       );
     }
     if (this.codelog) {
-      const n = this.perfRunning ? t.perfStop : t.perfStart;
+      const n = this.perfRunning, o = n ? t.perfRunning : t.perfStart, r = n ? "cursor:not-allowed;padding:2px 8px;background:#bbb;color:#fff;border-radius:4px;font-size:12px;border:none;pointer-events:none;" : "cursor:pointer;padding:2px 8px;background:#111;color:#fff;border-radius:4px;font-size:12px;border:none;";
       e.add(
         t.perf,
-        `<span id="codelog-perf-btn" style="cursor:pointer;padding:2px 8px;background:#111;color:#fff;border-radius:4px;font-size:12px;">${n}</span>`
+        `<button id="codelog-perf-btn" ${n ? "disabled" : ""} style="${r}">${o}</button>`
       );
     }
     setTimeout(() => this.bindInfoPanelHandlers(), 300);
@@ -2125,7 +2131,7 @@ class je {
     if (s && this.codelog) {
       const n = E[this.lang];
       s.onclick = async () => {
-        this.perfRunning ? (this.perfRunning = !1, s.textContent = n.perfStart, await this.codelog.stopPerfRun()) : (this.perfRunning = !0, s.textContent = n.perfStop, this.codelog.startPerfRun());
+        this.perfRunning || (this.perfRunning = !0, s.textContent = n.perfRunning, s.disabled = !0, s.style.cssText = "cursor:not-allowed;padding:2px 8px;background:#bbb;color:#fff;border-radius:4px;font-size:12px;border:none;pointer-events:none;", this.codelog.startPerfRun());
       };
     }
   }
@@ -3078,6 +3084,7 @@ class nt {
     }), this.reporter.onStopPerfRun(() => {
       this.stopPerfRun();
     }), this.reporter.onPerfRunDone((h) => {
+      this.dataBus.emit("perf_run_done", h);
       const b = { A: "🏆", B: "🥈", C: "🥉", D: "⚠️", F: "❌" }[h.grade] ?? "🏁";
       this.dataBus.emit("console", {
         timestamp: Date.now(),
@@ -3317,14 +3324,14 @@ class nt {
           }
           v = A.message, k = A.args;
         }
-        const I = be(k), C = we(k), te = Ve(k), se = {
+        const R = be(k), C = we(k), te = Ve(k), se = {
           timestamp: Date.now(),
           level: p,
           message: v,
           args: k,
           serializedArgs: te,
           indent: t,
-          ...I.length > 0 ? { cssStyles: I } : {},
+          ...R.length > 0 ? { cssStyles: R } : {},
           ...C ? { styledParts: C } : {},
           ...m ? { stack: O(new Error().stack) } : {}
         };
@@ -3503,11 +3510,11 @@ class nt {
       }
       t.emit("network", o);
     };
-    this.networkInterceptor = new ve(n, e), this.networkInterceptor.start(), this.wsInterceptor = new ke(n), this.wsInterceptor.start(), this.sseInterceptor = new Ce(n), this.sseInterceptor.start(), this.beaconInterceptor = new Ie(n), this.beaconInterceptor.start();
+    this.networkInterceptor = new ve(n, e), this.networkInterceptor.start(), this.wsInterceptor = new ke(n), this.wsInterceptor.start(), this.sseInterceptor = new Ce(n), this.sseInterceptor.start(), this.beaconInterceptor = new Re(n), this.beaconInterceptor.start();
   }
   initStorageReader() {
     const e = this.dataBus, t = this.storageProcessor;
-    this.storageReader = new Re((s) => {
+    this.storageReader = new Ie((s) => {
       if (t) {
         const n = t({
           localStorage: s.localStorage,
