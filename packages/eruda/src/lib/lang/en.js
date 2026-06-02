@@ -43,6 +43,7 @@ export default {
     lazyEvaluation: 'Lazy Evaluation',
     maxLogNum: 'Max Log Number',
     infinite: 'infinite',
+    showTimestamp: 'Show Timestamps',
   },
 
   // DevTools

@@ -63,7 +63,7 @@ var eruda$1 = { exports: {} };
           }
         }
         w();
-        function te(Te) {
+        function ne(Te) {
           return Z()(Te.replace("px", ""));
         }
         var B = e(2263), P = e.n(B), N = e(3693), I = e.n(N), C = e(9100), H = e.n(C), V = e(8105), Ae = e.n(V), ke = e(5651), le = e.n(ke), ee = e(961), se = e.n(ee), Oe = e(7e3), Ne = e.n(Oe), Fe = e(1009), Ue = e.n(Fe);
@@ -186,14 +186,14 @@ var eruda$1 = { exports: {} };
                 return "".concat(We, "-width");
               })), { top: Ee(F[$e[0]], we), left: Ee(F[$e[1]], we), right: Ee(F[$e[2]], we), bottom: Ee(F[$e[3]], we) };
             }
-            var be, ve, He, pe, de, fe, Ce = { margin: ce("margin"), border: ce("border"), padding: ce("padding"), content: (be = X, ve = window.getComputedStyle(be), He = te(ve.paddingLeft) + te(ve.paddingRight), pe = te(ve.paddingTop) + te(ve.paddingBottom), de = te(ve.borderLeftWidth) + te(ve.borderRightWidth), fe = te(ve.borderTopWidth) + te(ve.borderBottomWidth), { width: Ee(be.offsetWidth - He - de), height: Ee(be.offsetHeight - pe - fe) }) };
+            var be, ve, He, pe, de, fe, Ce = { margin: ce("margin"), border: ce("border"), padding: ce("padding"), content: (be = X, ve = window.getComputedStyle(be), He = ne(ve.paddingLeft) + ne(ve.paddingRight), pe = ne(ve.paddingTop) + ne(ve.paddingBottom), de = ne(ve.borderLeftWidth) + ne(ve.borderRightWidth), fe = ne(ve.borderTopWidth) + ne(ve.borderBottomWidth), { width: Ee(be.offsetWidth - He - de), height: Ee(be.offsetHeight - pe - fe) }) };
             return F.position !== "static" && (Ce.position = ce("position")), Ce;
           } }]);
         }(qe);
         function Ee(Te, oe) {
           if (f()(Te)) return Te;
           if (!b()(Te)) return "‒";
-          var X = te(Te);
+          var X = ne(Te);
           return isNaN(X) ? Te : oe === "position" ? X : X === 0 ? "‒" : X;
         }
         (function(Te, oe) {
@@ -235,7 +235,7 @@ var eruda$1 = { exports: {} };
 In order to be iterable, non-array objects must have a [Symbol.iterator]() method.`);
           }();
         }
-        var c = e(3029), s = e(2901), l = e(388), r = e(3954), u = e(991), f = e(5361), p = e(5902), b = e.n(p), x = e(2561), v = e.n(x), _ = e(3249), h = e.n(_), m = e(1009), w = e.n(m), O = e(4950), G = e.n(O), j = e(9100), S = e.n(j), Q = e(1580), Z = e.n(Q), U = e(9464), ie = e.n(U), me = e(15), W = e.n(me), te = e(9931), B = e.n(te);
+        var c = e(3029), s = e(2901), l = e(388), r = e(3954), u = e(991), f = e(5361), p = e(5902), b = e.n(p), x = e(2561), v = e.n(x), _ = e(3249), h = e.n(_), m = e(1009), w = e.n(m), O = e(4950), G = e.n(O), j = e(9100), S = e.n(j), Q = e(1580), Z = e.n(Q), U = e(9464), ie = e.n(U), me = e(15), W = e.n(me), ne = e(9931), B = e.n(ne);
         function P(Ve) {
           return Ve.constructor && Ve.constructor.name ? Ve.constructor.name : B()({}.toString.call(Ve).replace(/(\[object )|]/g, ""));
         }
@@ -996,7 +996,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         e.d(t, { A: function() {
           return Ft;
         } });
-        var o = e(7528), a = e(3029), i = e(2901), c = e(388), s = e(3954), l = e(991), r = e(5361), u = e(3693), f = e.n(u), p = e(5773), b = e.n(p), x = e(2263), v = e.n(x), _ = e(3915), h = e.n(_), m = e(9405), w = e.n(m), O = e(5169), G = e.n(O), j = e(9548), S = e.n(j), Q = (e(6097), e(3249)), Z = e.n(Q), U = e(6030), ie = e.n(U), me = e(5004), W = e.n(me), te = (e(9410), e(8609)), B = e.n(te);
+        var o = e(7528), a = e(3029), i = e(2901), c = e(388), s = e(3954), l = e(991), r = e(5361), u = e(3693), f = e.n(u), p = e(5773), b = e.n(p), x = e(2263), v = e.n(x), _ = e(3915), h = e.n(_), m = e(9405), w = e.n(m), O = e(5169), G = e.n(O), j = e(9548), S = e.n(j), Q = (e(6097), e(3249)), Z = e.n(Q), U = e(6030), ie = e.n(U), me = e(5004), W = e.n(me), ne = (e(9410), e(8609)), B = e.n(ne);
         function P(mt) {
           var lt = "luna-".concat(mt, "-");
           function ye(De) {
@@ -1389,7 +1389,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           var Ke = Z()();
           return Ke === "os x" ? "mac" : Ke;
         }
-        var te = e(9100), B = e.n(te), P = e(8105), N = e.n(P), I = e(5651), C = e.n(I), H = e(961), V = e.n(H), Ae = e(7e3), ke = e.n(Ae), le = e(1009), ee = e.n(le);
+        var ne = e(9100), B = e.n(ne), P = e(8105), N = e.n(P), I = e(5651), C = e.n(I), H = e(961), V = e.n(H), Ae = e(7e3), ke = e.n(Ae), le = e(1009), ee = e.n(le);
         function se() {
           try {
             var Ke = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function() {
@@ -1705,7 +1705,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }
         var c = e(4467), s = e(7528), l = e(3029), r = e(2901), u = e(388), f = e(3954), p = e(991), b = e(5361), x = e(2263), v = e.n(x), _ = e(3693), h = e.n(_), m = e(3915), w = e.n(m), O = e(9405), G = e.n(O), j = e(5169), S = e.n(j), Q = e(9548), Z = e.n(Q), U = (e(6097), e(3249)), ie = e.n(U), me = (e(6030), e(5004)), W = e.n(me);
         e(9410), e(8609), e(8990);
-        function te(pe) {
+        function ne(pe) {
           var de = "luna-".concat(pe, "-");
           function fe(Ce) {
             return w()(G()(Ce).split(/\s+/), function(we) {
@@ -1751,7 +1751,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               return pt = (0, f.A)(pt), (0, u.A)(st, Ne() ? Reflect.construct(pt, [], (0, f.A)(st).constructor) : pt.apply(st, Dt));
             }(this, de), we.subComponents = [], we.theme = "", we.onThemeChange = function(st) {
               we.options.theme === "auto" && we.setTheme(st);
-            }, we.compName = We, we.c = te(We), we.options = {}, we.container = fe, we.$container = h()(fe), we.$container.addClass(["luna-".concat(We), we.c("platform-".concat(($e = W()(), $e === "os x" ? "mac" : $e)))]), we.on("changeOption", function(st, pt) {
+            }, we.compName = We, we.c = ne(We), we.options = {}, we.container = fe, we.$container = h()(fe), we.$container.addClass(["luna-".concat(We), we.c("platform-".concat(($e = W()(), $e === "os x" ? "mac" : $e)))]), we.on("changeOption", function(st, pt) {
               if (st === "theme" && pt) {
                 var Dt = pt;
                 pt === "auto" && (Dt = ee().get()), we.setTheme(Dt), N()(we.subComponents, function($t) {
@@ -1900,7 +1900,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         } });
         var o = e(3029), a = e(2901), i = e(388), c = e(3954), s = e(5361), l = e(3693), r = e.n(l), u = e(5630), f = e.n(u), p = e(8438), b = e.n(p), x = e(5241), v = e.n(x), _ = e(2263), h = e.n(_), m = e(3915), w = e.n(m), O = e(9405), G = e.n(O), j = e(5169), S = e.n(j), Q = e(9548), Z = e.n(Q), U = (e(6097), e(3249)), ie = e.n(U), me = (e(6030), e(5004)), W = e.n(me);
         e(9410), e(8609);
-        function te(Ee) {
+        function ne(Ee) {
           var Te = "luna-".concat(Ee, "-");
           function oe(X) {
             return w()(G()(X).split(/\s+/), function(F) {
@@ -1946,7 +1946,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               return de = (0, c.A)(de), (0, i.A)(pe, Ne() ? Reflect.construct(de, [], (0, c.A)(pe).constructor) : de.apply(pe, fe));
             }(this, Te), F.subComponents = [], F.theme = "", F.onThemeChange = function(pe) {
               F.options.theme === "auto" && F.setTheme(pe);
-            }, F.compName = be, F.c = te(be), F.options = {}, F.container = oe, F.$container = r()(oe), F.$container.addClass(["luna-".concat(be), F.c("platform-".concat((ce = W()(), ce === "os x" ? "mac" : ce)))]), F.on("changeOption", function(pe, de) {
+            }, F.compName = be, F.c = ne(be), F.options = {}, F.container = oe, F.$container = r()(oe), F.$container.addClass(["luna-".concat(be), F.c("platform-".concat((ce = W()(), ce === "os x" ? "mac" : ce)))]), F.on("changeOption", function(pe, de) {
               if (pe === "theme" && de) {
                 var fe = de;
                 de === "auto" && (fe = ee().get()), F.setTheme(fe), N()(F.subComponents, function(Ce) {
@@ -2061,7 +2061,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }, A: function() {
           return De;
         } });
-        var o = e(2284), a = e(3029), i = e(2901), c = e(388), s = e(3954), l = e(991), r = e(5361), u = e(5427), f = e.n(u), p = e(6097), b = e.n(p), x = e(6493), v = e.n(x), _ = e(96), h = e.n(_), m = e(9760), w = e.n(m), O = e(6214), G = e.n(O), j = e(9931), S = e.n(j), Q = e(3145), Z = e.n(Q), U = e(9100), ie = e.n(U), me = e(1168), W = e.n(me), te = e(8796), B = e.n(te), P = e(2989), N = e.n(P), I = e(3693), C = e.n(I), H = e(466), V = e.n(H), Ae = e(15), ke = e.n(Ae), le = e(1738), ee = e.n(le), se = e(7514), Oe = e.n(se), Ne = e(2571), Fe = e.n(Ne), Ue = e(7140), et = e.n(Ue), qe = e(2561), he = e.n(qe), it = e(9993), Ee = e.n(it), Te = e(1532), oe = e.n(Te), X = e(8105), F = e.n(X), ce = function() {
+        var o = e(2284), a = e(3029), i = e(2901), c = e(388), s = e(3954), l = e(991), r = e(5361), u = e(5427), f = e.n(u), p = e(6097), b = e.n(p), x = e(6493), v = e.n(x), _ = e(96), h = e.n(_), m = e(9760), w = e.n(m), O = e(6214), G = e.n(O), j = e(9931), S = e.n(j), Q = e(3145), Z = e.n(Q), U = e(9100), ie = e.n(U), me = e(1168), W = e.n(me), ne = e(8796), B = e.n(ne), P = e(2989), N = e.n(P), I = e(3693), C = e.n(I), H = e(466), V = e.n(H), Ae = e(15), ke = e.n(Ae), le = e(1738), ee = e.n(le), se = e(7514), Oe = e.n(se), Ne = e(2571), Fe = e.n(Ne), Ue = e(7140), et = e.n(Ue), qe = e(2561), he = e.n(qe), it = e(9993), Ee = e.n(it), Te = e(1532), oe = e.n(Te), X = e(8105), F = e.n(X), ce = function() {
           return (0, i.A)(function L() {
             (0, a.A)(this, L), this.id = 0, this.visited = [];
           }, [{ key: "set", value: function(L, Me) {
@@ -2411,7 +2411,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         e.d(t, { Ay: function() {
           return st;
         } });
-        var o = e(991), a = e(3029), i = e(2901), c = e(388), s = e(3954), l = e(5361), r = e(3693), u = e.n(r), f = e(5241), p = e.n(f), b = e(5902), x = e.n(b), v = e(5630), _ = e.n(v), h = e(9760), m = e.n(h), w = e(5651), O = e.n(w), G = e(3915), j = e.n(G), S = e(6030), Q = e.n(S), Z = e(2561), U = e.n(Z), ie = e(3957), me = e.n(ie), W = e(3497), te = e.n(W), B = e(1976), P = e.n(B), N = e(1738), I = e.n(N), C = e(9405), H = e.n(C), V = e(3249), Ae = e.n(V), ke = e(96), le = e.n(ke), ee = e(4236), se = e.n(ee), Oe = e(9100), Ne = e.n(Oe), Fe = e(2263), Ue = e.n(Fe), et = e(5169), qe = e.n(et), he = e(9548), it = e.n(he), Ee = (e(6097), e(5004)), Te = e.n(Ee);
+        var o = e(991), a = e(3029), i = e(2901), c = e(388), s = e(3954), l = e(5361), r = e(3693), u = e.n(r), f = e(5241), p = e.n(f), b = e(5902), x = e.n(b), v = e(5630), _ = e.n(v), h = e(9760), m = e.n(h), w = e(5651), O = e.n(w), G = e(3915), j = e.n(G), S = e(6030), Q = e.n(S), Z = e(2561), U = e.n(Z), ie = e(3957), me = e.n(ie), W = e(3497), ne = e.n(W), B = e(1976), P = e.n(B), N = e(1738), I = e.n(N), C = e(9405), H = e.n(C), V = e(3249), Ae = e.n(V), ke = e(96), le = e.n(ke), ee = e(4236), se = e.n(ee), Oe = e(9100), Ne = e.n(Oe), Fe = e(2263), Ue = e.n(Fe), et = e(5169), qe = e.n(et), he = e(9548), it = e.n(he), Ee = (e(6097), e(5004)), Te = e.n(Ee);
         e(9410), e(8609);
         function oe(Be) {
           var $ = "luna-".concat(Be, "-");
@@ -2534,7 +2534,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             var K = new Dt(this, D, arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 1);
             return this.append(K), K;
           } }, { key: "appendSeparator", value: function() {
-            var D = this.items, K = this.options.separatorCollapse, re = te()(D);
+            var D = this.items, K = this.options.separatorCollapse, re = ne()(D);
             if (K && re instanceof Bt) return re;
             var Ie = new Bt(this);
             return this.append(Ie), Ie;
@@ -2800,7 +2800,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }
         var W;
         m();
-        var te = e(9100), B = e.n(te), P = e(8105), N = e.n(P), I = e(5651), C = e.n(I), H = e(961), V = e.n(H), Ae = e(7e3), ke = e.n(Ae), le = e(1009), ee = e.n(le);
+        var ne = e(9100), B = e.n(ne), P = e(8105), N = e.n(P), I = e(5651), C = e.n(I), H = e(961), V = e.n(H), Ae = e(7e3), ke = e.n(Ae), le = e(1009), ee = e.n(le);
         function se() {
           try {
             var Ee = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function() {
@@ -3004,7 +3004,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           var ve = Q()();
           return ve === "os x" ? "mac" : ve;
         }
-        var W = e(9100), te = e.n(W), B = e(8105), P = e.n(B), N = e(5651), I = e.n(N), C = e(961), H = e.n(C);
+        var W = e(9100), ne = e.n(W), B = e(8105), P = e.n(B), N = e(5651), I = e.n(N), C = e(961), H = e.n(C);
         function V() {
           try {
             var ve = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function() {
@@ -3020,7 +3020,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             var fe, Ce, we, $e, We = de.compName, tt = (arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {}).theme, ut = tt === void 0 ? "light" : tt;
             return (0, o.A)(this, He), Ce = this, we = He, we = (0, c.A)(we), (fe = (0, i.A)(Ce, V() ? Reflect.construct(we, [], (0, c.A)(Ce).constructor) : we.apply(Ce, $e))).subComponents = [], fe.compName = We, fe.c = Z(We), fe.options = {}, fe.container = pe, fe.$container = p()(pe), fe.$container.addClass(["luna-".concat(We), fe.c("platform-".concat(me()))]), fe.on("optionChange", function(st, pt, Dt) {
               var $t = fe.c;
-              st === "theme" && (fe.$container.rmClass($t("theme-".concat(Dt))).addClass($t("theme-".concat(pt))), te()(fe.subComponents, function(Bt) {
+              st === "theme" && (fe.$container.rmClass($t("theme-".concat(Dt))).addClass($t("theme-".concat(pt))), ne()(fe.subComponents, function(Bt) {
                 return Bt.setOption("theme", pt);
               }));
             }), fe.setOption("theme", ut), fe;
@@ -3031,7 +3031,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             this.$container.rmClass("luna-".concat(this.compName)).rmClass(pe("platform-".concat(me()))).rmClass(pe("theme-".concat(this.options.theme))), this.$container.html(""), this.emit("destroy"), this.removeAllListeners();
           } }, { key: "setOption", value: function(pe, de) {
             var fe = this, Ce = this.options, we = {};
-            typeof pe == "string" ? we[pe] = de : we = pe, te()(we, function($e, We) {
+            typeof pe == "string" ? we[pe] = de : we = pe, ne()(we, function($e, We) {
               var tt = Ce[We];
               Ce[We] = $e, fe.emit("optionChange", We, $e, tt);
             });
@@ -3044,7 +3044,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               return de === pe;
             });
           } }, { key: "destroySubComponents", value: function() {
-            te()(this.subComponents, function(pe) {
+            ne()(this.subComponents, function(pe) {
               return pe.destroy();
             }), this.subComponents = [];
           } }, { key: "initOptions", value: function(pe) {
@@ -3092,7 +3092,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             }(pe);
             se()(tt) && (tt = ["&nbsp;"]), _()(le()(tt)) || tt.pop();
             var ut = "";
-            te()(tt, function(st, pt) {
+            ne()(tt, function(st, pt) {
               de.lineNum += 1, ut += '<div class="'.concat(we("table-row"), '"><div class="').concat(we("line-number"), '">').concat(de.lineNum, '</div><div class="').concat(we("line-text"), '">').concat(fe.escape ? it()(st) : st || " ", "</div></div>");
             }), $e.find(we(".table")).append(ut), Ce.hide(), $e.offset().height > 40 && Ce.show(), this.updateCopyPos();
           } }, { key: "destroy", value: function() {
@@ -3135,7 +3135,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return this._$el.hide(), this;
         }, destroy: function() {
           this._$el.remove();
-        } }), _ = e(3693), h = e.n(_), m = e(5021), w = e.n(m), O = e(5630), G = e.n(O), j = e(9100), S = e.n(j), Q = e(2571), Z = e.n(Q), U = e(1738), ie = e.n(U), me = e(3249), W = e.n(me), te = e(8420), B = e.n(te), P = e(2561), N = e.n(P), I = e(3145), C = e.n(I), H = e(7604), V = e.n(H), Ae = e(5651), ke = e.n(Ae), le = e(8105), ee = e.n(le), se = e(6214), Oe = e.n(se), Ne = ["background", "foreground", "selectForeground", "accent", "highlight", "border", "primary", "contrast", "varColor", "stringColor", "keywordColor", "numberColor", "operatorColor", "linkColor", "textColor", "tagNameColor", "functionColor", "attributeNameColor", "commentColor"], Fe = Ne.length;
+        } }), _ = e(3693), h = e.n(_), m = e(5021), w = e.n(m), O = e(5630), G = e.n(O), j = e(9100), S = e.n(j), Q = e(2571), Z = e.n(Q), U = e(1738), ie = e.n(U), me = e(3249), W = e.n(me), ne = e(8420), B = e.n(ne), P = e(2561), N = e.n(P), I = e(3145), C = e.n(I), H = e(7604), V = e.n(H), Ae = e(5651), ke = e.n(Ae), le = e(8105), ee = e.n(le), se = e(6214), Oe = e.n(se), Ne = ["background", "foreground", "selectForeground", "accent", "highlight", "border", "primary", "contrast", "varColor", "stringColor", "keywordColor", "numberColor", "operatorColor", "linkColor", "textColor", "tagNameColor", "functionColor", "attributeNameColor", "commentColor"], Fe = Ne.length;
         function Ue(y) {
           for (var T = {}, n = 0; n < Fe; n++) T[Ne[n]] = y[n];
           return T;
@@ -3239,10 +3239,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             S()(R, function(Se) {
               return J[Se] = Se;
             });
-            var ne = this._setting.appendSelect(Y, n.get(g), "", A, J);
-            return this._settings.push({ config: n, key: g, id: Y, item: ne }), this;
+            var te = this._setting.appendSelect(Y, n.get(g), "", A, J);
+            return this._settings.push({ config: n, key: g, id: Y, item: te }), this;
           } }, { key: "range", value: function(n, g, A, R) {
-            var Y = R.min, J = Y === void 0 ? 0 : Y, ne = R.max, Se = ne === void 0 ? 1 : ne, Ge = R.step, ft = Ge === void 0 ? 0.1 : Ge, bt = this._genId(), Ot = this._setting.appendNumber(bt, n.get(g), A, { max: Se, min: J, step: ft, range: !0 });
+            var Y = R.min, J = Y === void 0 ? 0 : Y, te = R.max, Se = te === void 0 ? 1 : te, Ge = R.step, ft = Ge === void 0 ? 0.1 : Ge, bt = this._genId(), Ot = this._setting.appendNumber(bt, n.get(g), A, { max: Se, min: J, step: ft, range: !0 });
             return this._settings.push({ config: n, key: g, min: J, max: Se, step: ft, id: bt, item: Ot }), this;
           } }, { key: "button", value: function(n, g) {
             return this._setting.appendButton(n, g), this;
@@ -3345,18 +3345,18 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           function T(n) {
             var g, A, R, Y;
             return (0, o.A)(this, T), A = this, R = T, R = (0, c.A)(R), g = (0, i.A)(A, zt() ? Reflect.construct(R, [], (0, c.A)(A).constructor) : R.apply(A, Y)), (0, l.A)(g, "_onDragStart", function(J) {
-              var ne = g._$el;
-              ne.addClass(M("active")), g._isClick = !0, J = J.origEvent, g._startX = xt("x", J), g._oldX = Qe(ne.css("left")), g._oldY = Qe(ne.css("top")), g._startY = xt("y", J), Rt.on(ut()("move"), g._onDragMove), Rt.on(ut()("up"), g._onDragEnd);
+              var te = g._$el;
+              te.addClass(M("active")), g._isClick = !0, J = J.origEvent, g._startX = xt("x", J), g._oldX = Qe(te.css("left")), g._oldY = Qe(te.css("top")), g._startY = xt("y", J), Rt.on(ut()("move"), g._onDragMove), Rt.on(ut()("up"), g._onDragEnd);
             }), (0, l.A)(g, "_onDragMove", function(J) {
-              var ne = g._$el.get(0).offsetWidth, Se = g._$container.get(0).offsetWidth, Ge = g._$container.get(0).offsetHeight, ft = xt("x", J = J.origEvent) - g._startX, bt = xt("y", J) - g._startY;
+              var te = g._$el.get(0).offsetWidth, Se = g._$container.get(0).offsetWidth, Ge = g._$container.get(0).offsetHeight, ft = xt("x", J = J.origEvent) - g._startX, bt = xt("y", J) - g._startY;
               (Math.abs(ft) > 3 || Math.abs(bt) > 3) && (g._isClick = !1);
               var Ot = g._oldX + ft, Nt = g._oldY + bt;
-              Ot < 0 ? Ot = 0 : Ot > Se - ne && (Ot = Se - ne), Nt < 0 ? Nt = 0 : Nt > Ge - ne && (Nt = Ge - ne), g._$el.css({ left: Ot, top: Nt });
+              Ot < 0 ? Ot = 0 : Ot > Se - te && (Ot = Se - te), Nt < 0 ? Nt = 0 : Nt > Ge - te && (Nt = Ge - te), g._$el.css({ left: Ot, top: Nt });
             }), (0, l.A)(g, "_onDragEnd", function(J) {
-              var ne = g._$el;
+              var te = g._$el;
               g._isClick && g.emit("click"), g._onDragMove(J), Rt.off(ut()("move"), g._onDragMove), Rt.off(ut()("up"), g._onDragEnd);
               var Se = g.config;
-              Se.get("rememberPos") && Se.set("pos", { x: Qe(ne.css("left")), y: Qe(ne.css("top")) }), ne.rmClass("eruda-active");
+              Se.get("rememberPos") && Se.set("pos", { x: Qe(te.css("left")), y: Qe(te.css("top")) }), te.rmClass("eruda-active");
             }), g._style = ve(e(7031)), g._$container = n, g._initTpl(), g._bindEvent(), g._registerListener(), g;
           }
           return (0, s.A)(T, y), (0, a.A)(T, [{ key: "hide", value: function() {
@@ -3406,15 +3406,15 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         Ft.formatter = function(y, T) {
           return T.unshift(this.name), T;
         };
-        var De = e(2284), L = { en: { tools: { console: "Console", elements: "Elements", network: "Network", resources: "Resources", sources: "Sources", info: "Info", snippets: "Snippets", settings: "Settings" }, common: { all: "All", filter: "Filter", cancel: "Cancel", execute: "Execute", copied: "Copied", refreshed: "Refreshed", empty: "Empty", clear: "Clear", delete: "Delete", show: "Show", hide: "Hide", copy: "Copy" }, console: { info: "Info", warning: "Warning", error: "Error", asyncRender: "Asynchronous Rendering", jsExecution: "Enable JavaScript Execution", catchGlobalErr: "Catch Global Errors", overrideConsole: "Override Console", displayIfErr: "Auto Display If Error Occurs", displayExtraInfo: "Display Extra Information", displayUnenumerable: "Display Unenumerable Properties", displayGetterVal: "Access Getter Value", lazyEvaluation: "Lazy Evaluation", maxLogNum: "Max Log Number", infinite: "infinite" }, devTools: { theme: "Theme", systemPreference: "System preference", transparency: "Transparency", displaySize: "Display Size", restoreDefaults: "Restore defaults and reload" }, elements: { attributes: "Attributes", styles: "Styles", computedStyle: "Computed Style", eventListeners: "Event Listeners", catchEventListeners: "Catch Event Listeners", autoRefreshElements: "Auto Refresh Elements" }, resources: { key: "Key", value: "Value", localStorage: "Local Storage", sessionStorage: "Session Storage", cookie: "Cookie", script: "Script", stylesheet: "Stylesheet", iframe: "Iframe", image: "Image", hideErudaSetting: "Hide Eruda Setting" }, sources: { showLineNumbers: "Show Line Numbers", fetchError: "Sorry, unable to fetch source code:(" }, info: { location: "Location", userAgent: "User Agent", device: "Device", system: "System", sponsor: "Sponsor this Project", about: "About", screen: "screen", viewport: "viewport", pixelRatio: "pixel ratio", os: "os", browser: "browser", openCollective: "Open Collective", koFi: "Ko-fi", wechatPay: "Wechat Pay" }, snippets: { borderAll: "Border All", borderAllDesc: "Add color borders to all elements", refreshPage: "Refresh Page", refreshPageDesc: "Add timestamp to url and refresh", searchText: "Search Text", searchTextDesc: "Highlight given text on page", editPage: "Edit Page", editPageDesc: "Toggle body contentEditable", fitScreen: "Fit Screen", fitScreenDesc: "Scale down the whole page to fit screen", loadVuePlugin: "Load Vue Plugin", loadVuePluginDesc: "Vue devtools", loadMonitorPlugin: "Load Monitor Plugin", loadMonitorPluginDesc: "Display page fps, memory and dom nodes", loadFeaturesPlugin: "Load Features Plugin", loadFeaturesPluginDesc: "Browser feature detections", loadTimingPlugin: "Load Timing Plugin", loadTimingPluginDesc: "Show performance and resource timing", loadCodePlugin: "Load Code Plugin", loadCodePluginDesc: "Edit and run JavaScript", loadBenchmarkPlugin: "Load Benchmark Plugin", loadBenchmarkPluginDesc: "Run JavaScript benchmarks", loadGeolocationPlugin: "Load Geolocation Plugin", loadGeolocationPluginDesc: "Test geolocation", loadOrientationPlugin: "Load Orientation Plugin", loadOrientationPluginDesc: "Test orientation api", loadTouchesPlugin: "Load Touches Plugin", loadTouchesPluginDesc: "Visualize screen touches", enterText: "Enter the text", failToLoadPlugin: "Fail to load plugin " }, entryBtn: { rememberPosition: "Remember Entry Button Position" }, settings: { language: "Language" } }, "zh-CN": { tools: { console: "控制台", elements: "元素", network: "网络", resources: "资源", sources: "源码", info: "信息", snippets: "代码片段", settings: "设置" }, common: { all: "全部", filter: "过滤", cancel: "取消", execute: "执行", copied: "已复制", refreshed: "已刷新", empty: "空", clear: "清除", delete: "删除", show: "显示", hide: "隐藏", copy: "复制" }, console: { info: "信息", warning: "警告", error: "错误", asyncRender: "异步渲染", jsExecution: "启用 JavaScript 执行", catchGlobalErr: "捕获全局错误", overrideConsole: "重写控制台", displayIfErr: "出错时自动显示", displayExtraInfo: "显示额外信息", displayUnenumerable: "显示不可枚举属性", displayGetterVal: "访问 Getter 值", lazyEvaluation: "惰性求值", maxLogNum: "最大日志数量", infinite: "无限" }, devTools: { theme: "主题", systemPreference: "跟随系统", transparency: "透明度", displaySize: "显示大小", restoreDefaults: "恢复默认设置并重载" }, elements: { attributes: "属性", styles: "样式", computedStyle: "计算样式", eventListeners: "事件监听器", catchEventListeners: "捕获事件监听器", autoRefreshElements: "自动刷新元素" }, network: { name: "名称", method: "方法", status: "状态", type: "类型", size: "大小", time: "时间", pending: "等待中", responseHeaders: "响应头", requestHeaders: "请求头" }, resources: { key: "键", value: "值", localStorage: "本地存储", sessionStorage: "会话存储", cookie: "Cookie", script: "脚本", stylesheet: "样式表", iframe: "内联框架", image: "图片", hideErudaSetting: "隐藏 Eruda 设置" }, sources: { showLineNumbers: "显示行号", fetchError: "抱歉，无法获取源码 :(" }, info: { location: "位置", userAgent: "用户代理", device: "设备", system: "系统", sponsor: "赞助此项目", about: "关于", screen: "屏幕", viewport: "视口", pixelRatio: "像素比", os: "操作系统", browser: "浏览器", openCollective: "Open Collective", koFi: "Ko-fi", wechatPay: "微信支付" }, snippets: { borderAll: "边框标注", borderAllDesc: "为所有元素添加彩色边框", refreshPage: "刷新页面", refreshPageDesc: "添加时间戳到 URL 并刷新", searchText: "搜索文本", searchTextDesc: "高亮页面上的指定文本", editPage: "编辑页面", editPageDesc: "切换 body 的 contentEditable", fitScreen: "适应屏幕", fitScreenDesc: "缩小整个页面以适应屏幕", loadVuePlugin: "加载 Vue 插件", loadVuePluginDesc: "Vue 开发者工具", loadMonitorPlugin: "加载监控插件", loadMonitorPluginDesc: "显示页面 fps、内存和 DOM 节点数", loadFeaturesPlugin: "加载特性插件", loadFeaturesPluginDesc: "浏览器特性检测", loadTimingPlugin: "加载计时插件", loadTimingPluginDesc: "显示性能和资源计时", loadCodePlugin: "加载代码插件", loadCodePluginDesc: "编辑和运行 JavaScript", loadBenchmarkPlugin: "加载基准测试插件", loadBenchmarkPluginDesc: "运行 JavaScript 基准测试", loadGeolocationPlugin: "加载地理定位插件", loadGeolocationPluginDesc: "测试地理定位", loadOrientationPlugin: "加载方向插件", loadOrientationPluginDesc: "测试方向 API", loadTouchesPlugin: "加载触摸插件", loadTouchesPluginDesc: "可视化屏幕触摸", enterText: "输入文本", failToLoadPlugin: "加载插件失败 " }, entryBtn: { rememberPosition: "记住入口按钮位置" }, settings: { language: "语言" } } };
+        var De = e(2284), L = { en: { tools: { console: "Console", elements: "Elements", network: "Network", resources: "Resources", sources: "Sources", info: "Info", snippets: "Snippets", settings: "Settings" }, common: { all: "All", filter: "Filter", cancel: "Cancel", execute: "Execute", copied: "Copied", refreshed: "Refreshed", empty: "Empty", clear: "Clear", delete: "Delete", show: "Show", hide: "Hide", copy: "Copy" }, console: { info: "Info", warning: "Warning", error: "Error", asyncRender: "Asynchronous Rendering", jsExecution: "Enable JavaScript Execution", catchGlobalErr: "Catch Global Errors", overrideConsole: "Override Console", displayIfErr: "Auto Display If Error Occurs", displayExtraInfo: "Display Extra Information", displayUnenumerable: "Display Unenumerable Properties", displayGetterVal: "Access Getter Value", lazyEvaluation: "Lazy Evaluation", maxLogNum: "Max Log Number", infinite: "infinite", showTimestamp: "Show Timestamps" }, devTools: { theme: "Theme", systemPreference: "System preference", transparency: "Transparency", displaySize: "Display Size", restoreDefaults: "Restore defaults and reload" }, elements: { attributes: "Attributes", styles: "Styles", computedStyle: "Computed Style", eventListeners: "Event Listeners", catchEventListeners: "Catch Event Listeners", autoRefreshElements: "Auto Refresh Elements" }, resources: { key: "Key", value: "Value", localStorage: "Local Storage", sessionStorage: "Session Storage", cookie: "Cookie", script: "Script", stylesheet: "Stylesheet", iframe: "Iframe", image: "Image", hideErudaSetting: "Hide Eruda Setting" }, sources: { showLineNumbers: "Show Line Numbers", fetchError: "Sorry, unable to fetch source code:(" }, info: { location: "Location", userAgent: "User Agent", device: "Device", system: "System", sponsor: "Sponsor this Project", about: "About", screen: "screen", viewport: "viewport", pixelRatio: "pixel ratio", os: "os", browser: "browser", openCollective: "Open Collective", koFi: "Ko-fi", wechatPay: "Wechat Pay" }, snippets: { borderAll: "Border All", borderAllDesc: "Add color borders to all elements", refreshPage: "Refresh Page", refreshPageDesc: "Add timestamp to url and refresh", searchText: "Search Text", searchTextDesc: "Highlight given text on page", editPage: "Edit Page", editPageDesc: "Toggle body contentEditable", fitScreen: "Fit Screen", fitScreenDesc: "Scale down the whole page to fit screen", loadVuePlugin: "Load Vue Plugin", loadVuePluginDesc: "Vue devtools", loadMonitorPlugin: "Load Monitor Plugin", loadMonitorPluginDesc: "Display page fps, memory and dom nodes", loadFeaturesPlugin: "Load Features Plugin", loadFeaturesPluginDesc: "Browser feature detections", loadTimingPlugin: "Load Timing Plugin", loadTimingPluginDesc: "Show performance and resource timing", loadCodePlugin: "Load Code Plugin", loadCodePluginDesc: "Edit and run JavaScript", loadBenchmarkPlugin: "Load Benchmark Plugin", loadBenchmarkPluginDesc: "Run JavaScript benchmarks", loadGeolocationPlugin: "Load Geolocation Plugin", loadGeolocationPluginDesc: "Test geolocation", loadOrientationPlugin: "Load Orientation Plugin", loadOrientationPluginDesc: "Test orientation api", loadTouchesPlugin: "Load Touches Plugin", loadTouchesPluginDesc: "Visualize screen touches", enterText: "Enter the text", failToLoadPlugin: "Fail to load plugin " }, entryBtn: { rememberPosition: "Remember Entry Button Position" }, settings: { language: "Language" } }, "zh-CN": { tools: { console: "控制台", elements: "元素", network: "网络", resources: "资源", sources: "源码", info: "信息", snippets: "代码片段", settings: "设置" }, common: { all: "全部", filter: "过滤", cancel: "取消", execute: "执行", copied: "已复制", refreshed: "已刷新", empty: "空", clear: "清除", delete: "删除", show: "显示", hide: "隐藏", copy: "复制" }, console: { info: "信息", warning: "警告", error: "错误", asyncRender: "异步渲染", jsExecution: "启用 JavaScript 执行", catchGlobalErr: "捕获全局错误", overrideConsole: "重写控制台", displayIfErr: "出错时自动显示", displayExtraInfo: "显示额外信息", displayUnenumerable: "显示不可枚举属性", displayGetterVal: "访问 Getter 值", lazyEvaluation: "惰性求值", maxLogNum: "最大日志数量", infinite: "无限", showTimestamp: "显示时间戳" }, devTools: { theme: "主题", systemPreference: "跟随系统", transparency: "透明度", displaySize: "显示大小", restoreDefaults: "恢复默认设置并重载" }, elements: { attributes: "属性", styles: "样式", computedStyle: "计算样式", eventListeners: "事件监听器", catchEventListeners: "捕获事件监听器", autoRefreshElements: "自动刷新元素" }, network: { name: "名称", method: "方法", status: "状态", type: "类型", size: "大小", time: "时间", pending: "等待中", responseHeaders: "响应头", requestHeaders: "请求头" }, resources: { key: "键", value: "值", localStorage: "本地存储", sessionStorage: "会话存储", cookie: "Cookie", script: "脚本", stylesheet: "样式表", iframe: "内联框架", image: "图片", hideErudaSetting: "隐藏 Eruda 设置" }, sources: { showLineNumbers: "显示行号", fetchError: "抱歉，无法获取源码 :(" }, info: { location: "位置", userAgent: "用户代理", device: "设备", system: "系统", sponsor: "赞助此项目", about: "关于", screen: "屏幕", viewport: "视口", pixelRatio: "像素比", os: "操作系统", browser: "浏览器", openCollective: "Open Collective", koFi: "Ko-fi", wechatPay: "微信支付" }, snippets: { borderAll: "边框标注", borderAllDesc: "为所有元素添加彩色边框", refreshPage: "刷新页面", refreshPageDesc: "添加时间戳到 URL 并刷新", searchText: "搜索文本", searchTextDesc: "高亮页面上的指定文本", editPage: "编辑页面", editPageDesc: "切换 body 的 contentEditable", fitScreen: "适应屏幕", fitScreenDesc: "缩小整个页面以适应屏幕", loadVuePlugin: "加载 Vue 插件", loadVuePluginDesc: "Vue 开发者工具", loadMonitorPlugin: "加载监控插件", loadMonitorPluginDesc: "显示页面 fps、内存和 DOM 节点数", loadFeaturesPlugin: "加载特性插件", loadFeaturesPluginDesc: "浏览器特性检测", loadTimingPlugin: "加载计时插件", loadTimingPluginDesc: "显示性能和资源计时", loadCodePlugin: "加载代码插件", loadCodePluginDesc: "编辑和运行 JavaScript", loadBenchmarkPlugin: "加载基准测试插件", loadBenchmarkPluginDesc: "运行 JavaScript 基准测试", loadGeolocationPlugin: "加载地理定位插件", loadGeolocationPluginDesc: "测试地理定位", loadOrientationPlugin: "加载方向插件", loadOrientationPluginDesc: "测试方向 API", loadTouchesPlugin: "加载触摸插件", loadTouchesPluginDesc: "可视化屏幕触摸", enterText: "输入文本", failToLoadPlugin: "加载插件失败 " }, entryBtn: { rememberPosition: "记住入口按钮位置" }, settings: { language: "语言" } } };
         function Me(y, T) {
           var n = typeof Symbol < "u" && y[Symbol.iterator] || y["@@iterator"];
           if (!n) {
-            if (Array.isArray(y) || (n = function(ne, Se) {
-              if (ne) {
-                if (typeof ne == "string") return ae(ne, Se);
-                var Ge = {}.toString.call(ne).slice(8, -1);
-                return Ge === "Object" && ne.constructor && (Ge = ne.constructor.name), Ge === "Map" || Ge === "Set" ? Array.from(ne) : Ge === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(Ge) ? ae(ne, Se) : void 0;
+            if (Array.isArray(y) || (n = function(te, Se) {
+              if (te) {
+                if (typeof te == "string") return ae(te, Se);
+                var Ge = {}.toString.call(te).slice(8, -1);
+                return Ge === "Object" && te.constructor && (Ge = te.constructor.name), Ge === "Map" || Ge === "Set" ? Array.from(te) : Ge === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(Ge) ? ae(te, Se) : void 0;
               }
             }(y)) || T) {
               n && (y = n);
@@ -3422,8 +3422,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               };
               return { s: A, n: function() {
                 return g >= y.length ? { done: !0 } : { done: !1, value: y[g++] };
-              }, e: function(ne) {
-                throw ne;
+              }, e: function(te) {
+                throw te;
               }, f: A };
             }
             throw new TypeError(`Invalid attempt to iterate non-iterable instance.
@@ -3433,10 +3433,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return { s: function() {
             n = n.call(y);
           }, n: function() {
-            var ne = n.next();
-            return Y = ne.done, ne;
-          }, e: function(ne) {
-            J = !0, R = ne;
+            var te = n.next();
+            return Y = te.done, te;
+          }, e: function(te) {
+            J = !0, R = te;
           }, f: function() {
             try {
               Y || n.return == null || n.return();
@@ -3463,17 +3463,17 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               var Y = T.value;
               if (!A || (0, De.A)(A) !== "object" || !(Y in A)) {
                 A = L.en;
-                var J, ne = Me(g);
+                var J, te = Me(g);
                 try {
-                  for (ne.s(); !(J = ne.n()).done; ) {
+                  for (te.s(); !(J = te.n()).done; ) {
                     var Se = J.value;
                     if (!A || (0, De.A)(A) !== "object" || !(Se in A)) return y;
                     A = A[Se];
                   }
                 } catch (Ge) {
-                  ne.e(Ge);
+                  te.e(Ge);
                 } finally {
-                  ne.f();
+                  te.f();
                 }
                 break;
               }
@@ -3506,7 +3506,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }
         var Qt = function(y) {
           function T(n) {
-            var g, A, R, Y, J = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {}, ne = J.defaults, Se = ne === void 0 ? {} : ne, Ge = J.inline, ft = Ge !== void 0 && Ge;
+            var g, A, R, Y, J = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {}, te = J.defaults, Se = te === void 0 ? {} : te, Ge = J.inline, ft = Ge !== void 0 && Ge;
             return (0, o.A)(this, T), A = this, R = T, R = (0, c.A)(R), g = (0, i.A)(A, It() ? Reflect.construct(R, [], (0, c.A)(A).constructor) : R.apply(A, Y)), (0, l.A)(g, "_checkSafeArea", function() {
               var bt = g.$container;
               (function() {
@@ -3541,8 +3541,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           } }, { key: "add", value: function(n) {
             var g = this._tab;
             if (!(n instanceof v)) {
-              var A = new v(), R = A.init, Y = A.show, J = A.hide, ne = A.destroy;
-              ke()(n, { init: R, show: Y, hide: J, destroy: ne });
+              var A = new v(), R = A.init, Y = A.show, J = A.hide, te = A.destroy;
+              ke()(n, { init: R, show: Y, hide: J, destroy: te });
             }
             var Se = n.name;
             if (!Se) return ye.error("You must specify a name for a tool");
@@ -3590,8 +3590,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               }
             }), this._inline || n.range(A, "transparency", q.t("devTools.transparency"), { min: 0.2, max: 1, step: 0.01 }).range(A, "displaySize", q.t("devTools.displaySize"), { min: 40, max: 100, step: 1 }), n.button(q.t("devTools.restoreDefaults"), function() {
               var R = Ie("local"), Y = JSON.parse(JSON.stringify(R));
-              S()(Y, function(J, ne) {
-                ie()(J) && ht()(ne, "eruda") && R.removeItem(ne);
+              S()(Y, function(J, te) {
+                ie()(J) && ht()(te, "eruda") && R.removeItem(te);
               }), window.location.reload();
             }).separator();
           } }, { key: "notify", value: function(n, g) {
@@ -3628,24 +3628,24 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           } }, { key: "_bindEvent", value: function() {
             var n = this, g = this._$el.find(M(".resizer")), A = this._$el.find(M(".nav-bar")), R = h()(document);
             this._inline && g.hide();
-            var Y = function(ne) {
+            var Y = function(te) {
               if (n._isResizing) {
-                ne.preventDefault(), ne.stopPropagation(), ne = ne.origEvent;
-                var Se = (n._resizeStartY - xt("y", ne)) / window.innerHeight * 100, Ge = n._resizeStartSize + Se;
+                te.preventDefault(), te.stopPropagation(), te = te.origEvent;
+                var Se = (n._resizeStartY - xt("y", te)) / window.innerHeight * 100, Ge = n._resizeStartSize + Se;
                 Ge < 40 ? Ge = 40 : Ge > 100 && (Ge = 100), n.config.set("displaySize", Be()(Ge.toFixed(2)));
               }
             }, J = function() {
               clearTimeout(n._resizeTimer), n._isResizing = !1, g.css("height", 10), R.off(ut()("move"), Y), R.off(ut()("up"), J);
             };
-            g.css("height", 10), g.on(ut()("down"), function(ne) {
-              ne.preventDefault(), ne.stopPropagation(), ne = ne.origEvent, n._isResizing = !0, n._resizeStartSize = n.config.get("displaySize"), n._resizeStartY = xt("y", ne), g.css("height", "100%"), R.on(ut()("move"), Y), R.on(ut()("up"), J);
-            }), A.on("contextmenu", function(ne) {
-              return ne.preventDefault();
-            }), this.$container.on("click", function(ne) {
-              return ne.stopPropagation();
+            g.css("height", 10), g.on(ut()("down"), function(te) {
+              te.preventDefault(), te.stopPropagation(), te = te.origEvent, n._isResizing = !0, n._resizeStartSize = n.config.get("displaySize"), n._resizeStartY = xt("y", te), g.css("height", "100%"), R.on(ut()("move"), Y), R.on(ut()("up"), J);
+            }), A.on("contextmenu", function(te) {
+              return te.preventDefault();
+            }), this.$container.on("click", function(te) {
+              return te.stopPropagation();
             }), window.addEventListener("resize", this._checkSafeArea), p.on(p.SCALE, this._updateTabHeight), nt().on("change", function() {
-              var ne = n.config.get("theme");
-              ne === "System preference" && n._setTheme(ne);
+              var te = n.config.get("theme");
+              te === "System preference" && n._setTheme(te);
             });
           } }]);
         }(u()), sn = e(9993), rn = e.n(sn), Wt = e(3957), Ut = e.n(Wt), tn = e(1976), ln = e.n(tn), An = e(6962), fn = e.n(An), ao = e(8609), Gn = e.n(ao), Hn = e(4236), wn = e.n(Hn), so = e(3087);
@@ -3671,8 +3671,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             var n, g, A, R, Y = (arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {}).name, J = Y === void 0 ? "console" : Y;
             return (0, o.A)(this, T), g = this, A = T, A = (0, c.A)(A), n = (0, i.A)(g, $n() ? Reflect.construct(A, [], (0, c.A)(g).constructor) : A.apply(g, R)), (0, l.A)(n, "_handleShow", function() {
               Gn()(n._$el.get(0)) || n._logger.renderViewport();
-            }), (0, l.A)(n, "_handleErr", function(ne) {
-              n._logger.error(ne);
+            }), (0, l.A)(n, "_handleErr", function(te) {
+              n._logger.error(te);
             }), u().mixin(n), n.name = J, n._selectedLog = null, n;
           }
           return (0, s.A)(T, y), (0, a.A)(T, [{ key: "init", value: function(n, g) {
@@ -3734,11 +3734,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           } }, { key: "_initLogger", value: function() {
             var n = this.config, g = n.get("maxLogNum");
             g = g === "infinite" ? 0 : +g;
-            var A = this._$control.find(M(".level")), R = new so.A(this._$logs.get(0), { asyncRender: n.get("asyncRender"), maxNum: g, showHeader: n.get("displayExtraInfo"), unenumerable: n.get("displayUnenumerable"), accessGetter: n.get("displayGetterVal"), lazyEvaluation: n.get("lazyEvaluation") });
+            var A = this._$control.find(M(".level")), R = new so.A(this._$logs.get(0), { asyncRender: n.get("asyncRender"), maxNum: g, showHeader: n.get("displayExtraInfo") || n.get("showTimestamp"), unenumerable: n.get("displayUnenumerable"), accessGetter: n.get("displayGetterVal"), lazyEvaluation: n.get("lazyEvaluation") });
             R.on("changeOption", function(Y, J) {
               Y === "level" && A.each(function() {
-                var ne = h()(this), Se = ne.data("level");
-                ne[Se === J || Se === "all" && Oe()(J) ? "addClass" : "rmClass"](M("active"));
+                var te = h()(this), Se = te.data("level");
+                te[Se === J || Se === "all" && Oe()(J) ? "addClass" : "rmClass"](M("active"));
               });
             }), n.get("overrideConsole") && this.overrideConsole(), this._logger = R;
           } }, { key: "_exposeLogger", value: function() {
@@ -3750,7 +3750,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               };
             });
           } }, { key: "_bindEvent", value: function() {
-            var n = this, g = this._container, A = this._$input, R = this._$inputBtns, Y = this._$control, J = this._logger, ne = this.config;
+            var n = this, g = this._container, A = this._$input, R = this._$inputBtns, Y = this._$control, J = this._logger, te = this.config;
             Y.on("click", M(".clear-console"), function() {
               return J.clear(!0);
             }).on("click", M(".level"), function() {
@@ -3770,7 +3770,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             }), A.on("focusin", function() {
               return n._showInput();
             }), J.on("insert", function(Se) {
-              Se.type === "error" && ne.get("displayIfErr") && g.showTool("console").show();
+              Se.type === "error" && te.get("displayIfErr") && g.showTool("console").show();
             }), J.on("select", function(Se) {
               n._selectedLog = Se, Y.find(M(".icon-copy")).rmClass(M("icon-disabled"));
             }), J.on("deselect", function() {
@@ -3784,12 +3784,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             var n = this.config, g = this._container.get("settings");
             g && g.remove(n, "asyncRender").remove(n, "jsExecution").remove(n, "catchGlobalErr").remove(n, "overrideConsole").remove(n, "displayExtraInfo").remove(n, "displayUnenumerable").remove(n, "displayGetterVal").remove(n, "lazyEvaluation").remove(n, "displayIfErr").remove(n, "maxLogNum").remove(vt()(this.name));
           } }, { key: "_initCfg", value: function() {
-            var n = this, g = this._container, A = this.config = fe.createCfg(this.name, { asyncRender: !0, catchGlobalErr: !0, jsExecution: !0, overrideConsole: !0, displayExtraInfo: !1, displayUnenumerable: !0, displayGetterVal: !0, lazyEvaluation: !0, displayIfErr: !1, maxLogNum: "infinite" });
+            var n = this, g = this._container, A = this.config = fe.createCfg(this.name, { asyncRender: !0, catchGlobalErr: !0, jsExecution: !0, overrideConsole: !0, displayExtraInfo: !1, displayUnenumerable: !0, displayGetterVal: !0, lazyEvaluation: !0, displayIfErr: !1, maxLogNum: "infinite", showTimestamp: !1 });
             this._enableJsExecution(A.get("jsExecution")), A.get("catchGlobalErr") && this.catchGlobalErr(), A.on("change", function(Y, J) {
-              var ne = n._logger;
+              var te = n._logger;
               switch (Y) {
                 case "asyncRender":
-                  return ne.setOption("asyncRender", J);
+                  return te.setOption("asyncRender", J);
                 case "jsExecution":
                   return n._enableJsExecution(J);
                 case "catchGlobalErr":
@@ -3797,19 +3797,21 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 case "overrideConsole":
                   return J ? n.overrideConsole() : n.restoreConsole();
                 case "maxLogNum":
-                  return ne.setOption("maxNum", J === "infinite" ? 0 : +J);
+                  return te.setOption("maxNum", J === "infinite" ? 0 : +J);
                 case "displayExtraInfo":
-                  return ne.setOption("showHeader", J);
+                  return te.setOption("showHeader", J || A.get("showTimestamp"));
+                case "showTimestamp":
+                  return te.setOption("showHeader", J || A.get("displayExtraInfo"));
                 case "displayUnenumerable":
-                  return ne.setOption("unenumerable", J);
+                  return te.setOption("unenumerable", J);
                 case "displayGetterVal":
-                  return ne.setOption("accessGetter", J);
+                  return te.setOption("accessGetter", J);
                 case "lazyEvaluation":
-                  return ne.setOption("lazyEvaluation", J);
+                  return te.setOption("lazyEvaluation", J);
               }
             });
             var R = g.get("settings");
-            R && R.text(q.t("tools.console")).switch(A, "asyncRender", q.t("console.asyncRender")).switch(A, "jsExecution", q.t("console.jsExecution")).switch(A, "catchGlobalErr", q.t("console.catchGlobalErr")).switch(A, "overrideConsole", q.t("console.overrideConsole")).switch(A, "displayIfErr", q.t("console.displayIfErr")).switch(A, "displayExtraInfo", q.t("console.displayExtraInfo")).switch(A, "displayUnenumerable", q.t("console.displayUnenumerable")).switch(A, "displayGetterVal", q.t("console.displayGetterVal")).switch(A, "lazyEvaluation", q.t("console.lazyEvaluation")).select(A, "maxLogNum", q.t("console.maxLogNum"), [q.t("console.infinite"), "250", "125", "100", "50", "10"]).separator();
+            R && R.text(q.t("tools.console")).switch(A, "asyncRender", q.t("console.asyncRender")).switch(A, "jsExecution", q.t("console.jsExecution")).switch(A, "catchGlobalErr", q.t("console.catchGlobalErr")).switch(A, "overrideConsole", q.t("console.overrideConsole")).switch(A, "displayIfErr", q.t("console.displayIfErr")).switch(A, "displayExtraInfo", q.t("console.displayExtraInfo")).switch(A, "showTimestamp", q.t("console.showTimestamp")).switch(A, "displayUnenumerable", q.t("console.displayUnenumerable")).switch(A, "displayGetterVal", q.t("console.displayGetterVal")).switch(A, "lazyEvaluation", q.t("console.lazyEvaluation")).select(A, "maxLogNum", q.t("console.maxLogNum"), [q.t("console.infinite"), "250", "125", "100", "50", "10"]).separator();
           } }]);
         }(v), _n = ["log", "error", "info", "warn", "dir", "time", "timeLog", "timeEnd", "clear", "table", "assert", "count", "countReset", "debug", "group", "groupCollapsed", "groupEnd"], lo = e(9117), Yn = e.n(lo), uo = e(9464), Zt = e.n(uo), ho = e(5902), St = e.n(ho), fo = e(4844), pn = e.n(fo), po = e(4983), mo = e.n(po), go = e(15), kn = e.n(go);
         function qn() {
@@ -3826,26 +3828,26 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           function T(n, g) {
             var A, R, Y, J;
             return (0, o.A)(this, T), R = this, Y = T, Y = (0, c.A)(Y), A = (0, i.A)(R, qn() ? Reflect.construct(Y, [], (0, c.A)(R).constructor) : Y.apply(R, J)), (0, l.A)(A, "_copyRes", function() {
-              var ne = A._detailData, Se = "".concat(ne.method, " ").concat(ne.url, " ").concat(ne.status, `
+              var te = A._detailData, Se = "".concat(te.method, " ").concat(te.url, " ").concat(te.status, `
 `);
-              Zt()(ne.data) || (Se += `
+              Zt()(te.data) || (Se += `
 Request Data
 
-`, Se += "".concat(ne.data, `
-`)), Zt()(ne.reqHeaders) || (Se += `
+`, Se += "".concat(te.data, `
+`)), Zt()(te.reqHeaders) || (Se += `
 Request Headers
 
-`, S()(ne.reqHeaders, function(Ge, ft) {
+`, S()(te.reqHeaders, function(Ge, ft) {
                 return Se += "".concat(ft, ": ").concat(Ge, `
 `);
-              })), Zt()(ne.resHeaders) || (Se += `
+              })), Zt()(te.resHeaders) || (Se += `
 Response Headers
 
-`, S()(ne.resHeaders, function(Ge, ft) {
+`, S()(te.resHeaders, function(Ge, ft) {
                 return Se += "".concat(ft, ": ").concat(Ge, `
 `);
-              })), ne.resTxt && (Se += `
-`.concat(ne.resTxt, `
+              })), te.resTxt && (Se += `
+`.concat(te.resTxt, `
 `)), pn()(Se), A._devtools.notify(q.t("common.copied"), { icon: "success" });
             }), A._$container = n, A._devtools = g, A._detailData = {}, A._bindEvent(), A;
           }
@@ -3872,7 +3874,7 @@ Response Headers
               var J = n.resTxt;
               J.length > Qn && (J = kn()(J, Qn)), Y = '<pre class="'.concat(M("response"), '">').concat(St()(J), "</pre>");
             }
-            var ne = '<div class="'.concat(M("control"), `">
+            var te = '<div class="'.concat(M("control"), `">
       <span class="`).concat(M("icon-left back"), `"></span>
       <span class="`).concat(M("icon-delete back"), `"></span>
       <span class="`).concat(M("url"), '">').concat(St()(n.url), `</span>
@@ -3898,7 +3900,7 @@ Response Headers
       </div>
       `).concat(Y, `
     </div>`);
-            this._$container.html(ne).show(), this._detailData = n;
+            this._$container.html(te).show(), this._detailData = n;
           } }, { key: "hide", value: function() {
             this._$container.hide(), this.emit("hide");
           } }, { key: "_bindEvent", value: function() {
@@ -3971,7 +3973,7 @@ Response Headers
             var n, g, A, R;
             return (0, o.A)(this, T), g = this, A = T, A = (0, c.A)(A), n = (0, i.A)(g, Re() ? Reflect.construct(A, [], (0, c.A)(g).constructor) : A.apply(g, R)), (0, l.A)(n, "_reqWillBeSent", function(Y) {
               if (n._isRecording) {
-                var J, ne, Se, Ge = { name: (J = Y.request.url, ne = Vt()(J.split("/")), ne === "" && (ne = (J = new (pt())(J)).hostname), ne), url: Y.request.url, status: "pending", type: "unknown", subType: "unknown", size: 0, data: Y.request.postData, method: Y.request.method, startTime: 1e3 * Y.timestamp, time: 0, resTxt: "", done: !1, reqHeaders: Y.request.headers || {}, resHeaders: {} };
+                var J, te, Se, Ge = { name: (J = Y.request.url, te = Vt()(J.split("/")), te === "" && (te = (J = new (pt())(J)).hostname), te), url: Y.request.url, status: "pending", type: "unknown", subType: "unknown", size: 0, data: Y.request.postData, method: Y.request.method, startTime: 1e3 * Y.timestamp, time: 0, resTxt: "", done: !1, reqHeaders: Y.request.headers || {}, resHeaders: {} };
                 Ge.render = function() {
                   var ft = { name: Ge.name, method: Ge.method, status: Ge.status, type: Ge.subType, size: Ge.size, time: Ge.displayTime };
                   Se ? (Se.data = ft, Se.render()) : (Se = n._requestDataGrid.append(ft, { selectable: !0 }), h()(Se.container).data("id", Y.requestId)), Ge.hasErr && h()(Se.container).addClass(M("request-error"));
@@ -3983,27 +3985,27 @@ Response Headers
             }), (0, l.A)(n, "_resReceived", function(Y) {
               var J = n._requests[Y.requestId];
               if (n._isRecording && J) {
-                var ne = Y.response, Se = ne.status, Ge = ne.headers;
+                var te = Y.response, Se = te.status, Ge = te.headers;
                 J.status = Se, (Se < 200 || Se >= 300) && (J.hasErr = !0), Ge && (J.resHeaders = Ge, n._updateType(J)), J.render();
               }
             }), (0, l.A)(n, "_loadingFinished", function(Y) {
               var J = n._requests[Y.requestId];
               if (n._isRecording && J) {
-                var ne = 1e3 * Y.timestamp;
-                J.time = ne - J.startTime, J.displayTime = Yn()(J.time), J.size = Y.encodedDataLength, J.done = !0, J.resTxt = Pt.domain("Network").getResponseBody({ requestId: Y.requestId }).body, J.render();
+                var te = 1e3 * Y.timestamp;
+                J.time = te - J.startTime, J.displayTime = Yn()(J.time), J.size = Y.encodedDataLength, J.done = !0, J.resTxt = Pt.domain("Network").getResponseBody({ requestId: Y.requestId }).body, J.render();
               }
             }), (0, l.A)(n, "_loadingFailed", function(Y) {
               var J = n._requests[Y.requestId];
               if (n._isRecording && J) {
-                var ne = 1e3 * Y.timestamp;
-                J.time = ne - J.startTime, J.displayTime = Yn()(J.time), J.hasErr = !0, J.status = 0, J.done = !0, J.render();
+                var te = 1e3 * Y.timestamp;
+                J.time = te - J.startTime, J.displayTime = Yn()(J.time), J.hasErr = !0, J.status = 0, J.done = !0, J.render();
               }
             }), (0, l.A)(n, "_copyCurl", function() {
               var Y = n._selectedRequest;
               pn()(function(J) {
-                var ne = E()();
-                ne === "windows" && (ne = "win");
-                var Se = [], Ge = ue()(["accept-encoding", "host", "method", "path", "scheme", "version"]), ft = ne === "win" ? function(Mn) {
+                var te = E()();
+                te === "windows" && (te = "win");
+                var Se = [], Ge = ue()(["accept-encoding", "host", "method", "path", "scheme", "version"]), ft = te === "win" ? function(Mn) {
                   var ro = /[\r\n]/.test(Mn) ? '^"' : '"';
                   return ro + Mn.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[^a-zA-Z0-9\s_\-:=+~'/.',?;()*`&]/g, "^$&").replace(/%(?=[a-zA-Z0-9_])/g, "%^").replace(/\r?\n/g, `^
 
@@ -4021,7 +4023,7 @@ Response Headers
                   var Qo = en[hn], Uo = Qo.name.replace(/^:/, "");
                   Ge[Uo.toLowerCase()] || Se.push("-H " + ft(Uo + ": " + Qo.value));
                 }
-                return (Se = Se.concat(Ot)).push("--compressed"), "curl " + Se.join(Se.length >= 3 ? ne === "win" ? ` ^
+                return (Se = Se.concat(Ot)).push("--compressed"), "curl " + Se.join(Se.length >= 3 ? te === "win" ? ` ^
   ` : ` \\
   ` : " ");
               }({ requestMethod: Y.method, url: function() {
@@ -4030,8 +4032,8 @@ Response Headers
                 return Y.data;
               }, requestHeaders: function() {
                 var J = Y.reqHeaders || {};
-                return ee()(J, { "User-Agent": navigator.userAgent, Referer: location.href }), Ct()(J, function(ne, Se) {
-                  return { name: Se, value: ne };
+                return ee()(J, { "User-Agent": navigator.userAgent, Referer: location.href }), Ct()(J, function(te, Se) {
+                  return { name: Se, value: te };
                 });
               } })), n._container.notify(q.t("common.copied"), { icon: "success" });
             }), (0, l.A)(n, "_toggleRecording", function() {
@@ -4070,11 +4072,11 @@ Response Headers
             g.on("click", M(".clear-request"), function() {
               return n.clear();
             }).on("click", M(".show-detail"), this._showDetail).on("click", M(".copy-curl"), this._copyCurl).on("click", M(".record"), this._toggleRecording).on("click", M(".filter"), function() {
-              kt.A.prompt(q.t("common.filter")).then(function(ne) {
-                wn()(ne) || (A.text(ne), R.setOption("filter", D()(ne)));
+              kt.A.prompt(q.t("common.filter")).then(function(te) {
+                wn()(te) || (A.text(te), R.setOption("filter", D()(te)));
               });
-            }), R.on("select", function(ne) {
-              var Se = h()(ne.container).data("id"), Ge = Y._requests[Se];
+            }), R.on("select", function(te) {
+              var Se = h()(te.container).data("id"), Ge = Y._requests[Se];
               n._selectedRequest = Ge, n._updateButtons(), n._splitMode && n._showDetail();
             }), R.on("deselect", function() {
               n._selectedRequest = null, n._updateButtons(), n._detail.hide();
@@ -4116,11 +4118,11 @@ Response Headers
           }
           return function(R) {
             return Rn()(R, { comparator: function(Y, J) {
-              for (var ne = Y.length, Se = J.length, Ge = ne > Se ? Se : ne, ft = 0; ft < Ge; ft++) {
+              for (var te = Y.length, Se = J.length, Ge = te > Se ? Se : te, ft = 0; ft < Ge; ft++) {
                 var bt = Jn(Y.charCodeAt(ft), J.charCodeAt(ft));
                 if (bt !== 0) return bt;
               }
-              return ne > Se ? 1 : ne < Se ? -1 : 0;
+              return te > Se ? 1 : te < Se ? -1 : 0;
             } });
           }(T);
         }
@@ -4173,13 +4175,13 @@ Response Headers
           var g = y.id, A = y.className, R = y.attributes, Y = '<span class="eruda-tag-name-color">'.concat(y.tagName.toLowerCase(), "</span>");
           if (g !== "" && (Y += '<span class="eruda-function-color">#'.concat(g, "</span>")), ie()(A)) {
             var J = "";
-            S()(A.split(/\s+/g), function(ne) {
-              ne.trim() !== "" && (J += ".".concat(ne));
+            S()(A.split(/\s+/g), function(te) {
+              te.trim() !== "" && (J += ".".concat(te));
             }), Y += '<span class="eruda-attribute-name-color">'.concat(J, "</span>");
           }
-          return n || S()(R, function(ne) {
-            var Se = ne.name;
-            Se !== "id" && Se !== "class" && Se !== "style" && (Y += ' <span class="eruda-attribute-name-color">'.concat(Se, '</span><span class="eruda-operator-color">="</span><span class="eruda-string-color">').concat(ne.value, '</span><span class="eruda-operator-color">"</span>'));
+          return n || S()(R, function(te) {
+            var Se = te.name;
+            Se !== "id" && Se !== "class" && Se !== "style" && (Y += ' <span class="eruda-attribute-name-color">'.concat(Se, '</span><span class="eruda-operator-color">="</span><span class="eruda-string-color">').concat(te.value, '</span><span class="eruda-operator-color">"</span>'));
           }), Y;
         }
         var Vn = function() {
@@ -4200,20 +4202,20 @@ Response Headers
           } }, { key: "overrideEventTarget", value: function() {
             var y = No(), T = this._origAddEvent = y.addEventListener, n = this._origRmEvent = y.removeEventListener;
             y.addEventListener = function(g, A, R) {
-              (function(Y, J, ne) {
+              (function(Y, J, te) {
                 var Se = arguments.length > 3 && arguments[3] !== void 0 && arguments[3];
-                if (!(!Ye()(Y) || !Ut()(ne) || !un()(Se))) {
+                if (!(!Ye()(Y) || !Ut()(te) || !un()(Se))) {
                   var Ge = Y.erudaEvents = Y.erudaEvents || {};
-                  Ge[J] = Ge[J] || [], Ge[J].push({ listener: ne, listenerStr: ne.toString(), useCapture: Se });
+                  Ge[J] = Ge[J] || [], Ge[J].push({ listener: te, listenerStr: te.toString(), useCapture: Se });
                 }
               })(this, g, A, R), T.apply(this, arguments);
             }, y.removeEventListener = function(g, A, R) {
-              (function(Y, J, ne) {
+              (function(Y, J, te) {
                 var Se = arguments.length > 3 && arguments[3] !== void 0 && arguments[3];
-                if (!(!Ye()(Y) || !Ut()(ne) || !un()(Se))) {
+                if (!(!Ye()(Y) || !Ut()(te) || !un()(Se))) {
                   var Ge = Y.erudaEvents;
                   if (!(!Ge || !Ge[J])) {
-                    for (var ft = Ge[J], bt = 0, Ot = ft.length; bt < Ot; bt++) if (ft[bt].listener === ne) {
+                    for (var ft = Ge[J], bt = 0, Ot = ft.length; bt < Ot; bt++) if (ft[bt].listener === te) {
                       ft.splice(bt, 1);
                       break;
                     }
@@ -4263,7 +4265,7 @@ Response Headers
             var J = "";
             if (Zt()(y.styles)) g.hide();
             else {
-              var ne = Ct()(y.styles, function(bt) {
+              var te = Ct()(y.styles, function(bt) {
                 var Ot = bt.selectorText, Nt = bt.style;
                 return Nt = Ct()(Nt, function(en, hn) {
                   return '<div class="'.concat(M("rule"), '"><span>').concat(St()(hn), "</span>: ").concat(en, ";</div>");
@@ -4275,7 +4277,7 @@ Response Headers
               }).join("");
               J = "<h2>".concat(q.t("elements.styles"), `</h2>
       <div class="`).concat(M("style-wrapper"), `">
-        `).concat(ne, `
+        `).concat(te, `
       </div>`), g.html(J).show();
             }
             var Se = "";
@@ -4327,7 +4329,7 @@ Response Headers
             T.computedStyleSearchKeyword = this._computedStyleSearchKeyword, T.attributes = Ko(R), T.name = Ln({ tagName: Y, id: A, className: g, attributes: R });
             var J = y.erudaEvents;
             if (J && C()(J).length !== 0 && (T.listeners = J), tr(Y)) return T;
-            var ne = n.getComputedStyle(), Se = n.getMatchedCSSRules();
+            var te = n.getComputedStyle(), Se = n.getMatchedCSSRules();
             Se.unshift(function(ft) {
               for (var bt = { selectorText: "element.style", style: {} }, Ot = 0, Nt = ft.length; Ot < Nt; Ot++) {
                 var en = ft[Ot];
@@ -4336,18 +4338,18 @@ Response Headers
               return bt;
             }(y.style)), Se.forEach(function(ft) {
               return Kn(ft.style);
-            }), T.styles = Se, this._rmDefComputedStyle && (ne = function(ft, bt) {
+            }), T.styles = Se, this._rmDefComputedStyle && (te = function(ft, bt) {
               var Ot = {}, Nt = ["display", "width", "height"];
               return S()(bt, function(en) {
                 Nt = Nt.concat(C()(en.style));
               }), Nt = Xt()(Nt), S()(ft, function(en, hn) {
                 W()(Nt, hn) && (Ot[hn] = en);
               }), Ot;
-            }(ne, Se)), T.rmDefComputedStyle = this._rmDefComputedStyle;
+            }(te, Se)), T.rmDefComputedStyle = this._rmDefComputedStyle;
             var Ge = cn()(T.computedStyleSearchKeyword);
-            return Ge && (ne = an()(ne, function(ft, bt) {
+            return Ge && (te = an()(te, function(ft, bt) {
               return W()(bt, Ge) || W()(ft, Ge);
-            })), Kn(ne), T.computedStyle = ne, T;
+            })), Kn(te), T.computedStyle = te, T;
           } }, { key: "_bindEvent", value: function() {
             var y = this, T = this._devtools;
             this._$container.on("click", M(".toggle-all-computed-style"), function() {
@@ -4456,14 +4458,14 @@ Response Headers
               var J = Y.backendNodeId;
               n._container.show(), n._toggleSelect();
               try {
-                var ne = Pt.domain("DOM").getNode({ nodeId: J }).node;
-                n.select(ne);
+                var te = Pt.domain("DOM").getNode({ nodeId: J }).node;
+                n.select(te);
               } catch {
               }
             }), (0, l.A)(n, "_setNode", function(Y) {
               if (Y !== n._curNode) {
                 n._curNode = Y, n._renderCrumbs();
-                for (var J = [], ne = Y.parentNode; ne; ) J.push(ne), ne = ne.parentNode;
+                for (var J = [], te = Y.parentNode; te; ) J.push(te), te = te.parentNode;
                 n._curParentQueue = J, n._splitMode && n._showDetail(), n._updateButtons(), n._updateHistory();
               }
             }), n._style = ve(e(7705)), n.name = "elements", n._selectElement = !1, n._observeElement = !0, n._history = [], u().mixin(n), n;
@@ -4871,11 +4873,11 @@ Response Headers
         function yr(y, T) {
           var n = typeof Symbol < "u" && y[Symbol.iterator] || y["@@iterator"];
           if (!n) {
-            if (Array.isArray(y) || (n = function(ne, Se) {
-              if (ne) {
-                if (typeof ne == "string") return Ro(ne, Se);
-                var Ge = {}.toString.call(ne).slice(8, -1);
-                return Ge === "Object" && ne.constructor && (Ge = ne.constructor.name), Ge === "Map" || Ge === "Set" ? Array.from(ne) : Ge === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(Ge) ? Ro(ne, Se) : void 0;
+            if (Array.isArray(y) || (n = function(te, Se) {
+              if (te) {
+                if (typeof te == "string") return Ro(te, Se);
+                var Ge = {}.toString.call(te).slice(8, -1);
+                return Ge === "Object" && te.constructor && (Ge = te.constructor.name), Ge === "Map" || Ge === "Set" ? Array.from(te) : Ge === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(Ge) ? Ro(te, Se) : void 0;
               }
             }(y)) || T) {
               n && (y = n);
@@ -4883,8 +4885,8 @@ Response Headers
               };
               return { s: A, n: function() {
                 return g >= y.length ? { done: !0 } : { done: !1, value: y[g++] };
-              }, e: function(ne) {
-                throw ne;
+              }, e: function(te) {
+                throw te;
               }, f: A };
             }
             throw new TypeError(`Invalid attempt to iterate non-iterable instance.
@@ -4894,10 +4896,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return { s: function() {
             n = n.call(y);
           }, n: function() {
-            var ne = n.next();
-            return Y = ne.done, ne;
-          }, e: function(ne) {
-            J = !0, R = ne;
+            var te = n.next();
+            return Y = te.done, te;
+          }, e: function(te) {
+            J = !0, R = te;
           }, f: function() {
             try {
               Y || n.return == null || n.return();
@@ -5005,19 +5007,19 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             return this._cookie.refresh(), this;
           } }, { key: "refreshImage", value: function() {
             var n = [], g = this._performance = window.webkitPerformance || window.performance;
-            g && g.getEntries ? this._performance.getEntries().forEach(function(ne) {
-              if (ne.initiatorType === "img" || xr(ne.name)) {
-                if (W()(ne.name, "exclude=true")) return;
-                n.push(ne.name);
+            g && g.getEntries ? this._performance.getEntries().forEach(function(te) {
+              if (te.initiatorType === "img" || xr(te.name)) {
+                if (W()(te.name, "exclude=true")) return;
+                n.push(te.name);
               }
             }) : h()("img").each(function() {
-              var ne = h()(this), Se = ne.attr("src");
-              ne.data("exclude") !== "true" && n.push(Se);
+              var te = h()(this), Se = te.attr("src");
+              te.data("exclude") !== "true" && n.push(Se);
             }), (n = Xt()(n)).sort();
             var A = to("image", n.length), R = "<li>".concat(q.t("common.empty"), "</li>");
-            Zt()(n) || (R = Ct()(n, function(ne) {
+            Zt()(n) || (R = Ct()(n, function(te) {
               return '<li class="'.concat(M("image"), `">
-          <img src="`).concat(St()(ne), '" data-exclude="true" class="').concat(M("img-link"), `"/>
+          <img src="`).concat(St()(te), '" data-exclude="true" class="').concat(M("img-link"), `"/>
         </li>`);
             }).join(""));
             var Y = '<h2 class="'.concat(M("title"), `">
@@ -5045,14 +5047,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       <div class="section image"></div>`)), this._$localStorage = n.find(M(".local-storage")), this._$sessionStorage = n.find(M(".session-storage")), this._$cookie = n.find(M(".cookie")), this._$script = n.find(M(".script")), this._$stylesheet = n.find(M(".stylesheet")), this._$iframe = n.find(M(".iframe")), this._$image = n.find(M(".image"));
           } }, { key: "_bindEvent", value: function() {
             var n = this, g = this._$el, A = this._container;
-            function R(J, ne) {
+            function R(J, te) {
               var Se = A.get("sources");
-              if (Se) return Se.set(J, ne), A.showTool("sources"), !0;
+              if (Se) return Se.set(J, te), A.showTool("sources"), !0;
             }
             function Y(J) {
-              return function(ne) {
+              return function(te) {
                 if (A.get("sources")) {
-                  ne.preventDefault();
+                  te.preventDefault();
                   var Se = h()(this).attr("href");
                   J !== "iframe" && fr()(location.href, Se) ? zo()({ url: Se, success: function(Ge) {
                     R(J, Ge);
@@ -5094,10 +5096,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           } }, { key: "_handleMutation", value: function(n) {
             var g = this;
             if (!ze(n.target)) {
-              var A = function(ne) {
+              var A = function(te) {
                 var Se = function(Ge) {
                   return Ge.tagName ? Ge.tagName.toLowerCase() : "";
-                }(ne);
+                }(te);
                 switch (Se) {
                   case "script":
                     g.refreshScript();
@@ -5116,8 +5118,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 try {
                   for (J.s(); !(R = J.n()).done; )
                     A(R.value);
-                } catch (ne) {
-                  J.e(ne);
+                } catch (te) {
+                  J.e(te);
                 } finally {
                   J.f();
                 }
@@ -5320,8 +5322,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             }, 0));
           } }]);
         }(v), Dr = 3e4, qo = 8e4, oo = 1e5, zr = e(9760), Br = e.n(zr), Rr = e(1505), Fr = e.n(Rr), Pr = e(5701), Lr = e.n(Pr), Gr = { init: function() {
-          var y = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {}, T = y.container, n = y.tool, g = y.autoScale, A = g === void 0 || g, R = y.useShadowDom, Y = R === void 0 || R, J = y.inline, ne = J !== void 0 && J, Se = y.defaults, Ge = Se === void 0 ? {} : Se, ft = y.lang, bt = ft === void 0 ? "en" : ft;
-          this._isInit || (this._isInit = !0, this._scale = 1, q.setLang(bt), this._initContainer(T, Y), this._initStyle(), this._initDevTools(Ge, ne), this._initEntryBtn(), this._initSettings(), this._initTools(n), this._registerListener(), A && this._autoScale(), ne && (this._entryBtn.hide(), this._$el.addClass("eruda-inline"), this.show()));
+          var y = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {}, T = y.container, n = y.tool, g = y.autoScale, A = g === void 0 || g, R = y.useShadowDom, Y = R === void 0 || R, J = y.inline, te = J !== void 0 && J, Se = y.defaults, Ge = Se === void 0 ? {} : Se, ft = y.lang, bt = ft === void 0 ? "en" : ft;
+          this._isInit || (this._isInit = !0, this._scale = 1, q.setLang(bt), this._initContainer(T, Y), this._initStyle(), this._initDevTools(Ge, te), this._initEntryBtn(), this._initSettings(), this._initTools(n), this._registerListener(), A && this._autoScale(), te && (this._entryBtn.hide(), this._$el.addClass("eruda-inline"), this.show()));
         }, _isInit: !1, version: "0.2.1", util: { isErudaEl: ze, evalCss: ve, isDarkTheme: function(y) {
           return y || (y = this.getTheme()), it(y);
         }, getTheme: function() {
@@ -5715,9 +5717,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           var I = N.searchId, C = N.fromIndex, H = N.toIndex, V = W.get(I).slice(C, H);
           return { nodeIds: (0, h.default)(V, function(Ae) {
             var ke = (0, u.getNodeId)(Ae);
-            return ke || te(Ae);
+            return ke || ne(Ae);
           }) };
-        }, t.pushNodesToFrontend = te, t.discardSearchResults = function(N) {
+        }, t.pushNodesToFrontend = ne, t.discardSearchResults = function(N) {
           W.delete(N.searchId);
         }, t.pushNodesByBackendIdsToFrontend = function(N) {
           return { nodeIds: N.backendNodeIds };
@@ -5773,7 +5775,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return I;
         });
         var W = /* @__PURE__ */ new Map();
-        function te(N) {
+        function ne(N) {
           for (var I = [N], C = N.parentNode; C && (I.push(C), !(V = (0, u.getNodeId)(C))); )
             C = C.parentNode;
           for (; I.length; ) {
@@ -5925,14 +5927,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         function S(B, P) {
           B.on("send", function(N, I) {
             var C = { method: I.method, url: I.url, headers: I.reqHeaders };
-            I.data && (C.postData = I.data), te("Network.requestWillBeSent", { requestId: N, type: P, request: C, timestamp: I.time / 1e3 });
+            I.data && (C.postData = I.data), ne("Network.requestWillBeSent", { requestId: N, type: P, request: C, timestamp: I.time / 1e3 });
           }), B.on("headersReceived", function(N, I) {
-            te("Network.responseReceivedExtraInfo", { requestId: N, blockedCookies: [], headers: I.resHeaders });
+            ne("Network.responseReceivedExtraInfo", { requestId: N, blockedCookies: [], headers: I.resHeaders });
           }), B.on("done", function(N, I) {
             var C = { status: I.status };
-            I.resHeaders && (C.headers = I.resHeaders), te("Network.responseReceived", { requestId: N, type: P, response: C, timestamp: I.time / 1e3 }), G.set(N, I.resTxt), te("Network.loadingFinished", { requestId: N, encodedDataLength: I.size, timestamp: I.time / 1e3 });
+            I.resHeaders && (C.headers = I.resHeaders), ne("Network.responseReceived", { requestId: N, type: P, response: C, timestamp: I.time / 1e3 }), G.set(N, I.resTxt), ne("Network.loadingFinished", { requestId: N, encodedDataLength: I.size, timestamp: I.time / 1e3 });
           }), B.on("error", function(N, I) {
-            te("Network.loadingFailed", { requestId: N, errorText: I.errorText, timestamp: I.time / 1e3, type: P });
+            ne("Network.loadingFailed", { requestId: N, errorText: I.errorText, timestamp: I.time / 1e3, type: P });
           });
         }
         function Q(B) {
@@ -5944,7 +5946,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           }), W = [];
         };
         var Z, U, ie, me, W = [];
-        function te(B, P) {
+        function ne(B, P) {
           j ? w.default.trigger(B, P) : W.push(function() {
             return w.default.trigger(B, P);
           });
@@ -5976,8 +5978,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             var C = new B(N, I);
             if (!Q(N)) return C;
             var H = (0, O.createId)();
-            te("Network.webSocketCreated", { requestId: H, url: N }), C.addEventListener("open", function() {
-              te("Network.webSocketWillSendHandshakeRequest", { requestId: H, timestamp: (0, b.default)() / 1e3, request: { headers: {} } }), te("Network.webSocketHandshakeResponseReceived", { requestId: H, timeStamp: (0, b.default)() / 1e3, response: { status: 101, statusText: "Switching Protocols" } });
+            ne("Network.webSocketCreated", { requestId: H, url: N }), C.addEventListener("open", function() {
+              ne("Network.webSocketWillSendHandshakeRequest", { requestId: H, timestamp: (0, b.default)() / 1e3, request: { headers: {} } }), ne("Network.webSocketHandshakeResponseReceived", { requestId: H, timeStamp: (0, b.default)() / 1e3, response: { status: 101, statusText: "Switching Protocols" } });
             }), C.addEventListener("message", function(Ae) {
               return o(this, void 0, void 0, function() {
                 var ke, le;
@@ -5990,7 +5992,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                     case 2:
                       ke = (0, h.default)(ke, "base64"), ee.label = 3;
                     case 3:
-                      return te("Network.webSocketFrameReceived", { requestId: H, timestamp: (0, b.default)() / 1e3, response: { opcode: le, payloadData: ke } }), [2];
+                      return ne("Network.webSocketFrameReceived", { requestId: H, timestamp: (0, b.default)() / 1e3, response: { opcode: le, payloadData: ke } }), [2];
                   }
                 });
               });
@@ -6009,15 +6011,15 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                       case 2:
                         ee = (0, h.default)(ke, "base64"), se.label = 3;
                       case 3:
-                        return te("Network.webSocketFrameSent", { requestId: H, timestamp: (0, b.default)() / 1e3, response: { opcode: le, payloadData: ee } }), [2];
+                        return ne("Network.webSocketFrameSent", { requestId: H, timestamp: (0, b.default)() / 1e3, response: { opcode: le, payloadData: ee } }), [2];
                     }
                   });
                 });
               }(Ae), V.call(this, Ae);
             }, C.addEventListener("close", function() {
-              te("Network.webSocketClosed", { requestId: H, timestamp: (0, b.default)() / 1e3 });
+              ne("Network.webSocketClosed", { requestId: H, timestamp: (0, b.default)() / 1e3 });
             }), C.addEventListener("error", function() {
-              te("Network.webSocketFrameError", { requestId: H, timestamp: (0, b.default)() / 1e3, errorMessage: "WebSocket error" });
+              ne("Network.webSocketFrameError", { requestId: H, timestamp: (0, b.default)() / 1e3, errorMessage: "WebSocket error" });
             }), C;
           }
           P.prototype = B.prototype, P.CLOSED = B.CLOSED, P.CLOSING = B.CLOSING, P.CONNECTING = B.CONNECTING, P.OPEN = B.OPEN, window.WebSocket = P;
@@ -6063,7 +6065,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }, t.disable = function() {
           l.destroy(), r.remove(), window.removeEventListener("resize", ke), Q = !1;
         }, t.highlightNode = me, t.hideHighlight = W, t.setShowViewportSizeOnResize = function(se) {
-          te = se.show;
+          ne = se.show;
         }, t.setInspectMode = function(se) {
           B = se.highlightConfig, P = se.mode;
         };
@@ -6075,7 +6077,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         function W() {
           l.hide();
         }
-        var te = !1, B = {}, P = "none";
+        var ne = !1, B = {}, P = "none";
         function N(se) {
           if (U) {
             var Oe = se.touches[0] || se.changedTouches[0];
@@ -6108,7 +6110,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }), V("click", H));
         var Ae = (0, b.default)("div", { class: "__chobitsu-hide__", style: { position: "fixed", right: 0, top: 0, background: "#fff", fontSize: 13, opacity: 0.5, padding: "4px 6px" } });
         function ke() {
-          te && (ee.text("".concat(window.innerWidth, "px × ").concat(window.innerHeight, "px")), le ? clearTimeout(le) : document.documentElement.appendChild(Ae), le = setTimeout(function() {
+          ne && (ee.text("".concat(window.innerWidth, "px × ").concat(window.innerHeight, "px")), le ? clearTimeout(le) : document.documentElement.appendChild(Ae), le = setTimeout(function() {
             ee.remove(), le = null;
           }, 1e3));
         }
@@ -6275,8 +6277,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           if (w.attributes) {
             var Z = [];
             (0, c.default)(w.attributes, function(me) {
-              var W = me.name, te = me.value;
-              return Z.push(W, te);
+              var W = me.name, ne = me.value;
+              return Z.push(W, ne);
             }), Q.attributes = Z;
           }
           w.shadowRoot ? Q.shadowRoots = [v(w.shadowRoot, { depth: 1 })] : w.chobitsuShadowRoot && (Q.shadowRoots = [v(w.chobitsuShadowRoot, { depth: 1 })]), function(me) {
@@ -6363,7 +6365,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           ee > me && (ee = me, Ae = !0);
           for (var se = 0; se < ee; se++) {
             var Oe = le[se];
-            ke.push(te(Oe, H[Oe]));
+            ke.push(ne(Oe, H[Oe]));
           }
           if (V.properties = ke, (0, u.default)(C)) {
             for (var Ne = [], Fe = (se = 0, C.keys()), Ue = Fe.next().value; Ue; ) {
@@ -6387,7 +6389,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           }
           return V.overflow = Ae, V;
         }
-        function te(C, H) {
+        function ne(C, H) {
           var V = P(H);
           V.name = C;
           var Ae, ke = V.subtype;
@@ -6420,39 +6422,39 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return C instanceof N || !!(C[0] && C[0] instanceof N);
         }
       }, 3411: function(d, t, e) {
-        var o, a = this && this.__extends || (o = function(W, te) {
+        var o, a = this && this.__extends || (o = function(W, ne) {
           return o = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(B, P) {
             B.__proto__ = P;
           } || function(B, P) {
             for (var N in P) Object.prototype.hasOwnProperty.call(P, N) && (B[N] = P[N]);
-          }, o(W, te);
-        }, function(W, te) {
-          if (typeof te != "function" && te !== null) throw new TypeError("Class extends value " + String(te) + " is not a constructor or null");
+          }, o(W, ne);
+        }, function(W, ne) {
+          if (typeof ne != "function" && ne !== null) throw new TypeError("Class extends value " + String(ne) + " is not a constructor or null");
           function B() {
             this.constructor = W;
           }
-          o(W, te), W.prototype = te === null ? Object.create(te) : (B.prototype = te.prototype, new B());
+          o(W, ne), W.prototype = ne === null ? Object.create(ne) : (B.prototype = ne.prototype, new B());
         }), i = this && this.__importDefault || function(W) {
           return W && W.__esModule ? W : { default: W };
         };
         Object.defineProperty(t, "__esModule", { value: !0 }), t.FetchRequest = t.XhrRequest = void 0, t.fullUrl = Q;
         var c = i(e(2263)), s = i(e(1738)), l = i(e(3497)), r = i(e(6032)), u = i(e(9464)), f = i(e(9405)), p = i(e(3981)), b = i(e(9100)), x = i(e(1009)), v = i(e(6030)), _ = e(916), h = function(W) {
-          function te(B, P, N) {
+          function ne(B, P, N) {
             var I = W.call(this) || this;
             return I.xhr = B, I.reqHeaders = {}, I.method = P, I.url = Q(N), I.id = (0, _.createId)(), B.addEventListener("readystatechange", function() {
               B.readyState === 2 ? I.handleHeadersReceived() : B.readyState === 4 && (B.status === 0 ? I.handleError() : I.handleDone());
             }), I;
           }
-          return a(te, W), te.prototype.toJSON = function() {
+          return a(ne, W), ne.prototype.toJSON = function() {
             return { method: this.method, url: this.url, id: this.id };
-          }, te.prototype.handleSend = function(B) {
+          }, ne.prototype.handleSend = function(B) {
             (0, s.default)(B) || (B = ""), B = { name: Z(this.url), url: this.url, data: B, time: (0, p.default)(), reqHeaders: this.reqHeaders, method: this.method }, (0, u.default)(this.reqHeaders) || (B.reqHeaders = this.reqHeaders), this.emit("send", this.id, B);
-          }, te.prototype.handleReqHeadersSet = function(B, P) {
+          }, ne.prototype.handleReqHeadersSet = function(B, P) {
             B && P && (this.reqHeaders[B] = P);
-          }, te.prototype.handleHeadersReceived = function() {
+          }, ne.prototype.handleHeadersReceived = function() {
             var B = this.xhr, P = U(B.getResponseHeader("Content-Type") || "");
             this.emit("headersReceived", this.id, { type: P.type, subType: P.subType, size: j(B, !0, this.url), time: (0, p.default)(), resHeaders: G(B) });
-          }, te.prototype.handleDone = function() {
+          }, ne.prototype.handleDone = function() {
             var B, P, N, I = this, C = this.xhr, H = C.responseType, V = "", Ae = function() {
               I.emit("done", I.id, { status: C.status, size: j(C, !1, I.url), time: (0, p.default)(), resTxt: V });
             }, ke = U(C.getResponseHeader("Content-Type") || "");
@@ -6463,18 +6465,18 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             }, N.onerror = function(le) {
               P(le);
             }, N.readAsText(B));
-          }, te.prototype.handleError = function() {
+          }, ne.prototype.handleError = function() {
             this.emit("error", this.id, { errorText: "Network error", time: (0, p.default)() });
-          }, te;
+          }, ne;
         }(c.default);
         t.XhrRequest = h;
         var m = function(W) {
-          function te(B, P) {
+          function ne(B, P) {
             P === void 0 && (P = {});
             var N = W.call(this) || this, I = B instanceof window.Request, C = I ? B.url : B;
             return N.url = Q(C), N.id = (0, _.createId)(), N.options = P, N.reqHeaders = P.headers || (I ? B.headers : {}), N.method = P.method || (I ? B.method : "GET"), N;
           }
-          return a(te, W), te.prototype.send = function(B) {
+          return a(ne, W), ne.prototype.send = function(B) {
             var P = this, N = this.options, I = (0, s.default)(N.body) ? N.body : "";
             this.emit("send", this.id, { name: Z(this.url), url: this.url, data: I, reqHeaders: this.reqHeaders, time: (0, p.default)(), method: this.method }), B.then(function(C) {
               var H = U((C = C.clone()).headers.get("Content-Type"));
@@ -6485,32 +6487,32 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             }).catch(function(C) {
               P.emit("error", P.id, { errorText: C.message, time: (0, p.default)() });
             });
-          }, te;
+          }, ne;
         }(c.default);
-        function w(W, te) {
+        function w(W, ne) {
           var B = W.headers.get("Content-length");
-          return B ? (0, v.default)(B) : me(te);
+          return B ? (0, v.default)(B) : me(ne);
         }
         function O(W) {
-          var te = {};
+          var ne = {};
           return W.headers.forEach(function(B, P) {
-            return te[P] = B;
-          }), te;
+            return ne[P] = B;
+          }), ne;
         }
         function G(W) {
-          var te = W.getAllResponseHeaders().split(`
+          var ne = W.getAllResponseHeaders().split(`
 `), B = {};
-          return (0, b.default)(te, function(P) {
+          return (0, b.default)(ne, function(P) {
             if ((P = (0, f.default)(P)) !== "") {
               var N = P.split(":", 2), I = N[0], C = N[1];
               B[I] = (0, f.default)(C);
             }
           }), B;
         }
-        function j(W, te, B) {
+        function j(W, ne, B) {
           var P = 0;
           function N() {
-            if (!te) {
+            if (!ne) {
               var I = W.responseType, C = "";
               I !== "" && I !== "text" || (C = W.responseText), C && (P = me(C));
             }
@@ -6531,18 +6533,18 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return S.href = W, S.protocol + "//" + S.host + S.pathname + S.search + S.hash;
         }
         function Z(W) {
-          var te = (0, l.default)(W.split("/"));
-          return te.indexOf("?") > -1 && (te = (0, f.default)(te.split("?")[0])), te === "" && (te = new r.default(W).hostname), te;
+          var ne = (0, l.default)(W.split("/"));
+          return ne.indexOf("?") > -1 && (ne = (0, f.default)(ne.split("?")[0])), ne === "" && (ne = new r.default(W).hostname), ne;
         }
         function U(W) {
           if (!W) return { type: "unknown", subType: "unknown" };
-          var te = W.split(";")[0].split("/");
-          return { type: te[0], subType: (0, l.default)(te) };
+          var ne = W.split(";")[0].split("/");
+          return { type: ne[0], subType: (0, l.default)(ne) };
         }
         var ie = window.location.origin;
         function me(W) {
-          var te = encodeURIComponent(W).match(/%[89ABab]/g);
-          return W.length + (te ? te.length : 0);
+          var ne = encodeURIComponent(W).match(/%[89ABab]/g);
+          return W.length + (ne ? ne.length : 0);
         }
       }, 916: function(d, t, e) {
         var o, a = this && this.__extends || (o = function(j, S) {
@@ -6561,25 +6563,25 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return new (Q || (Q = Promise))(function(U, ie) {
             function me(B) {
               try {
-                te(Z.next(B));
+                ne(Z.next(B));
               } catch (P) {
                 ie(P);
               }
             }
             function W(B) {
               try {
-                te(Z.throw(B));
+                ne(Z.throw(B));
               } catch (P) {
                 ie(P);
               }
             }
-            function te(B) {
+            function ne(B) {
               var P;
               B.done ? U(B.value) : (P = B.value, P instanceof Q ? P : new Q(function(N) {
                 N(P);
               })).then(me, W);
             }
-            te((Z = Z.apply(j, S || [])).next());
+            ne((Z = Z.apply(j, S || [])).next());
           });
         }, c = this && this.__generator || function(j, S) {
           var Q, Z, U, ie = { label: 0, sent: function() {
@@ -6589,7 +6591,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return me.next = W(0), me.throw = W(1), me.return = W(2), typeof Symbol == "function" && (me[Symbol.iterator] = function() {
             return this;
           }), me;
-          function W(te) {
+          function W(ne) {
             return function(B) {
               return function(P) {
                 if (Q) throw new TypeError("Generator is already executing.");
@@ -6636,7 +6638,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 }
                 if (5 & P[0]) throw P[1];
                 return { value: P[0] ? P[1] : void 0, done: !0 };
-              }([te, B]);
+              }([ne, B]);
             };
           }
         }, s = this && this.__importDefault || function(j) {
@@ -7290,8 +7292,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           }
           var W = w.indexOf("#");
           W !== -1 && (m.hash = w.substr(W), w = w.slice(0, W));
-          var te = w.indexOf("?");
-          return te !== -1 && (m.query = c.parse(w.substr(te + 1)), w = w.slice(0, te)), m.pathname = w || "/", m;
+          var ne = w.indexOf("?");
+          return ne !== -1 && (m.query = c.parse(w.substr(ne + 1)), w = w.slice(0, ne)), m.pathname = w || "/", m;
         }, stringify: function(h) {
           var m = h.protocol + (h.slashes ? "//" : "") + (h.auth ? encodeURIComponent(h.auth) + "@" : "") + h.hostname + (h.port ? ":" + h.port : "") + h.pathname;
           return s(h.query) || (m += "?" + c.stringify(h.query)), h.hash && (m += h.hash), m;
@@ -7878,7 +7880,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               me === "#" || me === "." ? (Q.push(Z), Z = me) : Z += me;
             }
             Q.push(Z);
-            for (var W = 0, te = Q.length; W < te; W++) (Z = Q[W]) && (i(Z, "#") ? j = Z.slice(1) : i(Z, ".") ? S.push(Z.slice(1)) : G = Z);
+            for (var W = 0, ne = Q.length; W < ne; W++) (Z = Q[W]) && (i(Z, "#") ? j = Z.slice(1) : i(Z, ".") ? S.push(Z.slice(1)) : G = Z);
             return { tagName: G, id: j, classes: S };
           }(u), _ = v.tagName, h = v.id, m = v.classes, w = document.createElement(_);
           return h && w.setAttribute("id", h), c.add(w, m), l(b, function(O) {
@@ -8636,12 +8638,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             if (_ === p) throw Error("Parse Error: " + p);
             _ = p;
           }
-          function Z(ie, me, W, te) {
-            if (me = c(me), (te = !!te) || v.push(me), b.start) {
+          function Z(ie, me, W, ne) {
+            if (me = c(me), (ne = !!ne) || v.push(me), b.start) {
               var B = {};
               W.replace(u, function(P, N, I, C, H) {
                 B[N] = I || C || H || "";
-              }), b.start(me, B, te);
+              }), b.start(me, B, ne);
             }
           }
           function U(ie, me) {
@@ -8649,7 +8651,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             if (me = c(me)) for (W = v.length - 1; W >= 0 && v[W] !== me; W--) ;
             else W = 0;
             if (W >= 0) {
-              for (var te = v.length - 1; te >= W; te--) b.end && b.end(v[te]);
+              for (var ne = v.length - 1; ne >= W; ne--) b.end && b.end(v[ne]);
               v.length = W;
             }
           }
@@ -9020,12 +9022,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           }), '"'.concat(I, '":{') + Ae.join(",") + "}";
         }
         function me(I) {
-          return '"'.concat(te(I), '"');
+          return '"'.concat(ne(I), '"');
         }
         function W(I) {
-          return '"'.concat(te(i(I)), '"');
+          return '"'.concat(ne(i(I)), '"');
         }
-        function te(I) {
+        function ne(I) {
           return o(I).replace(/\\'/g, "'").replace(/\t/g, "\\t");
         }
         t = function(I) {
@@ -9501,30 +9503,30 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }, 3019: function(d, t) {
         Object.defineProperty(t, "__esModule", { value: !0 }), t.default = [["menuitem", "command"], ["rel", "roletype"], ["article", "article"], ["header", "banner"], ["input", "button", [["type", "checkbox"]]], ["summary", "button", [["aria-expanded", "false"]]], ["summary", "button", [["aria-expanded", "true"]]], ["input", "button", [["type", "button"]]], ["input", "button", [["type", "image"]]], ["input", "button", [["type", "reset"]]], ["input", "button", [["type", "submit"]]], ["button", "button"], ["td", "cell"], ["input", "checkbox", [["type", "checkbox"]]], ["th", "columnheader"], ["input", "combobox", [["type", "email"]]], ["input", "combobox", [["type", "search"]]], ["input", "combobox", [["type", "tel"]]], ["input", "combobox", [["type", "text"]]], ["input", "combobox", [["type", "url"]]], ["input", "combobox", [["type", "url"]]], ["select", "combobox"], ["select", "combobox", [["size", 1]]], ["aside", "complementary"], ["footer", "contentinfo"], ["dd", "definition"], ["dialog", "dialog"], ["body", "document"], ["figure", "figure"], ["form", "form"], ["form", "form"], ["form", "form"], ["span", "generic"], ["div", "generic"], ["table", "grid", [["role", "grid"]]], ["td", "gridcell", [["role", "gridcell"]]], ["details", "group"], ["fieldset", "group"], ["optgroup", "group"], ["h1", "heading"], ["h2", "heading"], ["h3", "heading"], ["h4", "heading"], ["h5", "heading"], ["h6", "heading"], ["img", "img"], ["img", "img"], ["a", "link"], ["area", "link"], ["link", "link"], ["menu", "list"], ["ol", "list"], ["ul", "list"], ["select", "listbox"], ["select", "listbox"], ["select", "listbox"], ["datalist", "listbox"], ["li", "listitem"], ["main", "main"], ["math", "math"], ["menuitem", "command"], ["nav", "navigation"], ["option", "option"], ["progress", "progressbar"], ["input", "radio", [["type", "radio"]]], ["section", "region"], ["section", "region"], ["frame", "region"], ["tr", "row"], ["tbody", "rowgroup"], ["tfoot", "rowgroup"], ["thead", "rowgroup"], ["th", "rowheader", [["scope", "row"]]], ["input", "searchbox", [["type", "search"]]], ["hr", "separator"], ["input", "slider", [["type", "range"]]], ["input", "spinbutton", [["type", "number"]]], ["output", "status"], ["table", "table"], ["dfn", "term"], ["input", "textbox"], ["input", "textbox", [["type", "email"]]], ["input", "textbox", [["type", "tel"]]], ["input", "textbox", [["type", "text"]]], ["input", "textbox", [["type", "url"]]], ["textarea", "textbox"]];
       }, 9196: function(d, t, e) {
-        var o, a = this && this.__extends || (o = function(W, te) {
+        var o, a = this && this.__extends || (o = function(W, ne) {
           return o = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(B, P) {
             B.__proto__ = P;
           } || function(B, P) {
             for (var N in P) Object.prototype.hasOwnProperty.call(P, N) && (B[N] = P[N]);
-          }, o(W, te);
-        }, function(W, te) {
-          if (typeof te != "function" && te !== null) throw new TypeError("Class extends value " + String(te) + " is not a constructor or null");
+          }, o(W, ne);
+        }, function(W, ne) {
+          if (typeof ne != "function" && ne !== null) throw new TypeError("Class extends value " + String(ne) + " is not a constructor or null");
           function B() {
             this.constructor = W;
           }
-          o(W, te), W.prototype = te === null ? Object.create(te) : (B.prototype = te.prototype, new B());
+          o(W, ne), W.prototype = ne === null ? Object.create(ne) : (B.prototype = ne.prototype, new B());
         }), i = this && this.__assign || function() {
           return i = Object.assign || function(W) {
-            for (var te, B = 1, P = arguments.length; B < P; B++) for (var N in te = arguments[B]) Object.prototype.hasOwnProperty.call(te, N) && (W[N] = te[N]);
+            for (var ne, B = 1, P = arguments.length; B < P; B++) for (var N in ne = arguments[B]) Object.prototype.hasOwnProperty.call(ne, N) && (W[N] = ne[N]);
             return W;
           }, i.apply(this, arguments);
         }, c = this && this.__values || function(W) {
-          var te = typeof Symbol == "function" && Symbol.iterator, B = te && W[te], P = 0;
+          var ne = typeof Symbol == "function" && Symbol.iterator, B = ne && W[ne], P = 0;
           if (B) return B.call(W);
           if (W && typeof W.length == "number") return { next: function() {
             return W && P >= W.length && (W = void 0), { value: W && W[P++], done: !W };
           } };
-          throw new TypeError(te ? "Object is not iterable." : "Symbol.iterator is not defined.");
+          throw new TypeError(ne ? "Object is not iterable." : "Symbol.iterator is not defined.");
         }, s = this && this.__importDefault || function(W) {
           return W && W.__esModule ? W : { default: W };
         };
@@ -9532,7 +9534,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         var l = s(e(7214)), r = e(926), u = e(4725), f = s(e(4095)), p = s(e(5865)), b = s(e(96)), x = s(e(9100)), v = s(e(8734)), _ = s(e(9848)), h = s(e(3805)), m = s(e(8105)), w = s(e(387)), O = s(e(3249)), G = s(e(6030)), j = s(e(3019)), S = s(e(1738));
         e(1209);
         var Q = function(W) {
-          function te(B, P) {
+          function ne(B, P) {
             P === void 0 && (P = {});
             var N = W.call(this, B, { compName: "dom-highlighter" }, P) || this;
             return N.overlay = new r.HighlightOverlay(window), N.reset = function() {
@@ -9542,56 +9544,56 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               N.reset(), N.draw();
             }, 16), N.redraw(), N.bindEvent(), N;
           }
-          return a(te, W), te.prototype.highlight = function(B, P) {
+          return a(ne, W), ne.prototype.highlight = function(B, P) {
             P && (0, m.default)(this.options, P), this.target = B, B instanceof HTMLElement && this.options.monitorResize && (this.resizeSensor && this.resizeSensor.destroy(), this.resizeSensor = new f.default(B), this.resizeSensor.addListener(this.redraw)), this.redraw();
-          }, te.prototype.hide = function() {
+          }, ne.prototype.hide = function() {
             this.target = null, this.redraw();
-          }, te.prototype.intercept = function(B) {
+          }, ne.prototype.intercept = function(B) {
             this.interceptor = B;
-          }, te.prototype.destroy = function() {
+          }, ne.prototype.destroy = function() {
             window.removeEventListener("resize", this.redraw), window.removeEventListener("scroll", this.redraw), this.resizeSensor && this.resizeSensor.destroy(), W.prototype.destroy.call(this);
-          }, te.prototype.draw = function() {
+          }, ne.prototype.draw = function() {
             var B = this.target;
             B && (B instanceof Text ? this.drawText(B) : this.drawElement(B));
-          }, te.prototype.drawText = function(B) {
+          }, ne.prototype.drawText = function(B) {
             var P = this.options, N = document.createRange();
             N.selectNode(B);
             var I = N.getBoundingClientRect(), C = I.left, H = I.top, V = I.width, Ae = I.height;
             N.detach();
             var ke = { paths: [{ path: this.rectToPath({ left: C, top: H, width: V, height: Ae }), fillColor: ie(P.contentColor), name: "content" }], showExtensionLines: P.showExtensionLines, showRulers: P.showRulers };
             P.showInfo && (ke.elementInfo = { tagName: "#text", nodeWidth: V, nodeHeight: Ae }), this.overlay.drawHighlight(ke);
-          }, te.prototype.drawElement = function(B) {
+          }, ne.prototype.drawElement = function(B) {
             var P = { paths: this.getPaths(B), showExtensionLines: this.options.showExtensionLines, showRulers: this.options.showRulers, colorFormat: this.options.colorFormat };
             if (this.options.showInfo && (P.elementInfo = this.getElementInfo(B)), this.interceptor) {
               var N = this.interceptor(P);
               N && (P = N);
             }
             this.overlay.drawHighlight(P);
-          }, te.prototype.getPaths = function(B) {
+          }, ne.prototype.getPaths = function(B) {
             var P = this.options, N = window.getComputedStyle(B), I = B.getBoundingClientRect(), C = I.left, H = I.top, V = I.width, Ae = I.height, ke = function(Te) {
               return (0, u.pxToNum)(N.getPropertyValue(Te));
             }, le = ke("margin-left"), ee = ke("margin-right"), se = ke("margin-top"), Oe = ke("margin-bottom"), Ne = ke("border-left-width"), Fe = ke("border-right-width"), Ue = ke("border-top-width"), et = ke("border-bottom-width"), qe = ke("padding-left"), he = ke("padding-right"), it = ke("padding-top"), Ee = ke("padding-bottom");
             return [{ path: this.rectToPath({ left: C + Ne + qe, top: H + Ue + it, width: V - Ne - qe - Fe - he, height: Ae - Ue - it - et - Ee }), fillColor: ie(P.contentColor), name: "content" }, { path: this.rectToPath({ left: C + Ne, top: H + Ue, width: V - Ne - Fe, height: Ae - Ue - et }), fillColor: ie(P.paddingColor), name: "padding" }, { path: this.rectToPath({ left: C, top: H, width: V, height: Ae }), fillColor: ie(P.borderColor), name: "border" }, { path: this.rectToPath({ left: C - le, top: H - se, width: V + le + ee, height: Ae + se + Oe }), fillColor: ie(P.marginColor), name: "margin" }];
-          }, te.prototype.getElementInfo = function(B) {
+          }, ne.prototype.getElementInfo = function(B) {
             var P = B.getBoundingClientRect(), N = P.width, I = P.height, C = B.getAttribute("class") || "";
             C = C.split(/\s+/).map(function(V) {
               return "." + V;
             }).join("");
             var H = { tagName: (0, b.default)(B.tagName), className: C, idValue: B.id, nodeWidth: N, nodeHeight: I };
             return this.options.showStyles && (H.style = this.getStyles(B)), this.options.showAccessibilityInfo && (0, m.default)(H, this.getAccessibilityInfo(B)), H;
-          }, te.prototype.getStyles = function(B) {
+          }, ne.prototype.getStyles = function(B) {
             for (var P = window.getComputedStyle(B), N = !1, I = B.childNodes, C = 0, H = I.length; C < H; C++) I[C].nodeType === 3 && (N = !0);
             var V = [];
             return N && V.push("color", "font-family", "font-size", "line-height"), V.push("padding", "margin", "background-color"), me(P, V);
-          }, te.prototype.getAccessibilityInfo = function(B) {
+          }, ne.prototype.getAccessibilityInfo = function(B) {
             var P = window.getComputedStyle(B);
             return i({ showAccessibilityInfo: !0, contrast: i({ contrastAlgorithm: "aa", textOpacity: 0.1 }, me(P, ["font-size", "font-weight", "background-color", "text-opacity"], !0)), isKeyboardFocusable: this.isFocusable(B) }, this.getAccessibleNameAndRole(B));
-          }, te.prototype.isFocusable = function(B) {
+          }, ne.prototype.isFocusable = function(B) {
             var P = (0, b.default)(B.tagName);
             if ((0, O.default)(["a", "button", "input", "textarea", "select", "details"], P)) return !0;
             var N = B.getAttribute("tabindex");
             return !!(N && (0, G.default)(N) > -1);
-          }, te.prototype.getAccessibleNameAndRole = function(B) {
+          }, ne.prototype.getAccessibleNameAndRole = function(B) {
             var P = B.getAttribute("labelledby") || B.getAttribute("aria-label"), N = B.getAttribute("role"), I = (0, b.default)(B.tagName);
             return j.default.forEach(function(C) {
               var H, V;
@@ -9616,25 +9618,25 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 }
               }
             }), { accessibleName: P || B.getAttribute("title") || "", accessibleRole: N || "generic" };
-          }, te.prototype.bindEvent = function() {
+          }, ne.prototype.bindEvent = function() {
             var B = this;
             window.addEventListener("resize", this.redraw), window.addEventListener("scroll", this.redraw), this.on("optionChange", function() {
               return B.redraw();
             });
-          }, te.prototype.rectToPath = function(B) {
+          }, ne.prototype.rectToPath = function(B) {
             var P = B.left, N = B.top, I = B.width, C = B.height, H = [];
             return H.push("M", P, N), H.push("L", P + I, N), H.push("L", P + I, N + C), H.push("L", P, N + C), H.push("Z"), H;
-          }, te;
+          }, ne;
         }(l.default);
         t.default = Q, d.exports = Q, d.exports.default = Q;
         var Z = /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/, U = /^rgba\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3}),\s*(\d*(?:\.\d+)?)\)$/;
         function ie(W) {
           return (0, S.default)(W) ? W : W.a ? "rgba(".concat(W.r, ", ").concat(W.g, ", ").concat(W.b, ", ").concat(W.a, ")") : "rgb(".concat(W.r, ", ").concat(W.g, ", ").concat(W.b, ")");
         }
-        function me(W, te, B) {
+        function me(W, ne, B) {
           B === void 0 && (B = !1);
           var P = {};
-          return (0, x.default)(te, function(N) {
+          return (0, x.default)(ne, function(N) {
             var I, C = W[N === "text-opacity" ? "color" : N];
             C && (I = C, (Z.test(I) || U.test(I)) && (C = function(H) {
               var V = v.default.parse(H), Ae = V.val[3] || 1;
@@ -9717,8 +9719,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               var Z = e(Q.value), U = Z[0], ie = Z.slice(1);
               if (G >= U) try {
                 for (var me = (w = void 0, o([900, 800, 700, 600, 500, 400, 300, 200, 100].entries())), W = me.next(); !W.done; W = me.next()) {
-                  var te = e(W.value, 2), B = te[0];
-                  if (j >= te[1]) {
+                  var ne = e(W.value, 2), B = ne[0];
+                  if (j >= ne[1]) {
                     var P = ie[ie.length - 1 - B];
                     return P === -1 ? null : P;
                   }
@@ -10039,9 +10041,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             }
             this.context.restore(), this.context.save();
             var G = !!(h.paths.length && h.showRulers && m.minX < 20 && m.maxX + 20 < this.canvasWidth), j = !!(h.paths.length && h.showRulers && m.minY < 20 && m.maxY + 20 < this.canvasHeight);
-            return h.showRulers && this.drawAxis(this.context, G, j), h.paths.length && (h.showExtensionLines && function(S, Q, Z, U, ie, me, W, te) {
+            return h.showRulers && this.drawAxis(this.context, G, j), h.paths.length && (h.showExtensionLines && function(S, Q, Z, U, ie, me, W, ne) {
               S.save();
-              var B = W, P = te;
+              var B = W, P = ne;
               if (S.strokeStyle = x, S.lineWidth = 1, S.translate(0.5, 0.5), Z) for (var N in Q.rightmostXForY) S.beginPath(), S.moveTo(B, Number(N)), S.lineTo(Q.rightmostXForY[N], Number(N)), S.stroke();
               else for (var N in Q.leftmostXForY) S.beginPath(), S.moveTo(0, Number(N)), S.lineTo(Q.leftmostXForY[N], Number(N)), S.stroke();
               if (U) for (var I in Q.bottommostYForX) S.beginPath(), S.moveTo(Number(I), P), S.lineTo(Number(I), Q.topmostYForX[I]), S.stroke();
@@ -10049,7 +10051,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               S.restore();
             }(this.context, m, G, j, void 0, !1, this.canvasWidth, this.canvasHeight), h.elementInfo && function(S, Q, Z, U, ie, me) {
               S.innerHTML = "";
-              var W = (0, l.createChild)(S, "div"), te = (0, l.createChild)(W, "div", "tooltip-content"), B = function(Ee, Te) {
+              var W = (0, l.createChild)(S, "div"), ne = (0, l.createChild)(W, "div", "tooltip-content"), B = function(Ee, Te) {
                 var oe = (0, l.createElement)("div", "element-info"), X = (0, l.createChild)(oe, "div", "element-info-header"), F = function(Mt) {
                   return Mt.layoutObjectName && (0, c.default)(Mt.layoutObjectName, "Grid") ? "grid" : Mt.layoutObjectName && Mt.layoutObjectName === "LayoutNGFlexibleBox" ? "flex" : null;
                 }(Ee);
@@ -10115,8 +10117,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 }
                 return oe;
               }(Q, Z);
-              te.appendChild(B);
-              var P, N = te.offsetWidth, I = te.offsetHeight, C = 8, H = 2, V = 2 * C, Ae = C + 2, ke = H + Ae, le = ie - H - Ae - V, ee = U.maxX - U.minX < V + 2 * Ae;
+              ne.appendChild(B);
+              var P, N = ne.offsetWidth, I = ne.offsetHeight, C = 8, H = 2, V = 2 * C, Ae = C + 2, ke = H + Ae, le = ie - H - Ae - V, ee = U.maxX - U.minX < V + 2 * Ae;
               if (ee) P = 0.5 * (U.minX + U.maxX) - C;
               else {
                 var se = U.minX + Ae, Oe = U.maxX - Ae - V;
@@ -10127,9 +10129,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               var Ue = U.minY - C - I, et = !0;
               Ue < 0 ? (Ue = Math.min(me - I, U.maxY + C), et = !1) : U.minY > me && (Ue = me - C - I);
               var qe = Fe >= U.minX && Fe + N <= U.maxX && Ue >= U.minY && Ue + I <= U.maxY, he = Fe < U.maxX && Fe + N > U.minX && Ue < U.maxY && Ue + I > U.minY;
-              if (he && !qe) return void (te.style.display = "none");
-              if (te.style.top = Ue + "px", te.style.left = Fe + "px", !Ne) {
-                var it = (0, l.createChild)(te, "div", "tooltip-arrow");
+              if (he && !qe) return void (ne.style.display = "none");
+              if (ne.style.top = Ue + "px", ne.style.left = Fe + "px", !Ne) {
+                var it = (0, l.createChild)(ne, "div", "tooltip-arrow");
                 it.style.clipPath = et ? "polygon(0 0, 100% 0, 50% 100%)" : "polygon(50% 0, 0 100%, 100% 100%)", it.style.top = (et ? I - 1 : -C) + "px", it.style.left = P - Fe + "px";
               }
             }(this.tooltip, h.elementInfo, h.colorFormat, m, this.canvasWidth, this.canvasHeight)), this.context.restore(), { bounds: m };
@@ -10146,16 +10148,16 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             h.save(), h.fillStyle = b, w ? h.fillRect(0, S(U) - 15, S(Z), S(U)) : h.fillRect(0, 0, S(Z), 15), h.globalCompositeOperation = "destination-out", h.fillStyle = "red", m ? h.fillRect(S(Z) - 15, 0, S(Z), S(U)) : h.fillRect(0, 0, 15, S(U)), h.restore(), h.fillStyle = b, m ? h.fillRect(S(Z) - 15, 0, S(Z), S(U)) : h.fillRect(0, 0, 15, S(U)), h.lineWidth = 1, h.strokeStyle = p, h.fillStyle = p, h.save(), h.translate(-G, 0.5 - j);
             for (var me = U + Q(j), W = 100; W < me; W += 100) h.save(), h.translate(G, S(W)), h.rotate(-Math.PI / 2), h.fillText(String(W), 2, m ? S(Z) - 7 : 13), h.restore();
             h.translate(0.5, -0.5);
-            for (var te = Z + Q(G), B = 100; B < te; B += 100) h.save(), h.fillText(String(B), S(B) + 2, w ? j + S(U) - 7 : j + 13), h.restore();
+            for (var ne = Z + Q(G), B = 100; B < ne; B += 100) h.save(), h.fillText(String(B), S(B) + 2, w ? j + S(U) - 7 : j + 13), h.restore();
             for (h.restore(), h.save(), m && (h.translate(S(Z), 0), h.scale(-1, 1)), h.translate(-G, 0.5 - j), me = U + Q(j), W = ie; W < me; W += ie) {
               h.beginPath(), h.moveTo(G, S(W));
               var P = W % 100 ? 5 : 8;
               h.lineTo(G + P, S(W)), h.stroke();
             }
             for (h.strokeStyle = f, W = 5; W < me; W += 5) W % ie && (h.beginPath(), h.moveTo(G, S(W)), h.lineTo(G + 5, S(W)), h.stroke());
-            for (h.restore(), h.save(), w && (h.translate(0, S(U)), h.scale(1, -1)), h.translate(0.5 - G, -j), te = Z + Q(G), B = ie; B < te; B += ie)
+            for (h.restore(), h.save(), w && (h.translate(0, S(U)), h.scale(1, -1)), h.translate(0.5 - G, -j), ne = Z + Q(G), B = ie; B < ne; B += ie)
               h.beginPath(), h.moveTo(S(B), j), P = B % 100 ? 5 : 8, h.lineTo(S(B), j + P), h.stroke();
-            for (h.strokeStyle = f, B = 5; B < te; B += 5) B % ie && (h.beginPath(), h.moveTo(S(B), j), h.lineTo(S(B), j + 5), h.stroke());
+            for (h.strokeStyle = f, B = 5; B < ne; B += 5) B % ie && (h.beginPath(), h.moveTo(S(B), j), h.lineTo(S(B), j + 5), h.stroke());
             h.restore(), h.restore();
           }, _;
         }(l.Overlay);
@@ -10487,7 +10489,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               typeof j > "u" ? yt(this, v).push(["RR", m, w, O, G, 0]) : yt(this, v).push(["RR", m, w, O, G, j]);
             }
             buildPathInCanvas(m) {
-              let w, O, G, j, S, Q, Z, U, ie, me, W, te, B, P, N, I, C, H, V, Ae, ke, le = 0, ee = 0, se = null, Oe = null, Ne = null, Fe = null, Ue = null, et = null;
+              let w, O, G, j, S, Q, Z, U, ie, me, W, ne, B, P, N, I, C, H, V, Ae, ke, le = 0, ee = 0, se = null, Oe = null, Ne = null, Fe = null, Ue = null, et = null;
               m.beginPath();
               for (let qe = 0; qe < yt(this, v).length; ++qe) {
                 let he;
@@ -10551,7 +10553,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                     he = yt(this, v)[qe], le = he[1], ee = he[2], B = he[3], O = he[4], w = he[5], Ae = he[6], m.arc(le, ee, B, O, w, Ae);
                     break;
                   case "AT":
-                    he = yt(this, v)[qe], W = he[1], te = he[2], le = he[3], ee = he[4], B = he[5], m.arcTo(W, te, le, ee, B);
+                    he = yt(this, v)[qe], W = he[1], ne = he[2], le = he[3], ee = he[4], B = he[5], m.arcTo(W, ne, le, ee, B);
                     break;
                   case "E":
                     he = yt(this, v)[qe], le = he[1], ee = he[2], P = he[3], N = he[4], Z = he[5], O = he[6], w = he[7], Ae = he[8], m.save(), m.translate(le, ee), m.rotate(Z), m.scale(P, N), m.arc(0, 0, 1, O, w, Ae), m.restore();
@@ -10585,9 +10587,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               if (G.length === 0 || G.length > 4) throw new RangeError(`Failed to execute 'roundRect' on '${this.constructor.name}': ${G.length} radii provided. Between one and four radii are necessary.`);
               G.forEach((W) => {
                 if (f(W)) {
-                  const te = W;
-                  if (typeof te.x == "number" && te.x < 0) throw new RangeError(`Failed to execute 'roundRect' on '${this.constructor.name}': Radius value ${te.x} is negative.`);
-                  if (typeof te.y == "number" && te.y < 0) throw new RangeError(`Failed to execute 'roundRect' on '${this.constructor.name}': Radius value ${te.y} is negative.`);
+                  const ne = W;
+                  if (typeof ne.x == "number" && ne.x < 0) throw new RangeError(`Failed to execute 'roundRect' on '${this.constructor.name}': Radius value ${ne.x} is negative.`);
+                  if (typeof ne.y == "number" && ne.y < 0) throw new RangeError(`Failed to execute 'roundRect' on '${this.constructor.name}': Radius value ${ne.y} is negative.`);
                 } else {
                   if (typeof W != "number") throw new TypeError(`Failed to execute 'roundRect' on '${this.constructor.name}': Radius value ${W} is not a number or DOMPointInit.`);
                   if (typeof W == "number" && W < 0) throw new RangeError(`Failed to execute 'roundRect' on '${this.constructor.name}': Radius value ${W} is negative.`);

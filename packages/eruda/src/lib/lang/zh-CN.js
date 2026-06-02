@@ -43,6 +43,7 @@ export default {
     lazyEvaluation: '惰性求值',
     maxLogNum: '最大日志数量',
     infinite: '无限',
+    showTimestamp: '显示时间戳',
   },
 
   // 开发工具

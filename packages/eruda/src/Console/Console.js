@@ -185,7 +185,7 @@ export default class Console extends Tool {
     const logger = new LunaConsole(this._$logs.get(0), {
       asyncRender: cfg.get('asyncRender'),
       maxNum: maxLogNum,
-      showHeader: cfg.get('displayExtraInfo'),
+      showHeader: cfg.get('displayExtraInfo') || cfg.get('showTimestamp'),
       unenumerable: cfg.get('displayUnenumerable'),
       accessGetter: cfg.get('displayGetterVal'),
       lazyEvaluation: cfg.get('lazyEvaluation'),
@@ -324,6 +324,7 @@ export default class Console extends Tool {
       lazyEvaluation: true,
       displayIfErr: false,
       maxLogNum: 'infinite',
+      showTimestamp: false,
     }))
 
     this._enableJsExecution(cfg.get('jsExecution'))
@@ -343,7 +344,9 @@ export default class Console extends Tool {
         case 'maxLogNum':
           return logger.setOption('maxNum', val === 'infinite' ? 0 : +val)
         case 'displayExtraInfo':
-          return logger.setOption('showHeader', val)
+          return logger.setOption('showHeader', val || cfg.get('showTimestamp'))
+        case 'showTimestamp':
+          return logger.setOption('showHeader', val || cfg.get('displayExtraInfo'))
         case 'displayUnenumerable':
           return logger.setOption('unenumerable', val)
         case 'displayGetterVal':
@@ -364,6 +367,7 @@ export default class Console extends Tool {
       .switch(cfg, 'overrideConsole', i18n.t('console.overrideConsole'))
       .switch(cfg, 'displayIfErr', i18n.t('console.displayIfErr'))
       .switch(cfg, 'displayExtraInfo', i18n.t('console.displayExtraInfo'))
+      .switch(cfg, 'showTimestamp', i18n.t('console.showTimestamp'))
       .switch(cfg, 'displayUnenumerable', i18n.t('console.displayUnenumerable'))
       .switch(cfg, 'displayGetterVal', i18n.t('console.displayGetterVal'))
       .switch(cfg, 'lazyEvaluation', i18n.t('console.lazyEvaluation'))
