@@ -2134,7 +2134,9 @@ class je {
         this.perfRunning || (this.perfRunning = !0, s.textContent = n.perfRunning, s.disabled = !0, s.style.cssText = "cursor:not-allowed;padding:2px 8px;background:#bbb;color:#fff;border-radius:4px;font-size:12px;border:none;pointer-events:none;", this.codelog.startPerfRun(), setTimeout(() => {
           var o;
           (o = this.codelog) == null || o.stopPerfRun();
-        }, 1e4));
+        }, 1e4), setTimeout(() => {
+          this.perfRunning && (this.perfRunning = !1, this.renderInfoPanel());
+        }, 3e4));
       };
     }
   }

@@ -308,10 +308,17 @@ export class ErudaPlugin {
         perfBtn.disabled = true;
         perfBtn.style.cssText = 'cursor:not-allowed;padding:2px 8px;background:#bbb;color:#fff;border-radius:4px;font-size:12px;border:none;pointer-events:none;';
         this.codelog!.startPerfRun();
-        // Auto-stop after 10 seconds to collect enough data and send to server
+        // Auto-stop after 10s to collect data and send to server
         setTimeout(() => {
           this.codelog?.stopPerfRun();
         }, 10000);
+        // Fallback: reset button after 30s even if perf_run_done never arrives
+        setTimeout(() => {
+          if (this.perfRunning) {
+            this.perfRunning = false;
+            this.renderInfoPanel();
+          }
+        }, 30000);
       };
     }
   }

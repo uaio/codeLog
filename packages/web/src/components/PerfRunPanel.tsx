@@ -100,15 +100,16 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
   // WS: listen for perf_run results pushed from server after device submits raw data
   useEffect(() => {
     const unsub = websocketManager.subscribe((msg: any) => {
-      if (msg.type === 'perf_run' && msg.data?.deviceId === deviceId) {
-        const session: PerfRunSession = msg.data;
+      // Server broadcasts perf_run result as: { type: 'event', deviceId, envelope: { type: 'perf_run', data: session } }
+      if (
+        msg.type === 'event' &&
+        msg.deviceId === deviceId &&
+        msg.envelope?.type === 'perf_run'
+      ) {
+        const session: PerfRunSession = msg.envelope.data;
         setSessions((prev) => [session, ...prev]);
         setSelected(session);
         setComputing(false);
-      }
-      // When the device starts a perf run, show computing indicator
-      if (msg.type === 'perf_run_raw' && msg.data?.tabId === deviceId) {
-        setComputing(true);
       }
     });
     return unsub;
