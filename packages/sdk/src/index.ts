@@ -515,13 +515,6 @@ export class CodeLog {
 
   private async initEruda(config?: ErudaConfig, lang?: 'zh' | 'en'): Promise<void> {
     try {
-      // Clear all eruda localStorage entries so settings/position don't persist across loads
-      if (typeof localStorage !== 'undefined') {
-        Object.keys(localStorage)
-          .filter((k) => k.startsWith('eruda'))
-          .forEach((k) => localStorage.removeItem(k));
-      }
-
       // 动态导入 eruda UMD 模块
       const erudaModule = await import('@codelog/eruda');
       // @ts-ignore - eruda is UMD module, default export is the eruda object

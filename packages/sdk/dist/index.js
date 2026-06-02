@@ -3380,7 +3380,6 @@ class gt {
   async initEruda(e, t) {
     var s, n, r, i, a, c, l;
     try {
-      typeof localStorage < "u" && Object.keys(localStorage).filter((d) => d.startsWith("eruda")).forEach((d) => localStorage.removeItem(d));
       const u = await import("./eruda--AmJ_kYw.js").then((d) => d.e);
       if (this.eruda = u.default || u, this.eruda && typeof this.eruda.init == "function") {
         this.eruda.init({
