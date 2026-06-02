@@ -949,7 +949,7 @@ export class CodeLog {
 
   startPerfRun(): void {
     if (this.perfRunning) return;
-    this.enterZenMode();
+    this.enterZenMode(true); // silent: don't show zen mode message during perf run
     this.perfRunCollector = new PerformanceCollector(this.dataBus);
     this.perfRunCollector.start();
     this.perfRunStartTime = Date.now();
@@ -957,8 +957,8 @@ export class CodeLog {
     this.dataBus.emit('console', {
       timestamp: Date.now(),
       level: 'log',
-      message: '[codeLog] 🏁 跑分开始...',
-      args: ['[codeLog] 🏁 跑分开始...'],
+      message: '[codeLog] 🏁 跑分开始，10 秒后自动上传...',
+      args: ['[codeLog] 🏁 跑分开始，10 秒后自动上传...'],
     });
   }
 
@@ -973,7 +973,7 @@ export class CodeLog {
     };
     this.perfRunCollector?.destroy();
     this.perfRunCollector = null;
-    this.exitZenMode();
+    this.exitZenMode(true); // silent: don't show zen mode off message after perf run
     const audit = runPageAudit();
     const endTime = Date.now();
     const rawPayload: PerfRunRawPayload = {
@@ -1035,7 +1035,7 @@ export class CodeLog {
    * 只保留 console + error 捕获和 WebSocket 传输。
    * 适合跑性能报告时使用，避免 SDK 自身干扰测量结果。
    */
-  enterZenMode(): void {
+  enterZenMode(silent = false): void {
     if (this.zenMode) return;
     this.zenMode = true;
 
@@ -1070,19 +1070,20 @@ export class CodeLog {
     this.domCollector?.destroy();
     this.domCollector = null;
 
-    // 发一条日志告知用户
-    this.dataBus.emit('console', {
-      timestamp: Date.now(),
-      level: 'warn',
-      message: '[codeLog] Zen Mode ON — 已停止高开销采集',
-      args: ['[codeLog] Zen Mode ON — 已停止高开销采集'],
-    });
+    if (!silent) {
+      this.dataBus.emit('console', {
+        timestamp: Date.now(),
+        level: 'warn',
+        message: '[codeLog] Zen Mode ON — 已停止高开销采集',
+        args: ['[codeLog] Zen Mode ON — 已停止高开销采集'],
+      });
+    }
   }
 
   /**
    * 退出禅模式，恢复所有采集器。
    */
-  exitZenMode(): void {
+  exitZenMode(silent = false): void {
     if (!this.zenMode) return;
     this.zenMode = false;
 
@@ -1090,12 +1091,14 @@ export class CodeLog {
     this.initStorageReader();
     this.initPerformanceCollector();
 
-    this.dataBus.emit('console', {
-      timestamp: Date.now(),
-      level: 'log',
-      message: '[codeLog] Zen Mode OFF — 已恢复所有采集',
-      args: ['[codeLog] Zen Mode OFF — 已恢复所有采集'],
-    });
+    if (!silent) {
+      this.dataBus.emit('console', {
+        timestamp: Date.now(),
+        level: 'log',
+        message: '[codeLog] Zen Mode OFF — 已恢复所有采集',
+        args: ['[codeLog] Zen Mode OFF — 已恢复所有采集'],
+      });
+    }
   }
 
   /** 当前是否处于禅模式 */

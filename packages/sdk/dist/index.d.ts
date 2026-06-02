@@ -108,11 +108,11 @@ declare class CodeLog {
      * 只保留 console + error 捕获和 WebSocket 传输。
      * 适合跑性能报告时使用，避免 SDK 自身干扰测量结果。
      */
-    enterZenMode(): void;
+    enterZenMode(silent?: boolean): void;
     /**
      * 退出禅模式，恢复所有采集器。
      */
-    exitZenMode(): void;
+    exitZenMode(silent?: boolean): void;
     /** 当前是否处于禅模式 */
     isZenMode(): boolean;
     enableRemote(): void;

@@ -3566,11 +3566,11 @@ class nt {
     return (e = this.screenshotCollector) == null ? void 0 : e.capture();
   }
   startPerfRun() {
-    this.perfRunning || (this.enterZenMode(), this.perfRunCollector = new K(this.dataBus), this.perfRunCollector.start(), this.perfRunStartTime = Date.now(), this.perfRunning = !0, this.dataBus.emit("console", {
+    this.perfRunning || (this.enterZenMode(!0), this.perfRunCollector = new K(this.dataBus), this.perfRunCollector.start(), this.perfRunStartTime = Date.now(), this.perfRunning = !0, this.dataBus.emit("console", {
       timestamp: Date.now(),
       level: "log",
-      message: "[codeLog] 🏁 跑分开始...",
-      args: ["[codeLog] 🏁 跑分开始..."]
+      message: "[codeLog] 🏁 跑分开始，10 秒后自动上传...",
+      args: ["[codeLog] 🏁 跑分开始，10 秒后自动上传..."]
     }));
   }
   async stopPerfRun() {
@@ -3583,7 +3583,7 @@ class nt {
       resources: [],
       interactions: []
     };
-    (r = this.perfRunCollector) == null || r.destroy(), this.perfRunCollector = null, this.exitZenMode();
+    (r = this.perfRunCollector) == null || r.destroy(), this.perfRunCollector = null, this.exitZenMode(!0);
     const t = Je(), s = Date.now(), n = {
       sessionId: Date.now().toString(36),
       tabId: this.tabId,
@@ -3628,9 +3628,9 @@ class nt {
    * 只保留 console + error 捕获和 WebSocket 传输。
    * 适合跑性能报告时使用，避免 SDK 自身干扰测量结果。
    */
-  enterZenMode() {
-    var e, t;
-    this.zenMode || (this.zenMode = !0, this.performanceCollector && (this.performanceCollector.destroy(), this.performanceCollector = null), this.networkInterceptor && (this.networkInterceptor.stop(), this.networkInterceptor = null), this.wsInterceptor && (this.wsInterceptor.stop(), this.wsInterceptor = null), this.sseInterceptor && (this.sseInterceptor.stop(), this.sseInterceptor = null), this.beaconInterceptor && (this.beaconInterceptor.stop(), this.beaconInterceptor = null), (e = this.storageReader) == null || e.unwatch(), (t = this.domCollector) == null || t.destroy(), this.domCollector = null, this.dataBus.emit("console", {
+  enterZenMode(e = !1) {
+    var t, s;
+    this.zenMode || (this.zenMode = !0, this.performanceCollector && (this.performanceCollector.destroy(), this.performanceCollector = null), this.networkInterceptor && (this.networkInterceptor.stop(), this.networkInterceptor = null), this.wsInterceptor && (this.wsInterceptor.stop(), this.wsInterceptor = null), this.sseInterceptor && (this.sseInterceptor.stop(), this.sseInterceptor = null), this.beaconInterceptor && (this.beaconInterceptor.stop(), this.beaconInterceptor = null), (t = this.storageReader) == null || t.unwatch(), (s = this.domCollector) == null || s.destroy(), this.domCollector = null, e || this.dataBus.emit("console", {
       timestamp: Date.now(),
       level: "warn",
       message: "[codeLog] Zen Mode ON — 已停止高开销采集",
@@ -3640,8 +3640,8 @@ class nt {
   /**
    * 退出禅模式，恢复所有采集器。
    */
-  exitZenMode() {
-    this.zenMode && (this.zenMode = !1, this.initNetworkInterceptor(this.networkConfig), this.initStorageReader(), this.initPerformanceCollector(), this.dataBus.emit("console", {
+  exitZenMode(e = !1) {
+    this.zenMode && (this.zenMode = !1, this.initNetworkInterceptor(this.networkConfig), this.initStorageReader(), this.initPerformanceCollector(), e || this.dataBus.emit("console", {
       timestamp: Date.now(),
       level: "log",
       message: "[codeLog] Zen Mode OFF — 已恢复所有采集",
