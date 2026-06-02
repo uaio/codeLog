@@ -65,6 +65,20 @@ export default {
     autoRefreshElements: 'Auto Refresh Elements',
   },
 
+  // Network panel
+  network: {
+    name: 'Name',
+    method: 'Method',
+    status: 'Status',
+    type: 'Type',
+    size: 'Size',
+    time: 'Time',
+    pending: 'Pending',
+    responseHeaders: 'Response Headers',
+    requestHeaders: 'Request Headers',
+    requestData: 'Request Data',
+  },
+
   // Resources panel
   resources: {
     key: 'Key',

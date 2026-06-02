@@ -103,15 +103,15 @@ export default class Detail extends Emitter {
 
     let data = `${detailData.method} ${detailData.url} ${detailData.status}\n`
     if (!isEmpty(detailData.data)) {
-      data += '\nRequest Data\n\n'
+      data += `\n${i18n.t('network.requestData')}\n\n`
       data += `${detailData.data}\n`
     }
     if (!isEmpty(detailData.reqHeaders)) {
-      data += '\nRequest Headers\n\n'
+      data += `\n${i18n.t('network.requestHeaders')}\n\n`
       each(detailData.reqHeaders, (val, key) => (data += `${key}: ${val}\n`))
     }
     if (!isEmpty(detailData.resHeaders)) {
-      data += '\nResponse Headers\n\n'
+      data += `\n${i18n.t('network.responseHeaders')}\n\n`
       each(detailData.resHeaders, (val, key) => (data += `${key}: ${val}\n`))
     }
     if (detailData.resTxt) {

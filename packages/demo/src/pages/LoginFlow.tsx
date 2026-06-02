@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { initCodeLog } from '../codelog';
+import { t } from '../i18n';
+import { useLang } from '../components/useLang';
 
 /**
  * 登录流程测试页
@@ -36,6 +38,7 @@ export default function LoginFlow() {
   const [result, setResult] = useState<'idle' | 'success' | 'fail'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [logs, setLogs] = useState<string[]>([]);
+  useLang(); // trigger re-render on language change
 
   useEffect(() => {
     initCodeLog().then(() => {
@@ -170,17 +173,16 @@ export default function LoginFlow() {
   return (
     <div>
       <div className="page-header">
-        <h2>🔐 登录流程</h2>
+        <h2>{t('login').title}</h2>
         <p>
-          完整演示 <code>@codelog[checkpoint]</code> 打点规范 — 用 AI 工具的{' '}
-          <code>get_checkpoints</code> 验证流程
+          {t('login').subtitle} — <code>@codelog[checkpoint]</code>
         </p>
       </div>
 
       {/* 流程图 */}
       <div className="section">
         <h3>
-          📊 检查点进度 ({hitCount}/{nodes.length})
+          📊 {t('login').flow} ({hitCount}/{nodes.length})
         </h3>
         <div className="checkpoint-result">
           {nodes.map((n) => (
@@ -207,29 +209,29 @@ export default function LoginFlow() {
               color: '#2e7d32',
             }}
           >
-            🎉 所有检查点均已命中！AI 验证：<code>get_checkpoints(feature="login")</code>
+            🎉 {t('login').success} <code>get_checkpoints(feature="login")</code>
           </div>
         )}
       </div>
 
       {/* 表单 */}
       <div className="section">
-        <h3>📋 登录表单</h3>
+        <h3>📋 {t('login').title}</h3>
         <div className="form-group">
-          <label>邮箱</label>
+          <label>{t('login').username}</label>
           <input
             value={form.username}
             onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-            placeholder="输入邮箱"
+            placeholder={t('login').username}
           />
         </div>
         <div className="form-group">
-          <label>密码</label>
+          <label>{t('login').password}</label>
           <input
             type="password"
             value={form.password}
             onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-            placeholder="输入密码（≥6位）"
+            placeholder={t('login').password}
           />
         </div>
         {result === 'fail' && (
@@ -243,7 +245,7 @@ export default function LoginFlow() {
               marginBottom: 12,
             }}
           >
-            ❌ {errorMsg}
+            {t('login').fail}{errorMsg}
           </div>
         )}
         {result === 'success' && (
@@ -257,27 +259,27 @@ export default function LoginFlow() {
               marginBottom: 12,
             }}
           >
-            ✅ 登录成功！（AI 现在可以调用 get_checkpoints 验证所有节点）
+            {t('login').success}
           </div>
         )}
         <div className="btn-group">
           <button className="btn-primary" onClick={handleLogin} disabled={running}>
-            {running ? '⏳ 登录中...' : '🔐 正常登录流程'}
+            {running ? t('login').running : `🔐 ${t('login').submit}`}
           </button>
           <button className="btn-warn" onClick={handleErrorFlow} disabled={running}>
             ⚠️ 触发验证失败（缺失节点示例）
           </button>
           <button className="btn-secondary" onClick={resetFlow} disabled={running}>
-            🔄 重置
+            🔄 {t('login').reset}
           </button>
         </div>
       </div>
 
       {/* 执行日志 */}
       <div className="section">
-        <h3>🗒️ 执行记录</h3>
+        <h3>🗒️ {t('login').logs}</h3>
         <div className="log-output">
-          {logs.length === 0 && <div style={{ color: '#555' }}>点击登录按钮开始流程…</div>}
+          {logs.length === 0 && <div style={{ color: '#555' }}>{t('login').noLogs}</div>}
           {[...logs].reverse().map((l, i) => (
             <div key={i} className="log-item log">
               {l}

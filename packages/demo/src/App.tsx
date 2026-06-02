@@ -1,21 +1,24 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import BasicTest from './pages/BasicTest';
 import LoginFlow from './pages/LoginFlow';
+import { t } from './i18n';
+import { useLang } from './components/useLang';
 import './App.css';
 
-const NAV = [
-  { path: '/basic', label: '🧪 基础功能测试', desc: 'Console / Network / Storage / Error' },
-  { path: '/login', label: '🔐 登录流程', desc: '@codelog[checkpoint] 完整示例' },
-];
-
 function NavBar() {
+  const lang = useLang();
+  const nav = t('nav');
   const { pathname } = useLocation();
+  const NAV = [
+    { path: '/basic', label: nav.basic, desc: nav.basicDesc },
+    { path: '/login', label: nav.login, desc: nav.loginDesc },
+  ];
   return (
     <nav className="navbar">
       <div className="navbar-brand">
         <span className="brand-icon">📡</span>
-        <span className="brand-name">codeLog Demo</span>
-        <span className="brand-tag">测试项目</span>
+        <span className="brand-name">{nav.brand}</span>
+        <span className="brand-tag">{nav.tag}</span>
       </div>
       <div className="navbar-links">
         {NAV.map((n) => (
@@ -33,11 +36,18 @@ function NavBar() {
 }
 
 function Home() {
+  const lang = useLang();
+  const home = t('home');
+  const nav = t('nav');
+  const NAV = [
+    { path: '/basic', label: nav.basic, desc: nav.basicDesc },
+    { path: '/login', label: nav.login, desc: nav.loginDesc },
+  ];
   return (
     <div className="home">
       <div className="home-hero">
-        <h1>codeLog 测试项目</h1>
-        <p>用于验证 codeLog 完整工作流：SDK 采集 → WS 传输 → PC 面板 → AI 工具</p>
+        <h1>{home.title}</h1>
+        <p>{home.subtitle}</p>
       </div>
       <div className="home-cards">
         {NAV.map((n) => (
@@ -48,8 +58,8 @@ function Home() {
         ))}
       </div>
       <div className="home-tip">
-        <strong>使用前：</strong>确保 <code>npx codelog</code> 已启动，并在控制台复制 SDK
-        接入地址配置到 <code>src/codelog.ts</code>
+        <strong>{home.tip}</strong>{home.tipBody}{' '}
+        <code>src/codelog.ts</code>
       </div>
     </div>
   );

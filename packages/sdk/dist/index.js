@@ -3380,7 +3380,7 @@ class gt {
   async initEruda(e, t) {
     var s, n, r, i, a, c, l;
     try {
-      const u = await import("./eruda--AmJ_kYw.js").then((d) => d.e);
+      const u = await import("./eruda-CeLRF2MY.js").then((d) => d.e);
       if (this.eruda = u.default || u, this.eruda && typeof this.eruda.init == "function") {
         this.eruda.init({
           tool: e == null ? void 0 : e.tool,

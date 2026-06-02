@@ -1,0 +1,31 @@
+{
+  "name": "@codelog/eruda",
+  "private": true,
+  "version": "0.2.1",
+  "description": "Console for Mobile Browsers",
+  "main": "dist/eruda.js",
+  "types": "eruda.d.ts",
+  "browserslist": [
+    "since 2015",
+    "not dead"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liriliri/eruda.git"
+  },
+  "keywords": [
+    "console",
+    "mobile",
+    "debug"
+  ],
+  "author": "redhoodsu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/liriliri/eruda/issues"
+  },
+  "homepage": "https://eruda.liriliri.io/",
+  "dependencies": {
+    "luna-dom-highlighter": "^1.0.2",
+    "path2d-polyfill": "^3.2.1"
+  }
+}

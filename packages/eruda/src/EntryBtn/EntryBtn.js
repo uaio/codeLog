@@ -1,5 +1,6 @@
 import emitter from '../lib/emitter'
 import Settings from '../Settings/Settings'
+import i18n from '../lib/i18n'
 import Emitter from 'licia/Emitter'
 import $ from 'licia/$'
 import nextTick from 'licia/nextTick'
@@ -161,7 +162,7 @@ export default class EntryBtn extends Emitter {
       pos: this._getDefPos(),
     }))
 
-    settings.switch(cfg, 'rememberPos', 'Remember Entry Button Position')
+    settings.switch(cfg, 'rememberPos', i18n.t('entryBtn.rememberPosition'))
 
     this._resetPos()
   }

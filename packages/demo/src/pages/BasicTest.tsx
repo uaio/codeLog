@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { initCodeLog, codelog } from '../codelog';
+import { t } from '../i18n';
+import { useLang } from '../components/useLang';
 
 interface LogItem {
   level: 'log' | 'info' | 'warn' | 'error' | 'checkpoint';
@@ -21,6 +23,7 @@ export default function BasicTest() {
   const [sdkReady, setSdkReady] = useState(false);
   const reqCount = useRef(0);
   const wsRef = useRef<WebSocket | null>(null);
+  useLang(); // trigger re-render on language change
 
   useEffect(() => {
     initCodeLog().then(() => setSdkReady(true));
@@ -260,9 +263,9 @@ export default function BasicTest() {
   return (
     <div>
       <div className="page-header">
-        <h2>🧪 全链路功能测试</h2>
+        <h2>{t('basic').title}</h2>
         <p>
-          测试链路：Demo 页 → SDK → Server (38291) → PC 面板 (3001)<br />
+          {t('basic').subtitle}<br />
           <small style={{ color: '#888' }}>
             PC 面板：<a href="http://localhost:3001" target="_blank" rel="noreferrer">http://localhost:3001</a>
           </small>
@@ -271,90 +274,90 @@ export default function BasicTest() {
 
       <div className="section">
         <h3>
-          SDK 状态：
+          {t('basic').sdkStatus}
           <span className={`status-badge ${sdkReady ? 'connected' : 'disconnected'}`}>
-            {sdkReady ? '✅ 已初始化，连接至 http://localhost:38291' : '⏳ 加载中...'}
+            {sdkReady ? t('basic').sdkReady : t('basic').sdkLoading}
           </span>
         </h3>
       </div>
 
       <div className="section">
-        <h3>📝 Console 日志</h3>
+        <h3>{t('basic').console}</h3>
         <div className="btn-group">
           <button className="btn-secondary" onClick={testLog}>log</button>
           <button className="btn-secondary" onClick={testInfo}>info</button>
           <button className="btn-warn" onClick={testWarn}>warn</button>
           <button className="btn-danger" onClick={testError}>error</button>
-          <button className="btn-secondary" onClick={testObject}>对象</button>
-          <button className="btn-secondary" onClick={testBatch}>批量 ×5</button>
+          <button className="btn-secondary" onClick={testObject}>{t('basic').object}</button>
+          <button className="btn-secondary" onClick={testBatch}>{t('basic').batch}</button>
         </div>
       </div>
 
       <div className="section">
-        <h3>🌐 网络请求 (Fetch / XHR)</h3>
+        <h3>{t('basic').network}</h3>
         <div className="btn-group">
           <button className="btn-primary" onClick={testFetch}>fetch GET</button>
           <button className="btn-primary" onClick={testFetchPost}>fetch POST</button>
           <button className="btn-secondary" onClick={testXHR}>XHR GET</button>
-          <button className="btn-danger" onClick={testFetchFail}>500 错误</button>
+          <button className="btn-danger" onClick={testFetchFail}>{t('basic').fetchFail}</button>
         </div>
       </div>
 
       <div className="section">
-        <h3>🎭 Mock API</h3>
+        <h3>{t('basic').mock}</h3>
         <div className="btn-group">
-          <button className="btn-success" onClick={testAddMock}>添加 Mock 规则</button>
-          <button className="btn-primary" onClick={testMockFetch}>fetch /api/demo（被 mock）</button>
-          <button className="btn-warn" onClick={testClearMocks}>清除 Mock 规则</button>
+          <button className="btn-success" onClick={testAddMock}>{t('basic').addMock}</button>
+          <button className="btn-primary" onClick={testMockFetch}>{t('basic').fetchMocked}</button>
+          <button className="btn-warn" onClick={testClearMocks}>{t('basic').clearMocks}</button>
         </div>
       </div>
 
       <div className="section">
-        <h3>🔌 WebSocket</h3>
+        <h3>{t('basic').websocket}</h3>
         <div className="btn-group">
-          <button className="btn-success" onClick={testWSOpen}>连接 WS</button>
-          <button className="btn-primary" onClick={testWSSend}>发送消息</button>
-          <button className="btn-warn" onClick={testWSClose}>断开 WS</button>
+          <button className="btn-success" onClick={testWSOpen}>{t('basic').connectWS}</button>
+          <button className="btn-primary" onClick={testWSSend}>{t('basic').sendMsg}</button>
+          <button className="btn-warn" onClick={testWSClose}>{t('basic').closeWS}</button>
         </div>
       </div>
 
       <div className="section">
-        <h3>🗄️ IndexedDB</h3>
+        <h3>{t('basic').idb}</h3>
         <div className="btn-group">
-          <button className="btn-success" onClick={testIDBWrite}>写入 3 条记录</button>
-          <button className="btn-secondary" onClick={testIDBRead}>读取所有记录</button>
-          <button className="btn-warn" onClick={testIDBDelete}>删除 item1</button>
+          <button className="btn-success" onClick={testIDBWrite}>{t('basic').idbWrite}</button>
+          <button className="btn-secondary" onClick={testIDBRead}>{t('basic').idbRead}</button>
+          <button className="btn-warn" onClick={testIDBDelete}>{t('basic').idbDelete}</button>
         </div>
       </div>
 
       <div className="section">
-        <h3>💾 Storage</h3>
+        <h3>{t('basic').storage}</h3>
         <div className="btn-group">
-          <button className="btn-success" onClick={testSetStorage}>写入 localStorage/cookie</button>
-          <button className="btn-secondary" onClick={testGetStorage}>读取 localStorage</button>
-          <button className="btn-warn" onClick={testClearStorage}>清除 key</button>
+          <button className="btn-success" onClick={testSetStorage}>{t('basic').storageWrite}</button>
+          <button className="btn-secondary" onClick={testGetStorage}>{t('basic').storageRead}</button>
+          <button className="btn-warn" onClick={testClearStorage}>{t('basic').storageClear}</button>
         </div>
       </div>
 
       <div className="section">
-        <h3>💥 错误捕获</h3>
+        <h3>{t('basic').errorCapture}</h3>
         <div className="btn-group">
-          <button className="btn-danger" onClick={testUncaughtError}>未捕获错误</button>
-          <button className="btn-danger" onClick={testPromiseReject}>Promise rejection</button>
+          <button className="btn-danger" onClick={testUncaughtError}>{t('basic').uncaughtError}</button>
+          <button className="btn-danger" onClick={testPromiseReject}>{t('basic').promiseReject}</button>
         </div>
       </div>
 
       <div className="section">
-        <h3>📷 截图</h3>
+        <h3>{t('basic').screenshot}</h3>
         <div className="btn-group">
-          <button className="btn-primary" onClick={testScreenshot}>截图并发至 PC 面板</button>
+          <button className="btn-primary" onClick={testScreenshot}>{t('basic').screenshotBtn}</button>
         </div>
       </div>
 
       <div className="section">
-        <h3>📋 本页操作记录</h3>
+        <h3>{t('basic').localLogs}</h3>
         <div className="log-output">
-          {logs.length === 0 && <div style={{ color: '#555' }}>点击上方按钮开始测试…</div>}
+          {logs.length === 0 && <div style={{ color: '#555' }}>{t('basic').noLogs}</div>}
           {[...logs].reverse().map((l, i) => (
             <div key={i} className={`log-item ${l.level}`}>
               <span className="log-time">{l.time}</span>

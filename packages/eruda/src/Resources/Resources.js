@@ -383,7 +383,7 @@ export default class Resources extends Tool {
     settings
       .text(i18n.t('tools.resources'))
       .switch(cfg, 'hideErudaSetting', i18n.t('resources.hideErudaSetting'))
-      .switch(cfg, 'observeElement', 'Auto Refresh Elements')
+      .switch(cfg, 'observeElement', i18n.t('elements.autoRefreshElements'))
       .separator()
   }
   _initObserver() {

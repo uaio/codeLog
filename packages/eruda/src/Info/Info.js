@@ -84,7 +84,7 @@ export default class Info extends Tool {
     return this
   }
   _addDefInfo() {
-    each(defInfo, (info) => this.add(info.name, info.val))
+    each(defInfo(), (info) => this.add(info.name, info.val))
   }
   _render() {
     const infos = []

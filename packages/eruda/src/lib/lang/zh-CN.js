@@ -76,6 +76,7 @@ export default {
     pending: '等待中',
     responseHeaders: '响应头',
     requestHeaders: '请求头',
+    requestData: '请求数据',
   },
 
   // 资源面板
