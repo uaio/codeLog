@@ -25,12 +25,12 @@ export default class Storage {
       columns: [
         {
           id: 'key',
-          title: 'Key',
+          title: i18n.t('resources.key'),
           weight: 30,
         },
         {
           id: 'value',
-          title: 'Value',
+          title: i18n.t('resources.value'),
           weight: 90,
         },
       ],
@@ -112,7 +112,7 @@ export default class Storage {
 
     $container.html(
       c(`<h2 class="title">
-      ${type === 'local' ? 'Local' : 'Session'} Storage
+      ${i18n.t(type === 'local' ? 'resources.localStorage' : 'resources.sessionStorage')}
       <div class="btn refresh-storage">
         <span class="icon icon-refresh"></span>
       </div>

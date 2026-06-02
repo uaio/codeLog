@@ -10,6 +10,7 @@ import replaceAll from 'licia/replaceAll'
 import highlight from 'licia/highlight'
 import LunaTextViewer from 'luna-text-viewer'
 import evalCss from '../lib/evalCss'
+import i18n from '../lib/i18n'
 import { classPrefix as c } from '../lib/util'
 
 export default class Sources extends Tool {
@@ -117,7 +118,7 @@ export default class Sources extends Tool {
 
     if (!settings) return
 
-    settings.remove(cfg, 'showLineNum').remove('Sources')
+    settings.remove(cfg, 'showLineNum').remove(i18n.t('tools.sources'))
   }
   _initCfg() {
     const cfg = (this.config = Settings.createCfg('sources', {
@@ -136,8 +137,8 @@ export default class Sources extends Tool {
 
     const settings = this._container.get('settings')
     settings
-      .text('Sources')
-      .switch(cfg, 'showLineNum', 'Show Line Numbers')
+      .text(i18n.t('tools.sources'))
+      .switch(cfg, 'showLineNum', i18n.t('sources.showLineNumbers'))
       .separator()
   }
   _render() {

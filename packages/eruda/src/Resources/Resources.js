@@ -94,7 +94,7 @@ export default class Resources extends Tool {
     }
 
     const scriptHtml = `<h2 class="${c('title')}">
-      Script
+      ${i18n.t('resources.script')}
       <div class="${c('btn refresh-script')}">
         <span class="${c('icon-refresh')}"></span>
       </div>
@@ -132,7 +132,7 @@ export default class Resources extends Tool {
     }
 
     const stylesheetHtml = `<h2 class="${c('title')}">
-      Stylesheet
+      ${i18n.t('resources.stylesheet')}
       <div class="${c('btn refresh-stylesheet')}">
         <span class="${c('icon-refresh')}"></span>
       </div>
@@ -169,7 +169,7 @@ export default class Resources extends Tool {
       }).join('')
     }
     const iframeHtml = `<h2 class="${c('title')}">
-      Iframe
+      ${i18n.t('resources.iframe')}
       <div class="${c('btn refresh-iframe')}">
         <span class="${c('icon-refresh')}"></span>
       </div>
@@ -240,7 +240,7 @@ export default class Resources extends Tool {
     }
 
     const imageHtml = `<h2 class="${c('title')}">
-      Image
+      ${i18n.t('resources.image')}
       <div class="${c('btn refresh-image')}">
         <span class="${c('icon-refresh')}"></span>
       </div>
@@ -357,7 +357,7 @@ export default class Resources extends Tool {
     settings
       .remove(cfg, 'hideErudaSetting')
       .remove(cfg, 'observeElement')
-      .remove('Resources')
+      .remove(i18n.t('tools.resources'))
   }
   _initCfg() {
     const cfg = (this.config = Settings.createCfg('resources', {
@@ -381,8 +381,8 @@ export default class Resources extends Tool {
 
     const settings = this._container.get('settings')
     settings
-      .text('Resources')
-      .switch(cfg, 'hideErudaSetting', 'Hide Eruda Setting')
+      .text(i18n.t('tools.resources'))
+      .switch(cfg, 'hideErudaSetting', i18n.t('resources.hideErudaSetting'))
       .switch(cfg, 'observeElement', 'Auto Refresh Elements')
       .separator()
   }

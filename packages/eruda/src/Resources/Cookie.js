@@ -21,12 +21,12 @@ export default class Cookie {
       columns: [
         {
           id: 'key',
-          title: 'Key',
+          title: i18n.t('resources.key'),
           weight: 30,
         },
         {
           id: 'value',
-          title: 'Value',
+          title: i18n.t('resources.value'),
           weight: 90,
         },
       ],
@@ -67,7 +67,7 @@ export default class Cookie {
 
     $container.html(
       c(`<h2 class="title">
-      Cookie
+      ${i18n.t('resources.cookie')}
       <div class="btn refresh-cookie">
         <span class="icon-refresh"></span>
       </div>

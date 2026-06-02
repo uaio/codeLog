@@ -204,7 +204,7 @@ export default class Detail {
       }
 
       computedStyle = `<h2>
-        Computed Style
+        ${i18n.t('elements.computedStyle')}
         ${toggleButton}
         <div class="${c('btn computed-style-search')}">
           <span class="${c('icon-filter')}"></span>
@@ -253,7 +253,7 @@ export default class Detail {
           </ul>
         </div>`
       }).join('')
-      listeners = `<h2>Event Listeners</h2>
+      listeners = `<h2>${i18n.t('elements.eventListeners')}</h2>
       <div class="${c('listener-wrapper')}">
         ${listeners} 
       </div>`
@@ -380,7 +380,7 @@ export default class Detail {
     settings
       .remove(cfg, 'overrideEventTarget')
       .remove(cfg, 'observeElement')
-      .remove('Elements')
+      .remove(i18n.t('tools.elements'))
   }
   _initCfg() {
     const cfg = (this.config = Settings.createCfg('elements', {
@@ -400,8 +400,8 @@ export default class Detail {
     if (!settings) return
 
     settings
-      .text('Elements')
-      .switch(cfg, 'overrideEventTarget', 'Catch Event Listeners')
+      .text(i18n.t('tools.elements'))
+      .switch(cfg, 'overrideEventTarget', i18n.t('elements.catchEventListeners'))
 
     settings.separator()
   }
