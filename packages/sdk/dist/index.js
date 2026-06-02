@@ -2119,17 +2119,14 @@ class je {
     const t = e.getElementById("codelog-pageid-info");
     if (t && this.pageId) {
       const n = this.pageId.length > 20 ? `${this.pageId.slice(0, 10)}…${this.pageId.slice(-6)}` : this.pageId;
-      t.addEventListener(
-        "click",
-        () => this.copyToClipboard(this.pageId, t, n)
-      );
+      t.onclick = () => this.copyToClipboard(this.pageId, t, n);
     }
     const s = e.getElementById("codelog-perf-btn");
     if (s && this.codelog) {
       const n = E[this.lang];
-      s.addEventListener("click", async () => {
+      s.onclick = async () => {
         this.perfRunning ? (this.perfRunning = !1, s.textContent = n.perfStart, await this.codelog.stopPerfRun()) : (this.perfRunning = !0, s.textContent = n.perfStop, this.codelog.startPerfRun());
-      });
+      };
     }
   }
   /** Attach open/close CSS class to entry button for styling hooks */

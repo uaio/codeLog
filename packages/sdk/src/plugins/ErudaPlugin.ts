@@ -277,16 +277,16 @@ export class ErudaPlugin {
       const displayId = this.pageId.length > 20
         ? `${this.pageId.slice(0, 10)}…${this.pageId.slice(-6)}`
         : this.pageId;
-      pageIdEl.addEventListener('click', () =>
-        this.copyToClipboard(this.pageId!, pageIdEl, displayId),
-      );
+      // Use onclick to avoid duplicate handlers when bindInfoPanelHandlers is called multiple times
+      pageIdEl.onclick = () => this.copyToClipboard(this.pageId!, pageIdEl, displayId);
     }
 
     // Perf run toggle
     const perfBtn = shadowRoot.getElementById('codelog-perf-btn');
     if (perfBtn && this.codelog) {
       const L = LABELS[this.lang];
-      perfBtn.addEventListener('click', async () => {
+      // Use onclick to avoid duplicate handlers when bindInfoPanelHandlers is called multiple times
+      perfBtn.onclick = async () => {
         if (this.perfRunning) {
           this.perfRunning = false;
           perfBtn.textContent = L.perfStart;
@@ -296,7 +296,7 @@ export class ErudaPlugin {
           perfBtn.textContent = L.perfStop;
           this.codelog!.startPerfRun();
         }
-      });
+      };
     }
   }
 
