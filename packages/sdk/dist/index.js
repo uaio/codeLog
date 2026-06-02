@@ -2131,7 +2131,10 @@ class je {
     if (s && this.codelog) {
       const n = E[this.lang];
       s.onclick = async () => {
-        this.perfRunning || (this.perfRunning = !0, s.textContent = n.perfRunning, s.disabled = !0, s.style.cssText = "cursor:not-allowed;padding:2px 8px;background:#bbb;color:#fff;border-radius:4px;font-size:12px;border:none;pointer-events:none;", this.codelog.startPerfRun());
+        this.perfRunning || (this.perfRunning = !0, s.textContent = n.perfRunning, s.disabled = !0, s.style.cssText = "cursor:not-allowed;padding:2px 8px;background:#bbb;color:#fff;border-radius:4px;font-size:12px;border:none;pointer-events:none;", this.codelog.startPerfRun(), setTimeout(() => {
+          var o;
+          (o = this.codelog) == null || o.stopPerfRun();
+        }, 1e4));
       };
     }
   }
