@@ -1,41 +1,41 @@
-function F(o) {
+function H(i) {
   let e = 0;
-  for (let t = 0; t < o.length; t++) {
-    const s = o.charCodeAt(t);
+  for (let t = 0; t < i.length; t++) {
+    const s = i.charCodeAt(t);
     e = (e << 5) - e + s, e = e & e;
   }
   return Math.abs(e).toString(16);
 }
-function O(o) {
+function L(i) {
   let e = 2166136261;
-  for (let t = 0; t < o.length; t++)
-    e ^= o.charCodeAt(t), e = e * 16777619 >>> 0;
+  for (let t = 0; t < i.length; t++)
+    e ^= i.charCodeAt(t), e = e * 16777619 >>> 0;
   return e.toString(16).padStart(8, "0");
 }
-function ie(...o) {
-  const e = O(o.slice(0, Math.ceil(o.length / 2)).join("|")), t = O(o.slice(Math.ceil(o.length / 2)).join("|"));
+function ne(...i) {
+  const e = L(i.slice(0, Math.ceil(i.length / 2)).join("|")), t = L(i.slice(Math.ceil(i.length / 2)).join("|"));
   return e + t;
 }
-function ae() {
+function oe() {
   return "tab-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
 }
-const q = "_codelog_fp";
-function ce() {
+const j = "_codelog_fp";
+function re() {
   try {
-    const e = localStorage.getItem(q);
+    const e = localStorage.getItem(j);
     if (e && /^[0-9a-f]{16,}$/.test(e))
       return e;
   } catch {
   }
-  const o = le();
+  const i = ie();
   try {
-    localStorage.setItem(q, o);
+    localStorage.setItem(j, i);
   } catch {
   }
-  return o;
+  return i;
 }
-function le() {
-  const o = [
+function ie() {
+  const i = [
     // User agent (browser name + version + OS)
     navigator.userAgent,
     // Screen
@@ -49,27 +49,27 @@ function le() {
     // Touch
     String(navigator.maxTouchPoints),
     // Canvas fingerprint
-    he(),
+    ae(),
     // WebGL renderer
-    ue(),
+    ce(),
     // Audio context fingerprint
-    de()
+    le()
   ];
-  return ie(...o);
+  return ne(...i);
 }
-function he() {
+function ae() {
   try {
-    const o = document.createElement("canvas");
-    o.width = 240, o.height = 60;
-    const e = o.getContext("2d");
-    return e ? (e.fillStyle = "#f0f0f0", e.fillRect(0, 0, 240, 60), e.fillStyle = "#1a1a2e", e.font = '14px "Arial", sans-serif', e.fillText("codeLog 🔍 BrowserFP", 10, 22), e.font = 'bold 11px "Courier New", monospace', e.fillStyle = "#16213e", e.fillText("abcdef ABCDEF 012345", 10, 42), e.strokeStyle = "#0f3460", e.lineWidth = 1.5, e.beginPath(), e.arc(200, 30, 18, 0, Math.PI * 2), e.stroke(), O(o.toDataURL().slice(22, 100))) : "no-canvas";
+    const i = document.createElement("canvas");
+    i.width = 240, i.height = 60;
+    const e = i.getContext("2d");
+    return e ? (e.fillStyle = "#f0f0f0", e.fillRect(0, 0, 240, 60), e.fillStyle = "#1a1a2e", e.font = '14px "Arial", sans-serif', e.fillText("codeLog 🔍 BrowserFP", 10, 22), e.font = 'bold 11px "Courier New", monospace', e.fillStyle = "#16213e", e.fillText("abcdef ABCDEF 012345", 10, 42), e.strokeStyle = "#0f3460", e.lineWidth = 1.5, e.beginPath(), e.arc(200, 30, 18, 0, Math.PI * 2), e.stroke(), L(i.toDataURL().slice(22, 100))) : "no-canvas";
   } catch {
     return "canvas-blocked";
   }
 }
-function ue() {
+function ce() {
   try {
-    const o = document.createElement("canvas"), e = o.getContext("webgl") ?? o.getContext("experimental-webgl");
+    const i = document.createElement("canvas"), e = i.getContext("webgl") ?? i.getContext("experimental-webgl");
     if (!e) return "no-webgl";
     const t = e.getExtension("WEBGL_debug_renderer_info");
     return t ? e.getParameter(t.UNMASKED_RENDERER_WEBGL) : "no-ext";
@@ -77,36 +77,36 @@ function ue() {
     return "webgl-blocked";
   }
 }
-function de() {
+function le() {
   try {
-    const o = window.AudioContext ?? window.webkitAudioContext;
-    if (!o) return "no-audio";
-    const e = new o(), t = e.createOscillator(), s = e.createAnalyser(), n = e.createGain();
+    const i = window.AudioContext ?? window.webkitAudioContext;
+    if (!i) return "no-audio";
+    const e = new i(), t = e.createOscillator(), s = e.createAnalyser(), n = e.createGain();
     n.gain.value = 0, t.connect(s), s.connect(n), n.connect(e.destination), t.start(0);
-    const r = new Float32Array(s.frequencyBinCount);
-    s.getFloatFrequencyData(r), t.stop(), e.close();
-    const i = r.slice(0, 32).join(",");
-    return O(i);
+    const o = new Float32Array(s.frequencyBinCount);
+    s.getFloatFrequencyData(o), t.stop(), e.close();
+    const r = o.slice(0, 32).join(",");
+    return L(r);
   } catch {
     return "audio-blocked";
   }
 }
-function fe(o, e) {
+function he(i, e) {
   try {
     if (typeof window < "u" && typeof localStorage < "u") {
-      const n = ce(), r = e.device.getUrl(), i = O(r);
-      return `${F(o)}-${n}-${i}`;
+      const n = re(), o = e.device.getUrl(), r = L(o);
+      return `${H(i)}-${n}-${r}`;
     }
   } catch {
   }
   const t = e.device.getUserAgent(), s = e.device.getUrl();
-  return F(t + o + s);
+  return H(t + i + s);
 }
-function pe(o, e) {
-  const t = fe(o, e), s = `_codelog_connect_${o}`, n = e.storage.getItem(s);
+function ue(i, e) {
+  const t = he(i, e), s = `_codelog_connect_${i}`, n = e.storage.getItem(s);
   return n || e.storage.setItem(s, Date.now().toString()), {
     deviceId: t,
-    projectId: o,
+    projectId: i,
     ua: e.device.getUserAgent(),
     screen: e.device.getScreen(),
     pixelRatio: e.device.getPixelRatio(),
@@ -116,10 +116,10 @@ function pe(o, e) {
     lastActiveTime: Date.now()
   };
 }
-function ge(o, e) {
-  e.storage.setItem(`codelog_last_active_${o}`, Date.now().toString());
+function de(i, e) {
+  e.storage.setItem(`codelog_last_active_${i}`, Date.now().toString());
 }
-class me {
+class pe {
   constructor() {
     this.listeners = /* @__PURE__ */ new Map();
   }
@@ -145,7 +145,7 @@ class me {
     this.listeners.clear();
   }
 }
-class ye {
+class fe {
   constructor(e = 100) {
     this.maxSize = e, this.queue = [];
   }
@@ -163,15 +163,15 @@ class ye {
     return this.queue.length;
   }
 }
-class be {
+class ge {
   constructor(e, t, s) {
     this.conn = null, this.state = "disconnected", this.reconnectAttempts = 0, this.maxReconnectAttempts = 10, this.reconnectDelay = 3e3, this.shouldReconnect = !0, this.reconnectTimer = null;
     let n = e.server || "";
     if (e.secret && n) {
-      const r = n.includes("?") ? "&" : "?";
-      n = `${n}${r}apiKey=${encodeURIComponent(e.secret)}`;
+      const o = n.includes("?") ? "&" : "?";
+      n = `${n}${o}apiKey=${encodeURIComponent(e.secret)}`;
     }
-    this.serverUrl = n, this.events = t, this.messageQueue = new ye(100), this.platform = s;
+    this.serverUrl = n, this.events = t, this.messageQueue = new fe(100), this.platform = s;
   }
   connect() {
     var e, t;
@@ -180,15 +180,15 @@ class be {
       try {
         this.conn = this.platform.createWebSocket(this.serverUrl, {
           onOpen: () => {
-            var n, r, i;
-            this.state = "connected", this.reconnectAttempts = 0, (r = (n = this.events).onConnect) == null || r.call(n);
+            var n, o, r;
+            this.state = "connected", this.reconnectAttempts = 0, (o = (n = this.events).onConnect) == null || o.call(n);
             const s = this.messageQueue.dequeueAll();
             for (const a of s)
-              (i = this.conn) == null || i.send(a);
+              (r = this.conn) == null || r.send(a);
           },
           onMessage: (s) => {
-            var n, r;
-            (r = (n = this.events).onMessage) == null || r.call(n, s);
+            var n, o;
+            (o = (n = this.events).onMessage) == null || o.call(n, s);
           },
           onClose: () => {
             var s, n;
@@ -197,8 +197,8 @@ class be {
             }, this.reconnectDelay));
           },
           onError: (s) => {
-            var n, r;
-            this.state = "error", (r = (n = this.events).onError) == null || r.call(n, s);
+            var n, o;
+            this.state = "error", (o = (n = this.events).onError) == null || o.call(n, s);
           }
         });
       } catch (s) {
@@ -227,7 +227,7 @@ class be {
     return this.serverUrl;
   }
 }
-class we {
+class me {
   constructor(e = 100) {
     this.maxPerSecond = e, this.count = 0, this.resetTime = 0;
   }
@@ -237,8 +237,8 @@ class we {
     return e > this.resetTime + 1e3 && (this.count = 0, this.resetTime = e), this.count >= this.maxPerSecond ? !1 : (this.count++, !0);
   }
 }
-function D(o) {
-  return o.length === 0 ? "" : typeof o[0] == "string" && /%[sdifoOc]/.test(o[0]) ? Se(o[0], o.slice(1)) : o.map((e) => {
+function x(i) {
+  return i.length === 0 ? "" : typeof i[0] == "string" && /%[sdifoOc]/.test(i[0]) ? ye(i[0], i.slice(1)) : i.map((e) => {
     if (e === void 0)
       return "undefined";
     if (e === null)
@@ -252,12 +252,12 @@ function D(o) {
     return String(e);
   }).join(" ");
 }
-function Se(o, e) {
+function ye(i, e) {
   let t = 0;
-  const s = o.replace(/%([sdifoOc])/g, (r, i) => {
-    if (t >= e.length) return `%${i}`;
+  const s = i.replace(/%([sdifoOc])/g, (o, r) => {
+    if (t >= e.length) return `%${r}`;
     const a = e[t++];
-    switch (i) {
+    switch (r) {
       case "s":
         return a === void 0 ? "undefined" : a === null ? "null" : String(a);
       case "d":
@@ -275,69 +275,69 @@ function Se(o, e) {
       case "c":
         return "";
       default:
-        return `%${i}`;
+        return `%${r}`;
     }
-  }), n = e.slice(t).map((r) => {
-    if (r === void 0) return "undefined";
-    if (r === null) return "null";
-    if (typeof r == "object")
+  }), n = e.slice(t).map((o) => {
+    if (o === void 0) return "undefined";
+    if (o === null) return "null";
+    if (typeof o == "object")
       try {
-        return JSON.stringify(r);
+        return JSON.stringify(o);
       } catch {
-        return String(r);
+        return String(o);
       }
-    return String(r);
+    return String(o);
   }).join(" ");
   return n ? `${s} ${n}` : s;
 }
-function ve(o) {
+function be(i) {
   const e = [];
-  if (typeof o[0] != "string") return e;
+  if (typeof i[0] != "string") return e;
   let t = 1;
-  const s = o[0], n = /%([sdifoOc])/g;
-  let r;
-  for (; (r = n.exec(s)) !== null && !(t >= o.length); )
-    r[1] === "c" && e.push(String(o[t])), t++;
+  const s = i[0], n = /%([sdifoOc])/g;
+  let o;
+  for (; (o = n.exec(s)) !== null && !(t >= i.length); )
+    o[1] === "c" && e.push(String(i[t])), t++;
   return e;
 }
-function ke(o) {
-  if (typeof o[0] != "string") return null;
-  const e = o[0];
+function we(i) {
+  if (typeof i[0] != "string") return null;
+  const e = i[0];
   if (!/%c/.test(e)) return null;
   const t = [];
-  let s = 1, n = 0, r;
-  const i = /%([sdifoOc])/g;
+  let s = 1, n = 0, o;
+  const r = /%([sdifoOc])/g;
   let a;
-  for (; (a = i.exec(e)) !== null; )
+  for (; (a = r.exec(e)) !== null; )
     if (a[1] === "c") {
       const u = e.slice(n, a.index);
-      u && t.push({ text: u, style: r }), r = s < o.length ? String(o[s]) : void 0, s++, n = a.index + a[0].length;
+      u && t.push({ text: u, style: o }), o = s < i.length ? String(i[s]) : void 0, s++, n = a.index + a[0].length;
     } else
-      s < o.length && s++;
+      s < i.length && s++;
   const c = e.slice(n);
-  return c && t.push({ text: c, style: r }), t.length === 0 ? null : t;
+  return c && t.push({ text: c, style: o }), t.length === 0 ? null : t;
 }
-function _(o) {
-  return o ? o.split(`
+function O(i) {
+  return i ? i.split(`
 `).filter(
     (s) => !s.includes("interceptConsole") && !s.includes("serializeArgs") && !s.includes("cleanStackTrace")
   ).join(`
 `) : void 0;
 }
-class Ce {
+class Se {
   constructor(e, t, s) {
-    this.transport = null, this.remoteEnabled = !0, this.onRefreshStorageCallback = null, this.onRefreshDOMCallback = null, this.onTakeScreenshotCallback = null, this.onZenModeCallback = null, this.onStartPerfRunCallback = null, this.onStopPerfRunCallback = null, this.onSetNetworkThrottleCallback = null, this.onAddMockCallback = null, this.onRemoveMockCallback = null, this.onClearMocksCallback = null, this.onUpdateMockRuleCallback = null, this.onRequestIDBSnapshotCallback = null, this.onRequestIDBStoreDataCallback = null, this.onGetComputedStylesCallback = null, this.onSetElementAttrCallback = null, this.onStartElementPickerCallback = null, this.executeJsBus = null, this.rateLimiter = new we(100), this.dataBusUnsubscribers = [], this.deviceInfo = e, this.tabId = t, this.platform = s;
+    this.transport = null, this.remoteEnabled = !0, this.onRefreshStorageCallback = null, this.onRefreshDOMCallback = null, this.onTakeScreenshotCallback = null, this.onZenModeCallback = null, this.onStartPerfRunCallback = null, this.onStopPerfRunCallback = null, this.onPerfRunDoneCallback = null, this.onSetNetworkThrottleCallback = null, this.onAddMockCallback = null, this.onRemoveMockCallback = null, this.onClearMocksCallback = null, this.onUpdateMockRuleCallback = null, this.onRequestIDBSnapshotCallback = null, this.onRequestIDBStoreDataCallback = null, this.onGetComputedStylesCallback = null, this.onSetElementAttrCallback = null, this.onStartElementPickerCallback = null, this.executeJsBus = null, this.rateLimiter = new me(100), this.dataBusUnsubscribers = [], this.deviceInfo = e, this.tabId = t, this.platform = s;
   }
   connect(e) {
-    this.remoteEnabled && (this.serverUrl = e ?? this.serverUrl, this.transport = new be(
+    this.remoteEnabled && (this.serverUrl = e ?? this.serverUrl, this.transport = new ge(
       { projectId: this.deviceInfo.projectId, server: this.serverUrl },
       {
         onConnect: () => {
           this.sendRegisterMessage();
         },
         onMessage: (t) => {
-          var s, n, r, i, a, c, l, u, d, h, g, y, p, S, f, b;
-          if (t.type === "refresh_storage" && ((s = this.onRefreshStorageCallback) == null || s.call(this)), t.type === "refresh_dom" && ((n = this.onRefreshDOMCallback) == null || n.call(this)), t.type === "take_screenshot" && ((r = this.onTakeScreenshotCallback) == null || r.call(this)), t.type === "execute_js" && t.code && this.executeJsBus && this.runCode(t.code, this.executeJsBus), t.type === "reload_page")
+          var s, n, o, r, a, c, l, u, d, h, f, b, w, S, p, g, m;
+          if (t.type === "refresh_storage" && ((s = this.onRefreshStorageCallback) == null || s.call(this)), t.type === "refresh_dom" && ((n = this.onRefreshDOMCallback) == null || n.call(this)), t.type === "take_screenshot" && ((o = this.onTakeScreenshotCallback) == null || o.call(this)), t.type === "execute_js" && t.code && this.executeJsBus && this.runCode(t.code, this.executeJsBus), t.type === "reload_page")
             try {
               window.location.reload();
             } catch {
@@ -345,14 +345,14 @@ class Ce {
           if (t.type === "set_storage")
             try {
               t.storageType === "cookie" ? (async () => {
-                var C;
-                const w = t.key, v = t.value ?? "";
-                if (typeof ((C = window.cookieStore) == null ? void 0 : C.set) == "function") {
-                  const k = { name: w, value: v };
-                  t.path && (k.path = t.path), t.domain && (k.domain = t.domain), t.expires && (k.expires = t.expires), t.secure !== void 0 && (k.secure = t.secure), t.sameSite && (k.sameSite = t.sameSite), await window.cookieStore.set(k);
+                var I;
+                const v = t.key, k = t.value ?? "";
+                if (typeof ((I = window.cookieStore) == null ? void 0 : I.set) == "function") {
+                  const C = { name: v, value: k };
+                  t.path && (C.path = t.path), t.domain && (C.domain = t.domain), t.expires && (C.expires = t.expires), t.secure !== void 0 && (C.secure = t.secure), t.sameSite && (C.sameSite = t.sameSite), await window.cookieStore.set(C);
                 } else {
-                  let k = `${encodeURIComponent(w)}=${encodeURIComponent(v)}`;
-                  k += `; path=${t.path ?? "/"}`, t.domain && (k += `; domain=${t.domain}`), t.expires && (k += `; expires=${new Date(t.expires).toUTCString()}`), t.secure && (k += "; Secure"), t.sameSite && (k += `; SameSite=${t.sameSite}`), document.cookie = k;
+                  let C = `${encodeURIComponent(v)}=${encodeURIComponent(k)}`;
+                  C += `; path=${t.path ?? "/"}`, t.domain && (C += `; domain=${t.domain}`), t.expires && (C += `; expires=${new Date(t.expires).toUTCString()}`), t.secure && (C += "; Secure"), t.sameSite && (C += `; SameSite=${t.sameSite}`), document.cookie = C;
                 }
               })() : (t.storageType === "session" ? sessionStorage : localStorage).setItem(t.key, t.value ?? "");
             } catch {
@@ -365,14 +365,14 @@ class Ce {
           if (t.type === "delete_storage")
             try {
               if (t.storageType === "cookie") {
-                const m = ["/", "/"], w = encodeURIComponent(t.key);
-                for (const v of m)
-                  document.cookie = `${w}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${v}`;
+                const y = ["/", "/"], v = encodeURIComponent(t.key);
+                for (const k of y)
+                  document.cookie = `${v}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${k}`;
               } else
                 (t.storageType === "session" ? sessionStorage : localStorage).removeItem(t.key);
             } catch {
             }
-          if (t.type === "highlight_element" && t.selector && this.highlightElement(t.selector, t.duration ?? 3e3), t.type === "zen_mode" && ((i = this.onZenModeCallback) == null || i.call(this, !!t.enabled)), t.type === "start_perf_run" && ((a = this.onStartPerfRunCallback) == null || a.call(this)), t.type === "stop_perf_run" && ((c = this.onStopPerfRunCallback) == null || c.call(this)), t.type === "set_network_throttle" && t.preset && ((l = this.onSetNetworkThrottleCallback) == null || l.call(this, t.preset)), t.type === "add_mock" && t.rule && ((u = this.onAddMockCallback) == null || u.call(this, t.rule)), t.type === "remove_mock" && t.id && ((d = this.onRemoveMockCallback) == null || d.call(this, t.id)), t.type === "clear_mocks" && ((h = this.onClearMocksCallback) == null || h.call(this)), t.type === "update_mock_rule" && t.id && ((g = this.onUpdateMockRuleCallback) == null || g.call(this, t.id, t.enabled ?? !0)), t.type === "request_idb_snapshot" && ((y = this.onRequestIDBSnapshotCallback) == null || y.call(this)), t.type === "request_idb_store_data" && ((p = this.onRequestIDBStoreDataCallback) == null || p.call(
+          if (t.type === "highlight_element" && t.selector && this.highlightElement(t.selector, t.duration ?? 3e3), t.type === "zen_mode" && ((r = this.onZenModeCallback) == null || r.call(this, !!t.enabled)), t.type === "start_perf_run" && ((a = this.onStartPerfRunCallback) == null || a.call(this)), t.type === "stop_perf_run" && ((c = this.onStopPerfRunCallback) == null || c.call(this)), t.type === "perf_run_done" && t.score && ((l = this.onPerfRunDoneCallback) == null || l.call(this, t.score)), t.type === "set_network_throttle" && t.preset && ((u = this.onSetNetworkThrottleCallback) == null || u.call(this, t.preset)), t.type === "add_mock" && t.rule && ((d = this.onAddMockCallback) == null || d.call(this, t.rule)), t.type === "remove_mock" && t.id && ((h = this.onRemoveMockCallback) == null || h.call(this, t.id)), t.type === "clear_mocks" && ((f = this.onClearMocksCallback) == null || f.call(this)), t.type === "update_mock_rule" && t.id && ((b = this.onUpdateMockRuleCallback) == null || b.call(this, t.id, t.enabled ?? !0)), t.type === "request_idb_snapshot" && ((w = this.onRequestIDBSnapshotCallback) == null || w.call(this)), t.type === "request_idb_store_data" && ((S = this.onRequestIDBStoreDataCallback) == null || S.call(
             this,
             t.dbName,
             t.storeName,
@@ -381,42 +381,42 @@ class Ce {
             t.reqId ?? ""
           )), t.type === "idb_clear_store" && t.dbName && t.storeName)
             try {
-              const m = indexedDB.open(t.dbName);
-              m.onsuccess = () => {
-                const w = m.result;
+              const y = indexedDB.open(t.dbName);
+              y.onsuccess = () => {
+                const v = y.result;
                 try {
-                  const v = w.transaction(t.storeName, "readwrite");
-                  v.objectStore(t.storeName).clear(), v.oncomplete = () => {
-                    w.close();
-                  }, v.onerror = () => {
-                    w.close();
+                  const k = v.transaction(t.storeName, "readwrite");
+                  k.objectStore(t.storeName).clear(), k.oncomplete = () => {
+                    v.close();
+                  }, k.onerror = () => {
+                    v.close();
                   };
                 } catch {
-                  w.close();
+                  v.close();
                 }
               };
             } catch {
             }
           if (t.type === "idb_put_record" && t.dbName && t.storeName && t.value !== void 0)
             try {
-              const m = indexedDB.open(t.dbName);
-              m.onsuccess = () => {
-                const w = m.result;
+              const y = indexedDB.open(t.dbName);
+              y.onsuccess = () => {
+                const v = y.result;
                 try {
-                  const v = w.transaction(t.storeName, "readwrite"), C = v.objectStore(t.storeName), k = C.keyPath !== null ? C.put(t.value) : C.put(t.value, t.key);
-                  k.onsuccess = () => {
-                  }, v.oncomplete = () => {
-                    w.close();
-                  }, v.onerror = () => {
-                    w.close();
+                  const k = v.transaction(t.storeName, "readwrite"), I = k.objectStore(t.storeName), C = I.keyPath !== null ? I.put(t.value) : I.put(t.value, t.key);
+                  C.onsuccess = () => {
+                  }, k.oncomplete = () => {
+                    v.close();
+                  }, k.onerror = () => {
+                    v.close();
                   };
                 } catch {
-                  w.close();
+                  v.close();
                 }
               };
             } catch {
             }
-          t.type === "get_computed_styles" && t.selector && ((S = this.onGetComputedStylesCallback) == null || S.call(this, t.selector)), t.type === "set_element_attr" && t.selector && t.attr !== void 0 && ((f = this.onSetElementAttrCallback) == null || f.call(this, t.selector, t.attr, t.value ?? "")), t.type === "start_element_picker" && ((b = this.onStartElementPickerCallback) == null || b.call(this));
+          t.type === "get_computed_styles" && t.selector && ((p = this.onGetComputedStylesCallback) == null || p.call(this, t.selector)), t.type === "set_element_attr" && t.selector && t.attr !== void 0 && ((g = this.onSetElementAttrCallback) == null || g.call(this, t.selector, t.attr, t.value ?? "")), t.type === "start_element_picker" && ((m = this.onStartElementPickerCallback) == null || m.call(this));
         }
       },
       this.platform
@@ -439,6 +439,9 @@ class Ce {
   }
   onStopPerfRun(e) {
     this.onStopPerfRunCallback = e;
+  }
+  onPerfRunDone(e) {
+    this.onPerfRunDoneCallback = e;
   }
   onSetNetworkThrottle(e) {
     this.onSetNetworkThrottleCallback = e;
@@ -479,8 +482,8 @@ class Ce {
   reportPickedElement(e, t) {
     !this.remoteEnabled || !this.transport || this.sendEnvelope("element_picked", { selector: e, tagName: t });
   }
-  reportPerfRun(e) {
-    !this.remoteEnabled || !this.transport || this.sendEnvelope("perf_run", e);
+  reportPerfRunRaw(e) {
+    !this.remoteEnabled || !this.transport || this.sendEnvelope("perf_run_raw", e);
   }
   reportIDBSnapshot(e) {
     !this.remoteEnabled || !this.transport || this.sendEnvelope("idb_snapshot", e);
@@ -504,7 +507,7 @@ class Ce {
       e.on("dom", (t) => this.reportDOM(t)),
       e.on("performance", (t) => this.reportPerformance(t)),
       e.on("screenshot", (t) => this.reportScreenshot(t)),
-      e.on("perf_run", (t) => this.reportPerfRun(t))
+      e.on("perf_run_raw", (t) => this.reportPerfRunRaw(t))
     ];
   }
   detachDataBus() {
@@ -525,7 +528,7 @@ class Ce {
       s !== void 0 && t.emit("console", {
         timestamp: Date.now(),
         level: "repl-output",
-        message: D([s]),
+        message: x([s]),
         args: [s]
       });
     } catch (s) {
@@ -543,9 +546,9 @@ class Ce {
       try {
         const s = document.querySelector(e);
         if (!s) return;
-        const n = s.style.outline, r = s.style.backgroundColor;
+        const n = s.style.outline, o = s.style.backgroundColor;
         s.style.outline = "3px solid #ff4d4f", s.style.backgroundColor = "rgba(255,77,79,0.15)", s.scrollIntoView({ behavior: "smooth", block: "center" }), setTimeout(() => {
-          s.style.outline = n, s.style.backgroundColor = r;
+          s.style.outline = n, s.style.backgroundColor = o;
         }, t);
       } catch {
       }
@@ -641,38 +644,38 @@ class Ce {
     (t = this.transport) == null || t.send(JSON.stringify(e));
   }
 }
-function N() {
+function z() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
-function E(o, e) {
-  return !o || new TextEncoder().encode(o).length <= e ? o : o.slice(0, Math.floor(e / 2)) + "...[truncated]";
+function R(i, e) {
+  return !i || new TextEncoder().encode(i).length <= e ? i : i.slice(0, Math.floor(e / 2)) + "...[truncated]";
 }
-function U(o, e) {
+function q(i, e) {
   for (const t of e)
     try {
-      if (new RegExp(t).test(o))
+      if (new RegExp(t).test(i))
         return !0;
     } catch {
     }
   return !1;
 }
-function H(o) {
+function _(i) {
   const e = {};
-  return o.forEach((t, s) => {
+  return i.forEach((t, s) => {
     e[s] = t;
   }), e;
 }
-function X(o, e) {
+function N(i, e) {
   try {
     const s = performance.getEntriesByType("resource").find(
-      (u) => u.name === o || u.name.endsWith(o) && Math.abs(u.startTime - (e - performance.timeOrigin)) < 500
+      (u) => u.name === i || u.name.endsWith(i) && Math.abs(u.startTime - (e - performance.timeOrigin)) < 500
     );
     if (!s || s.startTime === 0) return;
-    const n = s.domainLookupEnd - s.domainLookupStart, r = s.connectEnd - s.connectStart, i = s.secureConnectionStart > 0 ? s.connectEnd - s.secureConnectionStart : 0, a = s.responseStart - s.requestStart, c = s.responseEnd - s.responseStart, l = s.responseEnd - s.startTime;
+    const n = s.domainLookupEnd - s.domainLookupStart, o = s.connectEnd - s.connectStart, r = s.secureConnectionStart > 0 ? s.connectEnd - s.secureConnectionStart : 0, a = s.responseStart - s.requestStart, c = s.responseEnd - s.responseStart, l = s.responseEnd - s.startTime;
     return {
       dns: Math.max(0, n),
-      tcp: Math.max(0, r),
-      ssl: Math.max(0, i),
+      tcp: Math.max(0, o),
+      ssl: Math.max(0, r),
       request: Math.max(0, a),
       response: Math.max(0, c),
       total: Math.max(0, l)
@@ -681,9 +684,9 @@ function X(o, e) {
     return;
   }
 }
-function W(o, e) {
-  if (o) {
-    const t = o["content-length"];
+function F(i, e) {
+  if (i) {
+    const t = i["content-length"];
     if (t) {
       const s = parseInt(t, 10);
       if (!isNaN(s)) return s;
@@ -692,7 +695,7 @@ function W(o, e) {
   if (e)
     return new TextEncoder().encode(e).length;
 }
-class Ie {
+class ve {
   constructor(e, t) {
     this.originalFetch = null, this.originalXhrOpen = null, this.originalXhrSend = null, this.originalXhrSetRequestHeader = null, this.onReport = e, this.config = {
       enabled: (t == null ? void 0 : t.enabled) ?? !0,
@@ -715,93 +718,93 @@ class Ie {
     const e = this;
     window.fetch = function(t, s) {
       var d, h;
-      const n = N(), r = Date.now();
-      let i, a = ((d = s == null ? void 0 : s.method) == null ? void 0 : d.toUpperCase()) || "GET", c, l, u;
+      const n = z(), o = Date.now();
+      let r, a = ((d = s == null ? void 0 : s.method) == null ? void 0 : d.toUpperCase()) || "GET", c, l, u;
       try {
         u = (h = new Error().stack) == null ? void 0 : h.split(`
 `).slice(3, 8).join(`
 `);
       } catch {
       }
-      if (typeof t == "string" ? i = t : t instanceof URL ? i = t.toString() : t instanceof Request ? (i = t.url, a = t.method.toUpperCase(), c = H(t.headers)) : i = String(t), U(i, e.config.ignoreUrls))
+      if (typeof t == "string" ? r = t : t instanceof URL ? r = t.toString() : t instanceof Request ? (r = t.url, a = t.method.toUpperCase(), c = _(t.headers)) : r = String(t), q(r, e.config.ignoreUrls))
         return e.originalFetch.call(window, t, s);
-      if (s && (s.headers && (s.headers instanceof Headers ? c = H(s.headers) : typeof s.headers == "object" && (c = s.headers)), s.body))
+      if (s && (s.headers && (s.headers instanceof Headers ? c = _(s.headers) : typeof s.headers == "object" && (c = s.headers)), s.body))
         if (typeof s.body == "string")
-          l = E(s.body, e.config.maxRequestBodySize);
+          l = R(s.body, e.config.maxRequestBodySize);
         else if (s.body instanceof FormData)
           l = "[FormData]";
         else
           try {
-            l = E(
+            l = R(
               JSON.stringify(s.body),
               e.config.maxRequestBodySize
             );
           } catch {
             l = "[Body]";
           }
-      return e.originalFetch.call(window, t, s).then(async (g) => {
-        const y = Date.now() - r;
-        let p;
+      return e.originalFetch.call(window, t, s).then(async (f) => {
+        const b = Date.now() - o;
+        let w;
         try {
-          p = H(g.headers);
+          w = _(f.headers);
         } catch {
         }
         let S;
         try {
-          const f = g.clone(), b = (p == null ? void 0 : p["content-type"]) ?? "";
-          if (b.includes("application/json")) {
-            const m = await f.text();
-            S = E(m, e.config.maxResponseBodySize);
-          } else if (b.includes("text/")) {
-            const m = await f.text();
-            S = E(m, e.config.maxResponseBodySize);
-          } else if (b) {
-            const m = await f.blob();
+          const p = f.clone(), g = (w == null ? void 0 : w["content-type"]) ?? "";
+          if (g.includes("application/json")) {
+            const m = await p.text();
+            S = R(m, e.config.maxResponseBodySize);
+          } else if (g.includes("text/")) {
+            const m = await p.text();
+            S = R(m, e.config.maxResponseBodySize);
+          } else if (g) {
+            const m = await p.blob();
             if (m.size <= e.config.maxResponseBodySize) {
-              const w = await m.arrayBuffer(), v = new Uint8Array(w);
-              let C = "";
-              v.forEach((k) => {
-                C += String.fromCharCode(k);
-              }), S = `[binary: ${m.type}, ${m.size}B] ` + btoa(C).slice(0, 200);
+              const y = await m.arrayBuffer(), v = new Uint8Array(y);
+              let k = "";
+              v.forEach((I) => {
+                k += String.fromCharCode(I);
+              }), S = `[binary: ${m.type}, ${m.size}B] ` + btoa(k).slice(0, 200);
             } else
               S = `[binary: ${m.type}, ${m.size}B, EXCEED_SIZE]`;
           } else {
-            const m = await f.text();
-            S = E(m, e.config.maxResponseBodySize);
+            const m = await p.text();
+            S = R(m, e.config.maxResponseBodySize);
           }
         } catch {
         }
         return e.onReport({
           id: n,
-          timestamp: r,
+          timestamp: o,
           method: a,
-          url: i,
-          status: g.status,
-          statusText: g.statusText,
+          url: r,
+          status: f.status,
+          statusText: f.statusText,
           requestHeaders: c,
           requestBody: l,
-          responseHeaders: p,
+          responseHeaders: w,
           responseBody: S,
-          duration: y,
+          duration: b,
           type: "fetch",
-          responseSize: W(p, S),
-          timingPhases: X(i, r),
+          responseSize: F(w, S),
+          timingPhases: N(r, o),
           initiator: u
-        }), g;
-      }).catch((g) => {
-        const y = Date.now() - r;
+        }), f;
+      }).catch((f) => {
+        const b = Date.now() - o;
         throw e.onReport({
           id: n,
-          timestamp: r,
+          timestamp: o,
           method: a,
-          url: i,
+          url: r,
           requestHeaders: c,
           requestBody: l,
-          duration: y,
+          duration: b,
           type: "fetch",
-          error: g.message,
+          error: f.message,
           initiator: u
-        }), g;
+        }), f;
       });
     };
   }
@@ -810,7 +813,7 @@ class Ie {
     const e = this;
     this.originalXhrOpen = XMLHttpRequest.prototype.open, this.originalXhrSend = XMLHttpRequest.prototype.send, this.originalXhrSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
     const t = /* @__PURE__ */ new WeakMap();
-    XMLHttpRequest.prototype.open = function(s, n, r = !0, i, a) {
+    XMLHttpRequest.prototype.open = function(s, n, o = !0, r, a) {
       var u;
       let c;
       try {
@@ -820,38 +823,38 @@ class Ie {
       } catch {
       }
       const l = {
-        requestId: N(),
+        requestId: z(),
         startTime: 0,
         method: s.toUpperCase(),
         url: typeof n == "string" ? n : n.toString(),
         requestHeaders: {},
         initiator: c
       };
-      return t.set(this, l), e.originalXhrOpen.call(this, s, n, r, i, a);
+      return t.set(this, l), e.originalXhrOpen.call(this, s, n, o, r, a);
     }, XMLHttpRequest.prototype.setRequestHeader = function(s, n) {
-      const r = t.get(this);
-      return r && (r.requestHeaders[s] = n), e.originalXhrSetRequestHeader.call(this, s, n);
+      const o = t.get(this);
+      return o && (o.requestHeaders[s] = n), e.originalXhrSetRequestHeader.call(this, s, n);
     }, XMLHttpRequest.prototype.send = function(s) {
       const n = t.get(this);
       if (!n)
         return e.originalXhrSend.call(this, s);
-      if (U(n.url, e.config.ignoreUrls))
+      if (q(n.url, e.config.ignoreUrls))
         return e.originalXhrSend.call(this, s);
       if (n.startTime = Date.now(), s)
         if (typeof s == "string")
-          n.requestBody = E(s, e.config.maxRequestBodySize);
+          n.requestBody = R(s, e.config.maxRequestBodySize);
         else if (s instanceof FormData)
           n.requestBody = "[FormData]";
         else
           try {
-            n.requestBody = E(
+            n.requestBody = R(
               JSON.stringify(s),
               e.config.maxRequestBodySize
             );
           } catch {
             n.requestBody = "[Body]";
           }
-      const r = () => {
+      const o = () => {
         const a = Date.now() - n.startTime;
         let c;
         try {
@@ -860,8 +863,8 @@ class Ie {
             const d = {};
             u.split(`\r
 `).forEach((h) => {
-              const [g, y] = h.split(": ");
-              g && y && (d[g] = y);
+              const [f, b] = h.split(": ");
+              f && b && (d[f] = b);
             }), Object.keys(d).length > 0 && (c = d);
           }
         } catch {
@@ -871,13 +874,13 @@ class Ie {
           const u = this.responseType;
           if (!u || u === "text" || u === "json") {
             const d = u === "json" ? JSON.stringify(this.response) : this.responseText;
-            d && (l = E(d, e.config.maxResponseBodySize));
+            d && (l = R(d, e.config.maxResponseBodySize));
           } else if (u === "arraybuffer" && this.response instanceof ArrayBuffer) {
             const d = new Uint8Array(this.response);
             if (d.byteLength <= e.config.maxResponseBodySize) {
               let h = "";
-              d.forEach((g) => {
-                h += String.fromCharCode(g);
+              d.forEach((f) => {
+                h += String.fromCharCode(f);
               }), l = `[arraybuffer: ${d.byteLength}B] ` + btoa(h).slice(0, 200);
             } else
               l = `[arraybuffer: ${d.byteLength}B, EXCEED_SIZE]`;
@@ -898,11 +901,11 @@ class Ie {
           duration: a,
           type: "xhr",
           withCredentials: this.withCredentials,
-          responseSize: W(c, l),
-          timingPhases: X(n.url, n.startTime),
+          responseSize: F(c, l),
+          timingPhases: N(n.url, n.startTime),
           initiator: n.initiator
         });
-      }, i = () => {
+      }, r = () => {
         const a = Date.now() - n.startTime;
         e.onReport({
           id: n.requestId,
@@ -916,11 +919,11 @@ class Ie {
           error: "Network error"
         });
       };
-      return this.addEventListener("load", r), this.addEventListener("error", i), e.originalXhrSend.call(this, s);
+      return this.addEventListener("load", o), this.addEventListener("error", r), e.originalXhrSend.call(this, s);
     };
   }
 }
-class Re {
+class ke {
   constructor(e) {
     this.originalWebSocket = null, this.connections = /* @__PURE__ */ new Map(), this.onReport = e;
   }
@@ -929,81 +932,81 @@ class Re {
     this.originalWebSocket = WebSocket;
     const e = this, t = WebSocket;
     window.WebSocket = function(s, n) {
-      const r = n !== void 0 ? new t(s, n) : new t(s), i = `ws-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, a = String(s), c = {
-        id: i,
+      const o = n !== void 0 ? new t(s, n) : new t(s), r = `ws-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, a = String(s), c = {
+        id: r,
         url: a,
         openTime: Date.now(),
         messageCount: 0
       };
-      e.connections.set(r, c), r.addEventListener("open", () => {
+      e.connections.set(o, c), o.addEventListener("open", () => {
         c.openTime = Date.now(), e.onReport({
-          id: i,
+          id: r,
           method: "WS",
           url: a,
           type: "ws",
           wsEventType: "open",
-          wsConnectionId: i,
+          wsConnectionId: r,
           status: 101,
           statusText: "Switching Protocols",
           timestamp: Date.now()
         });
-      }), r.addEventListener("message", (u) => {
+      }), o.addEventListener("message", (u) => {
         c.messageCount++;
         const d = typeof u.data == "string" ? u.data : u.data instanceof ArrayBuffer ? `[Binary ArrayBuffer: ${u.data.byteLength} bytes]` : u.data instanceof Blob ? `[Blob: ${u.data.size} bytes]` : String(u.data);
         e.onReport({
-          id: `${i}-recv-${c.messageCount}`,
+          id: `${r}-recv-${c.messageCount}`,
           method: "WS",
           url: a,
           type: "ws",
           wsEventType: "message",
           wsDirection: "receive",
-          wsConnectionId: i,
+          wsConnectionId: r,
           responseBody: d,
           timestamp: Date.now()
         });
-      }), r.addEventListener("error", () => {
+      }), o.addEventListener("error", () => {
         e.onReport({
-          id: `${i}-err`,
+          id: `${r}-err`,
           method: "WS",
           url: a,
           type: "ws",
           wsEventType: "error",
-          wsConnectionId: i,
+          wsConnectionId: r,
           error: "WebSocket error",
           timestamp: Date.now()
-        }), e.connections.delete(r);
-      }), r.addEventListener("close", (u) => {
+        }), e.connections.delete(o);
+      }), o.addEventListener("close", (u) => {
         const d = Date.now() - c.openTime;
         e.onReport({
-          id: `${i}-close`,
+          id: `${r}-close`,
           method: "WS",
           url: a,
           type: "ws",
           wsEventType: "close",
-          wsConnectionId: i,
+          wsConnectionId: r,
           status: u.code,
           statusText: u.reason || "Connection closed",
           duration: d,
           messageCount: c.messageCount,
           timestamp: Date.now()
-        }), e.connections.delete(r);
+        }), e.connections.delete(o);
       });
-      const l = r.send.bind(r);
-      return r.send = (u) => {
+      const l = o.send.bind(o);
+      return o.send = (u) => {
         c.messageCount++;
         const d = typeof u == "string" ? u : u instanceof ArrayBuffer ? `[Binary ArrayBuffer: ${u.byteLength} bytes]` : u instanceof Blob ? `[Blob: ${u.size} bytes]` : `[Binary: ${u.byteLength} bytes]`;
         e.onReport({
-          id: `${i}-send-${c.messageCount}`,
+          id: `${r}-send-${c.messageCount}`,
           method: "WS",
           url: a,
           type: "ws",
           wsEventType: "message",
           wsDirection: "send",
-          wsConnectionId: i,
+          wsConnectionId: r,
           requestBody: d,
           timestamp: Date.now()
         }), l(u);
-      }, r;
+      }, o;
     }, Object.assign(window.WebSocket, {
       CONNECTING: t.CONNECTING,
       OPEN: t.OPEN,
@@ -1015,7 +1018,7 @@ class Re {
     this.originalWebSocket && (window.WebSocket = this.originalWebSocket, this.originalWebSocket = null), this.connections.clear();
   }
 }
-class Ee {
+class Ce {
   constructor(e) {
     this.originalEventSource = null, this.onReport = e;
   }
@@ -1024,11 +1027,11 @@ class Ee {
     this.originalEventSource = EventSource;
     const e = this, t = EventSource;
     window.EventSource = function(s, n) {
-      const r = new t(s, n), i = `sse-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, a = String(s);
+      const o = new t(s, n), r = `sse-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, a = String(s);
       let c = Date.now(), l = 0;
-      return r.addEventListener("open", () => {
+      return o.addEventListener("open", () => {
         c = Date.now(), e.onReport({
-          id: i,
+          id: r,
           method: "SSE",
           url: a,
           type: "sse",
@@ -1037,9 +1040,9 @@ class Ee {
           statusText: "OK",
           timestamp: Date.now()
         });
-      }), r.addEventListener("message", (u) => {
+      }), o.addEventListener("message", (u) => {
         l++, e.onReport({
-          id: `${i}-msg-${l}`,
+          id: `${r}-msg-${l}`,
           method: "SSE",
           url: a,
           type: "sse",
@@ -1048,20 +1051,20 @@ class Ee {
           responseBody: u.data,
           timestamp: Date.now()
         });
-      }), r.addEventListener("error", () => {
+      }), o.addEventListener("error", () => {
         const u = Date.now() - c;
         e.onReport({
-          id: `${i}-err`,
+          id: `${r}-err`,
           method: "SSE",
           url: a,
           type: "sse",
           wsEventType: "error",
-          error: r.readyState === EventSource.CLOSED ? "Connection closed" : "SSE error",
+          error: o.readyState === EventSource.CLOSED ? "Connection closed" : "SSE error",
           duration: u,
           messageCount: l,
           timestamp: Date.now()
         });
-      }), r;
+      }), o;
     }, window.EventSource.prototype = t.prototype, Object.assign(window.EventSource, {
       CONNECTING: t.CONNECTING,
       OPEN: t.OPEN,
@@ -1072,7 +1075,7 @@ class Ee {
     this.originalEventSource && (window.EventSource = this.originalEventSource, this.originalEventSource = null);
   }
 }
-class Te {
+class Ie {
   constructor(e) {
     this.originalSendBeacon = null, this.onReport = e;
   }
@@ -1081,26 +1084,26 @@ class Te {
     this.originalSendBeacon = navigator.sendBeacon.bind(navigator);
     const e = this;
     navigator.sendBeacon = function(t, s) {
-      const n = `beacon-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, r = String(t);
-      let i;
+      const n = `beacon-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, o = String(t);
+      let r;
       if (s != null)
         if (typeof s == "string")
-          i = s;
+          r = s;
         else if (s instanceof Blob)
-          i = `[Blob: ${s.size} bytes, type: ${s.type || "unknown"}]`;
+          r = `[Blob: ${s.size} bytes, type: ${s.type || "unknown"}]`;
         else if (s instanceof FormData) {
           const c = [];
           s.forEach((l, u) => {
             c.push(`${u}=${typeof l == "string" ? l : "[File]"}`);
-          }), i = c.join("&");
-        } else s instanceof URLSearchParams ? i = s.toString() : (s instanceof ArrayBuffer || ArrayBuffer.isView(s)) && (i = `[Binary: ${s instanceof ArrayBuffer, s.byteLength} bytes]`);
+          }), r = c.join("&");
+        } else s instanceof URLSearchParams ? r = s.toString() : (s instanceof ArrayBuffer || ArrayBuffer.isView(s)) && (r = `[Binary: ${s instanceof ArrayBuffer, s.byteLength} bytes]`);
       const a = e.originalSendBeacon(t, s);
       return e.onReport({
         id: n,
         method: "BEACON",
-        url: r,
+        url: o,
         type: "beacon",
-        requestBody: i,
+        requestBody: r,
         status: a ? 200 : 0,
         statusText: a ? "Queued" : "Failed",
         timestamp: Date.now()
@@ -1111,7 +1114,7 @@ class Te {
     this.originalSendBeacon && (navigator.sendBeacon = this.originalSendBeacon, this.originalSendBeacon = null);
   }
 }
-class xe {
+class Re {
   constructor(e) {
     this.debounceTimer = null, this.origLocalSetItem = null, this.origLocalRemoveItem = null, this.origLocalClear = null, this.origSessionSetItem = null, this.origSessionRemoveItem = null, this.origSessionClear = null, this.cookieDescriptor = null, this.watching = !1, this.onReport = e;
   }
@@ -1156,9 +1159,9 @@ class xe {
       }
     } catch {
     }
-    let r = "", i;
+    let o = "", r;
     try {
-      r = document.cookie, typeof window < "u" && "cookieStore" in window && (i = (await window.cookieStore.getAll()).map((c) => ({
+      o = document.cookie, typeof window < "u" && "cookieStore" in window && (r = (await window.cookieStore.getAll()).map((c) => ({
         name: c.name,
         value: c.value,
         path: c.path,
@@ -1173,8 +1176,8 @@ class xe {
       timestamp: Date.now(),
       localStorage: e,
       sessionStorage: t,
-      cookies: r,
-      cookieEntries: i,
+      cookies: o,
+      cookieEntries: r,
       localStorageSize: s,
       sessionStorageSize: n
     };
@@ -1192,13 +1195,13 @@ class xe {
       t === "local" ? this.origLocalSetItem = n : this.origSessionSetItem = n, e.setItem = function(a, c) {
         n(a, c), s.debouncedReport();
       };
-      const r = e.removeItem.bind(e);
-      t === "local" ? this.origLocalRemoveItem = r : this.origSessionRemoveItem = r, e.removeItem = function(a) {
-        r(a), s.debouncedReport();
+      const o = e.removeItem.bind(e);
+      t === "local" ? this.origLocalRemoveItem = o : this.origSessionRemoveItem = o, e.removeItem = function(a) {
+        o(a), s.debouncedReport();
       };
-      const i = e.clear.bind(e);
-      t === "local" ? this.origLocalClear = i : this.origSessionClear = i, e.clear = function() {
-        i(), s.debouncedReport();
+      const r = e.clear.bind(e);
+      t === "local" ? this.origLocalClear = r : this.origSessionClear = r, e.clear = function() {
+        r(), s.debouncedReport();
       };
     } catch {
     }
@@ -1233,7 +1236,7 @@ class xe {
     }
   }
 }
-class De {
+class Ee {
   constructor(e, t) {
     this.errorHandler = null, this.rejectionHandler = null, this.started = !1, this.reporting = !1, this.platform = e, this.bus = t;
   }
@@ -1245,13 +1248,13 @@ class De {
         this.safeReport({ timestamp: Date.now(), level: "error", message: u }), this.bus.emit("error", { source: "resource", message: u, url: c, tag: l });
         return;
       }
-      const t = e, s = t.error, n = s != null && s.stack ? _(s.stack) : t.filename ? `    at ${t.filename}:${t.lineno}:${t.colno}` : void 0, r = (s == null ? void 0 : s.name) ?? "Error", i = {
+      const t = e, s = t.error, n = s != null && s.stack ? O(s.stack) : t.filename ? `    at ${t.filename}:${t.lineno}:${t.colno}` : void 0, o = (s == null ? void 0 : s.name) ?? "Error", r = {
         timestamp: Date.now(),
         level: "error",
-        message: `[Uncaught ${r}] ${t.message}`,
+        message: `[Uncaught ${o}] ${t.message}`,
         stack: n
       };
-      this.safeReport(i), this.bus.emit("error", {
+      this.safeReport(r), this.bus.emit("error", {
         source: "uncaught",
         message: t.message,
         stack: n,
@@ -1263,7 +1266,7 @@ class De {
       if (this.reporting) return;
       const t = e.reason;
       let s, n;
-      t instanceof Error ? (s = `[Unhandled Promise Rejection] ${t.message}`, n = _(t.stack)) : s = `[Unhandled Promise Rejection] ${String(t)}`, this.safeReport({ timestamp: Date.now(), level: "error", message: s, stack: n }), this.bus.emit("error", {
+      t instanceof Error ? (s = `[Unhandled Promise Rejection] ${t.message}`, n = O(t.stack)) : s = `[Unhandled Promise Rejection] ${String(t)}`, this.safeReport({ timestamp: Date.now(), level: "error", message: s, stack: n }), this.bus.emit("error", {
         source: "unhandledrejection",
         message: s,
         stack: n,
@@ -1284,7 +1287,7 @@ class De {
     }
   }
 }
-const Me = /* @__PURE__ */ new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "SVG", "CANVAS"]), Be = /* @__PURE__ */ new Set([
+const xe = /* @__PURE__ */ new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "SVG", "CANVAS"]), Te = /* @__PURE__ */ new Set([
   "onclick",
   "onload",
   "onerror",
@@ -1300,36 +1303,36 @@ const Me = /* @__PURE__ */ new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "
   "onmouseover",
   "onmouseout",
   "onmousemove"
-]), K = 8, J = 30, Le = 150, Pe = 8;
-function ne(o, e) {
-  var i;
-  const t = o.tagName;
-  if (Me.has(t)) return null;
+]), U = 8, X = 30, De = 150, Be = 8;
+function ee(i, e) {
+  var r;
+  const t = i.tagName;
+  if (xe.has(t)) return null;
   const s = { tag: t.toLowerCase() };
-  o.id && (s.id = o.id), o.className && typeof o.className == "string" && o.className.trim() && (s.className = o.className.trim());
+  i.id && (s.id = i.id), i.className && typeof i.className == "string" && i.className.trim() && (s.className = i.className.trim());
   const n = {};
-  let r = 0;
-  for (const a of Array.from(o.attributes))
-    if (!(a.name === "id" || a.name === "class") && !Be.has(a.name.toLowerCase()) && !a.name.startsWith("on")) {
-      if (r >= Pe) break;
-      n[a.name] = a.value.slice(0, 200), r++;
+  let o = 0;
+  for (const a of Array.from(i.attributes))
+    if (!(a.name === "id" || a.name === "class") && !Te.has(a.name.toLowerCase()) && !a.name.startsWith("on")) {
+      if (o >= Be) break;
+      n[a.name] = a.value.slice(0, 200), o++;
     }
-  if (r > 0 && (s.attrs = n), e >= K - 2 || o.children.length === 0) {
-    const a = (i = o.textContent) == null ? void 0 : i.trim().slice(0, Le);
+  if (o > 0 && (s.attrs = n), e >= U - 2 || i.children.length === 0) {
+    const a = (r = i.textContent) == null ? void 0 : r.trim().slice(0, De);
     a && (s.text = a);
   }
-  if (e < K) {
-    const a = [], c = Array.from(o.children), l = c.length;
-    for (const u of c.slice(0, J)) {
-      const d = ne(u, e + 1);
+  if (e < U) {
+    const a = [], c = Array.from(i.children), l = c.length;
+    for (const u of c.slice(0, X)) {
+      const d = ee(u, e + 1);
       d && a.push(d);
     }
-    a.length > 0 && (s.children = a), l > J && (s.childCount = l);
+    a.length > 0 && (s.children = a), l > X && (s.childCount = l);
   } else
-    s.childCount = o.children.length;
+    s.childCount = i.children.length;
   return s;
 }
-class Oe {
+class Me {
   constructor(e, t) {
     this.refreshHandler = null, this.platform = e, this.callback = t;
   }
@@ -1337,7 +1340,7 @@ class Oe {
   collect() {
     if (!(typeof document > "u"))
       try {
-        const e = document.documentElement, t = ne(e, 0);
+        const e = document.documentElement, t = ee(e, 0);
         if (!t) return;
         let s;
         try {
@@ -1369,8 +1372,8 @@ class Oe {
     this.refreshHandler = null;
   }
 }
-const Ae = 3e3, _e = 120, $e = 100, G = 200, He = 100, j = 200;
-class Z {
+const Le = 3e3, Pe = 120, Oe = 100, W = 200, Ae = 100, $ = 200;
+class K {
   constructor(e) {
     this.samples = [], this.vitals = [], this.longTasks = [], this.resources = [], this.interactions = [], this.marks = [], this.rafHandle = 0, this.intervalHandle = null, this.observers = [], this.destroyed = !1, this.fpsFrames = 0, this.fpsLastTick = performance.now(), this.bus = e;
   }
@@ -1379,17 +1382,17 @@ class Z {
   }
   async collectVitals() {
     try {
-      const { onLCP: e, onCLS: t, onFCP: s, onTTFB: n, onINP: r, onFID: i } = await import("./web-vitals-Bpb2w_6o.js"), a = (c, l, u) => {
-        const d = this.vitals.findIndex((g) => g.name === c), h = { name: c, value: Math.round(l * 100) / 100, rating: u };
+      const { onLCP: e, onCLS: t, onFCP: s, onTTFB: n, onINP: o, onFID: r } = await import("./web-vitals-Bpb2w_6o.js"), a = (c, l, u) => {
+        const d = this.vitals.findIndex((f) => f.name === c), h = { name: c, value: Math.round(l * 100) / 100, rating: u };
         d >= 0 ? this.vitals[d] = h : this.vitals.push(h), this.flush();
       };
       e((c) => a("LCP", c.value, c.rating)), t((c) => a("CLS", c.value, c.rating)), s((c) => a("FCP", c.value, c.rating)), n((c) => a("TTFB", c.value, c.rating));
       try {
-        r((c) => a("INP", c.value, c.rating));
+        o((c) => a("INP", c.value, c.rating));
       } catch {
       }
       try {
-        i((c) => a("FID", c.value, c.rating));
+        r((c) => a("FID", c.value, c.rating));
       } catch {
       }
     } catch (e) {
@@ -1404,7 +1407,7 @@ class Z {
             startTime: Math.round(s.startTime),
             duration: Math.round(s.duration),
             name: s.name
-          }), this.longTasks.length > $e && this.longTasks.shift();
+          }), this.longTasks.length > Oe && this.longTasks.shift();
         this.flush();
       });
       e.observe({ entryTypes: ["longtask"] }), this.observers.push(e);
@@ -1414,11 +1417,11 @@ class Z {
   observeResources() {
     try {
       const e = performance.getEntriesByType("resource");
-      for (const s of e.slice(-G))
+      for (const s of e.slice(-W))
         this.resources.push(this.mapResource(s));
       const t = new PerformanceObserver((s) => {
         for (const n of s.getEntries())
-          this.resources.push(this.mapResource(n)), this.resources.length > G && this.resources.shift();
+          this.resources.push(this.mapResource(n)), this.resources.length > W && this.resources.shift();
         this.flush();
       });
       t.observe({ entryTypes: ["resource"] }), this.observers.push(t);
@@ -1444,11 +1447,11 @@ class Z {
             duration: Math.round(n.duration),
             startTime: Math.round(n.startTime),
             target: (() => {
-              const r = n.target;
-              if (r instanceof Element)
-                return `${r.tagName.toLowerCase()}${r.id ? "#" + r.id : ""}`;
+              const o = n.target;
+              if (o instanceof Element)
+                return `${o.tagName.toLowerCase()}${o.id ? "#" + o.id : ""}`;
             })()
-          }), this.interactions.length > He && this.interactions.shift();
+          }), this.interactions.length > Ae && this.interactions.shift();
         }
         this.flush();
       });
@@ -1464,19 +1467,19 @@ class Z {
     try {
       const e = performance.getEntriesByType("mark");
       for (const n of e)
-        this.marks.push({ name: n.name, startTime: Math.round(n.startTime), type: "mark" }), this.marks.length > j && this.marks.shift();
+        this.marks.push({ name: n.name, startTime: Math.round(n.startTime), type: "mark" }), this.marks.length > $ && this.marks.shift();
       const t = performance.getEntriesByType("measure");
       for (const n of t)
-        this.marks.push({ name: n.name, startTime: Math.round(n.startTime), duration: Math.round(n.duration), type: "measure" }), this.marks.length > j && this.marks.shift();
+        this.marks.push({ name: n.name, startTime: Math.round(n.startTime), duration: Math.round(n.duration), type: "measure" }), this.marks.length > $ && this.marks.shift();
       const s = new PerformanceObserver((n) => {
-        for (const r of n.getEntries()) {
-          const i = r.entryType;
+        for (const o of n.getEntries()) {
+          const r = o.entryType;
           this.marks.push({
-            name: r.name,
-            startTime: Math.round(r.startTime),
-            ...r.duration ? { duration: Math.round(r.duration) } : {},
-            type: i
-          }), this.marks.length > j && this.marks.shift();
+            name: o.name,
+            startTime: Math.round(o.startTime),
+            ...o.duration ? { duration: Math.round(o.duration) } : {},
+            type: r
+          }), this.marks.length > $ && this.marks.shift();
         }
         this.flush();
       });
@@ -1499,8 +1502,8 @@ class Z {
         ts: Date.now(),
         fps: Math.min(s, 120)
       };
-      performance.memory && (n.heapUsed = parseFloat((performance.memory.usedJSHeapSize / 1048576).toFixed(2)), n.heapTotal = parseFloat((performance.memory.totalJSHeapSize / 1048576).toFixed(2))), this.samples.push(n), this.samples.length > _e && this.samples.shift(), this.flush();
-    }, Ae);
+      performance.memory && (n.heapUsed = parseFloat((performance.memory.usedJSHeapSize / 1048576).toFixed(2)), n.heapTotal = parseFloat((performance.memory.totalJSHeapSize / 1048576).toFixed(2))), this.samples.push(n), this.samples.length > Pe && this.samples.shift(), this.flush();
+    }, Le);
   }
   flush() {
     const e = {
@@ -1536,7 +1539,7 @@ class Z {
     this.observers = [];
   }
 }
-class je {
+class _e {
   constructor(e) {
     this.bus = e;
   }
@@ -1564,7 +1567,7 @@ class je {
       }
   }
 }
-class ze {
+class $e {
   constructor(e) {
     this.connectionChangeHandler = null, this.batteryChangeHandler = null, this.batteryObj = null, this.onReport = e;
   }
@@ -1615,14 +1618,14 @@ class ze {
         };
       } catch {
       }
-    const n = ((c = screen.orientation) == null ? void 0 : c.type) ?? void 0, r = (() => {
+    const n = ((c = screen.orientation) == null ? void 0 : c.type) ?? void 0, o = (() => {
       try {
         const l = document.createElement("canvas");
         return l.width = 1, l.height = 1, l.toDataURL("image/webp").startsWith("data:image/webp");
       } catch {
         return !1;
       }
-    })(), i = (() => {
+    })(), r = (() => {
       try {
         const l = document.createElement("canvas");
         return !!(l.getContext("webgl") || l.getContext("experimental-webgl"));
@@ -1663,9 +1666,9 @@ class ze {
       timezoneOffset: (/* @__PURE__ */ new Date()).getTimezoneOffset(),
       features: {
         // Core APIs
-        webGL: i,
+        webGL: r,
         webGL2: a,
-        webP: r,
+        webP: o,
         serviceWorker: "serviceWorker" in navigator,
         webWorker: typeof Worker < "u",
         indexedDB: "indexedDB" in window,
@@ -1794,7 +1797,7 @@ class ze {
     };
   }
 }
-class Fe {
+class He {
   constructor(e) {
     this.originalOpen = null, this.enabled = !1, this.onReport = e;
   }
@@ -1813,8 +1816,8 @@ class Fe {
       "openCursor"
     ].forEach((s) => {
       const n = IDBObjectStore.prototype[s];
-      typeof n == "function" && (IDBObjectStore.prototype[s] = function(...r) {
-        const i = Date.now(), a = this.transaction.db.name, c = this.name, l = `idb-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, u = n.apply(this, r);
+      typeof n == "function" && (IDBObjectStore.prototype[s] = function(...o) {
+        const r = Date.now(), a = this.transaction.db.name, c = this.name, l = `idb-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, u = n.apply(this, o);
         return u.addEventListener("success", () => {
           if (!e.enabled) return;
           const d = u.result;
@@ -1829,11 +1832,11 @@ class Fe {
             dbName: a,
             storeName: c,
             operation: s,
-            key: r[0],
-            value: s === "put" || s === "add" ? r[0] : void 0,
+            key: o[0],
+            value: s === "put" || s === "add" ? o[0] : void 0,
             result: h,
-            duration: Date.now() - i,
-            timestamp: i
+            duration: Date.now() - r,
+            timestamp: r
           });
         }), u.addEventListener("error", () => {
           var d;
@@ -1842,10 +1845,10 @@ class Fe {
             dbName: a,
             storeName: c,
             operation: s,
-            key: r[0],
+            key: o[0],
             error: ((d = u.error) == null ? void 0 : d.message) ?? "Unknown IDB error",
-            duration: Date.now() - i,
-            timestamp: i
+            duration: Date.now() - r,
+            timestamp: r
           });
         }), u;
       });
@@ -1865,90 +1868,90 @@ class Fe {
       return { ts: Date.now(), databases: [] };
     }
     const t = [];
-    for (const { name: n, version: r } of e)
+    for (const { name: n, version: o } of e)
       if (n)
         try {
-          const i = await this._inspectDatabase(n, r);
-          t.push(i);
+          const r = await this._inspectDatabase(n, o);
+          t.push(r);
         } catch {
         }
     return { ts: Date.now(), databases: t };
   }
   /** Fetch paginated records from a specific store. */
   async getStoreData(e, t, s = 0, n = 50) {
-    return new Promise((r, i) => {
+    return new Promise((o, r) => {
       const a = indexedDB.open(e);
       a.onsuccess = () => {
         const c = a.result;
         if (!c.objectStoreNames.contains(t))
-          return c.close(), r({ dbName: e, storeName: t, records: [], keys: [], total: 0, page: s, pageSize: n });
+          return c.close(), o({ dbName: e, storeName: t, records: [], keys: [], total: 0, page: s, pageSize: n });
         const u = c.transaction(t, "readonly").objectStore(t), d = u.keyPath, h = u.count();
         h.onsuccess = () => {
-          const g = h.result, y = s * n, p = [], S = [];
-          let f = 0;
-          const b = u.openCursor();
-          b.onsuccess = () => {
-            const m = b.result;
+          const f = h.result, b = s * n, w = [], S = [];
+          let p = 0;
+          const g = u.openCursor();
+          g.onsuccess = () => {
+            const m = g.result;
             if (!m)
-              return c.close(), r({ dbName: e, storeName: t, records: p, keys: S, keyPath: d, total: g, page: s, pageSize: n });
-            if (f < y) {
-              f++, m.continue();
+              return c.close(), o({ dbName: e, storeName: t, records: w, keys: S, keyPath: d, total: f, page: s, pageSize: n });
+            if (p < b) {
+              p++, m.continue();
               return;
             }
-            if (p.length < n) {
+            if (w.length < n) {
               try {
-                p.push(JSON.parse(JSON.stringify(m.value)));
+                w.push(JSON.parse(JSON.stringify(m.value)));
               } catch {
-                p.push(String(m.value));
+                w.push(String(m.value));
               }
               S.push(m.key), m.continue();
             } else
-              c.close(), r({ dbName: e, storeName: t, records: p, keys: S, keyPath: d, total: g, page: s, pageSize: n });
-          }, b.onerror = () => {
-            c.close(), r({ dbName: e, storeName: t, records: p, keys: S, keyPath: d, total: g, page: s, pageSize: n });
+              c.close(), o({ dbName: e, storeName: t, records: w, keys: S, keyPath: d, total: f, page: s, pageSize: n });
+          }, g.onerror = () => {
+            c.close(), o({ dbName: e, storeName: t, records: w, keys: S, keyPath: d, total: f, page: s, pageSize: n });
           };
         }, h.onerror = () => {
-          c.close(), i(new Error("Count failed"));
+          c.close(), r(new Error("Count failed"));
         };
-      }, a.onerror = () => i(new Error(`Cannot open ${e}`));
+      }, a.onerror = () => r(new Error(`Cannot open ${e}`));
     });
   }
   _inspectDatabase(e, t) {
     return new Promise((s, n) => {
-      const r = indexedDB.open(e, t);
-      r.onsuccess = () => {
-        const i = r.result, a = [], c = Array.from(i.objectStoreNames);
+      const o = indexedDB.open(e, t);
+      o.onsuccess = () => {
+        const r = o.result, a = [], c = Array.from(r.objectStoreNames);
         if (c.length === 0)
-          return i.close(), s({ name: e, version: i.version, stores: a });
+          return r.close(), s({ name: e, version: r.version, stores: a });
         let l = c.length;
-        const u = i.transaction(c, "readonly");
+        const u = r.transaction(c, "readonly");
         c.forEach((d) => {
-          const h = u.objectStore(d), g = Array.from(h.indexNames).map((S) => {
-            const f = h.index(S);
+          const h = u.objectStore(d), f = Array.from(h.indexNames).map((S) => {
+            const p = h.index(S);
             return {
               name: S,
-              keyPath: f.keyPath,
-              unique: f.unique,
-              multiEntry: f.multiEntry
+              keyPath: p.keyPath,
+              unique: p.unique,
+              multiEntry: p.multiEntry
             };
-          }), y = h.count(), p = {
+          }), b = h.count(), w = {
             name: d,
             keyPath: h.keyPath,
             autoIncrement: h.autoIncrement,
-            indexes: g,
+            indexes: f,
             count: 0
           };
-          y.onsuccess = () => {
-            p.count = y.result, a.push(p), l--, l === 0 && (i.close(), s({ name: e, version: i.version, stores: a }));
-          }, y.onerror = () => {
-            a.push(p), l--, l === 0 && (i.close(), s({ name: e, version: i.version, stores: a }));
+          b.onsuccess = () => {
+            w.count = b.result, a.push(w), l--, l === 0 && (r.close(), s({ name: e, version: r.version, stores: a }));
+          }, b.onerror = () => {
+            a.push(w), l--, l === 0 && (r.close(), s({ name: e, version: r.version, stores: a }));
           };
         });
-      }, r.onerror = () => n(new Error(`Cannot open ${e}`)), r.onblocked = () => n(new Error(`${e} is blocked`));
+      }, o.onerror = () => n(new Error(`Cannot open ${e}`)), o.onblocked = () => n(new Error(`${e} is blocked`));
     });
   }
 }
-const x = {
+const E = {
   zh: {
     pageId: "页面 ID",
     perf: "⚡ 跑分",
@@ -1966,23 +1969,23 @@ const x = {
     clickCopy: "Click to copy"
   }
 };
-class qe {
+class je {
   constructor() {
     this.eruda = null, this.unsubscribers = [], this.lang = "zh", this.pageId = null, this.codelog = null, this.perfRunning = !1, this.onDevToolsShow = null, this.settingsItemsAdded = !1, this.settingsItemCount = 0;
   }
   /** 将 Eruda 实例与 DataBus 绑定（可在 Eruda 异步加载完成后调用） */
   attach(e, t, s, n) {
     if (this.eruda = e, this.codelog = s ?? null, this.pageId = n ?? null, this.settingsItemsAdded = !1, this.settingsItemCount = 0, this.detach(), this.lang = this.detectInitialLang(), this.syncErudaLang(this.lang), this.unsubscribers.push(
-      t.on("console", (r) => {
-        this.forwardToEruda(r);
+      t.on("console", (o) => {
+        this.forwardToEruda(o);
       })
     ), typeof document < "u") {
-      const r = e.get();
-      r != null && r.on && (this.onDevToolsShow = () => {
+      const o = e.get();
+      o != null && o.on && (this.onDevToolsShow = () => {
         setTimeout(() => {
           this.renderInfoPanel(), this.bindInfoPanelHandlers();
         }, 150);
-      }, r.on("show", this.onDevToolsShow)), setTimeout(() => this.renderInfoPanel(), 1200), setTimeout(() => this.addSettingsItems(), 1200), setTimeout(() => this.customizeEntryButton(), 1200);
+      }, o.on("show", this.onDevToolsShow)), setTimeout(() => this.renderInfoPanel(), 1200), setTimeout(() => this.addSettingsItems(), 1200), setTimeout(() => this.customizeEntryButton(), 1200);
     }
   }
   /** 解绑（清理订阅，不影响 DataBus 本身） */
@@ -2029,8 +2032,8 @@ class qe {
     var s;
     const e = (s = this.eruda) == null ? void 0 : s.get("info");
     if (!e || typeof e.add != "function") return;
-    const t = x[this.lang];
-    for (const n of [x.zh.pageId, x.en.pageId, x.zh.perf, x.en.perf])
+    const t = E[this.lang];
+    for (const n of [E.zh.pageId, E.en.pageId, E.zh.perf, E.en.perf])
       try {
         e.remove(n);
       } catch {
@@ -2053,9 +2056,9 @@ class qe {
   }
   /** Add language + theme selects to top of Settings panel (called once after attach) */
   addSettingsItems() {
-    var r, i;
+    var o, r;
     if (this.settingsItemsAdded) return;
-    const e = (r = this.eruda) == null ? void 0 : r.get("settings");
+    const e = (o = this.eruda) == null ? void 0 : o.get("settings");
     if (!e || typeof e.select != "function") return;
     let t = 0;
     const s = {
@@ -2070,7 +2073,7 @@ class qe {
       }
     };
     e.select(s, "lang", "语言 / Language", ["中文", "English"]), t++;
-    const n = (i = this.eruda) == null ? void 0 : i.get();
+    const n = (r = this.eruda) == null ? void 0 : r.get();
     if (n != null && n.config) {
       const a = [
         "Dark",
@@ -2103,9 +2106,9 @@ class qe {
     if (!t) return;
     const s = Array.from(t.children), n = this.settingsItemCount;
     if (s.length < n) return;
-    const r = s.slice(-n);
-    for (let i = r.length - 1; i >= 0; i--)
-      t.insertBefore(r[i], t.firstChild);
+    const o = s.slice(-n);
+    for (let r = o.length - 1; r >= 0; r--)
+      t.insertBefore(o[r], t.firstChild);
   }
   bindInfoPanelHandlers() {
     const e = this.getErudaShadowRoot();
@@ -2123,7 +2126,7 @@ class qe {
     }
     const s = e.getElementById("codelog-perf-btn");
     if (s && this.codelog) {
-      const n = x[this.lang];
+      const n = E[this.lang];
       s.addEventListener("click", async () => {
         this.perfRunning ? (this.perfRunning = !1, s.textContent = n.perfStart, await this.codelog.stopPerfRun()) : (this.perfRunning = !0, s.textContent = n.perfStop, this.codelog.startPerfRun());
       });
@@ -2147,22 +2150,22 @@ class qe {
     }));
   }
   copyToClipboard(e, t, s) {
-    const n = x[this.lang], r = () => {
+    const n = E[this.lang], o = () => {
       setTimeout(() => {
         t.textContent = s;
       }, 1500);
     };
     if (navigator.clipboard)
       navigator.clipboard.writeText(e).then(() => {
-        t.textContent = n.copied, r();
+        t.textContent = n.copied, o();
       });
     else {
-      const i = document.createElement("input");
-      i.value = e, document.body.appendChild(i), i.select(), document.execCommand("copy"), document.body.removeChild(i), t.textContent = n.copied, r();
+      const r = document.createElement("input");
+      r.value = e, document.body.appendChild(r), r.select(), document.execCommand("copy"), document.body.removeChild(r), t.textContent = n.copied, o();
     }
   }
 }
-class Ne {
+class ze {
   constructor(e, t) {
     this.ws = new WebSocket(e), this.ws.onopen = () => t.onOpen(), this.ws.onmessage = (s) => {
       try {
@@ -2178,7 +2181,7 @@ class Ne {
     this.ws.close();
   }
 }
-class Ue {
+class qe {
   constructor() {
     this.storage = {
       getItem(e) {
@@ -2219,239 +2222,118 @@ class Ue {
     };
   }
   createWebSocket(e, t) {
-    return new Ne(e, t);
+    return new ze(e, t);
   }
 }
-function I(o, e, t) {
-  return o + (e - o) * Math.max(0, Math.min(1, t));
+function B(i) {
+  return i >= 75 ? "good" : i >= 50 ? "needs-improvement" : "poor";
 }
-function R(o) {
-  return Math.max(0, Math.min(100, o));
-}
-function Xe(o) {
-  if (!o.length) return { score: 100, value: -1 };
-  const e = o.reduce((s, n) => s + n.fps, 0) / o.length;
-  let t;
-  return e >= 55 ? t = 100 : e >= 30 ? t = I(50, 100, (e - 30) / 25) : t = I(0, 50, e / 30), { score: R(t), value: Math.round(e) };
-}
-function We(o) {
-  return o === null || o <= 2500 ? 100 : o <= 4e3 ? R(I(50, 100, (4e3 - o) / 1500)) : R(I(0, 50, (8e3 - o) / 4e3));
-}
-function Ke(o) {
-  return o === null || o <= 0.1 ? 100 : o <= 0.25 ? R(I(50, 100, (0.25 - o) / 0.15)) : R(I(0, 50, (0.5 - o) / 0.25));
-}
-function Je(o) {
-  return o === null || o <= 1800 ? 100 : o <= 3e3 ? R(I(50, 100, (3e3 - o) / 1200)) : R(I(0, 50, (6e3 - o) / 3e3));
-}
-function Ge(o) {
-  return o === null || o <= 800 ? 100 : o <= 1800 ? R(I(50, 100, (1800 - o) / 1e3)) : R(I(0, 50, (3600 - o) / 1800));
-}
-function Ze(o) {
-  return o === null || o <= 200 ? 100 : o <= 500 ? R(I(50, 100, (500 - o) / 300)) : R(I(0, 50, (1e3 - o) / 500));
-}
-function Ve(o) {
-  const e = o.length;
-  return e === 0 ? 100 : e <= 3 ? 80 : e <= 10 ? 50 : Math.max(0, 100 - e * 5);
-}
-function Qe(o) {
-  if (!o.length) return 100;
-  const e = o.reduce((t, s) => t + s.duration, 0) / o.length;
-  return e <= 200 ? 100 : e <= 500 ? 75 : e <= 1e3 ? 50 : 25;
-}
-function T(o) {
-  return o >= 75 ? "good" : o >= 50 ? "needs-improvement" : "poor";
-}
-function Ye(o) {
-  const e = new Map(o.vitals.map((p) => [p.name, p.value])), t = Xe(o.samples), s = We(e.get("LCP") ?? null), n = Ke(e.get("CLS") ?? null), r = Je(e.get("FCP") ?? null), i = Ge(e.get("TTFB") ?? null), a = Ze(e.get("INP") ?? null), c = Ve(o.longTasks), l = Qe(o.resources), u = [
-    {
-      name: "FPS",
-      score: Math.round(t.score),
-      weight: 0.2,
-      value: t.value >= 0 ? t.value : null,
-      unit: "fps",
-      rating: T(t.score)
-    },
-    {
-      name: "LCP",
-      score: Math.round(s),
-      weight: 0.15,
-      value: e.get("LCP") ?? null,
-      unit: "ms",
-      rating: T(s)
-    },
-    {
-      name: "CLS",
-      score: Math.round(n),
-      weight: 0.1,
-      value: e.get("CLS") ?? null,
-      unit: "",
-      rating: T(n)
-    },
-    {
-      name: "FCP",
-      score: Math.round(r),
-      weight: 0.1,
-      value: e.get("FCP") ?? null,
-      unit: "ms",
-      rating: T(r)
-    },
-    {
-      name: "TTFB",
-      score: Math.round(i),
-      weight: 0.1,
-      value: e.get("TTFB") ?? null,
-      unit: "ms",
-      rating: T(i)
-    },
-    {
-      name: "INP",
-      score: Math.round(a),
-      weight: 0.1,
-      value: e.get("INP") ?? null,
-      unit: "ms",
-      rating: T(a)
-    },
-    {
-      name: "LongTasks",
-      score: Math.round(c),
-      weight: 0.15,
-      value: o.longTasks.length,
-      unit: "次",
-      rating: T(c)
-    },
-    {
-      name: "Resources",
-      score: Math.round(l),
-      weight: 0.1,
-      value: o.resources.length ? Math.round(
-        o.resources.reduce((p, S) => p + S.duration, 0) / o.resources.length
-      ) : null,
-      unit: "ms",
-      rating: T(l)
-    }
-  ], d = Math.round(u.reduce((p, S) => p + S.score * S.weight, 0));
-  let h;
-  d >= 90 ? h = "A" : d >= 75 ? h = "B" : d >= 60 ? h = "C" : d >= 45 ? h = "D" : h = "F";
-  const g = {
-    A: "性能优秀，可直接上线",
-    B: "性能良好，有优化空间",
-    C: "性能一般，建议优化",
-    D: "性能较差，需要优化",
-    F: "性能极差，亟需修复"
-  }, y = [];
-  for (const p of u)
-    p.rating === "poor" ? (p.name === "FPS" && y.push(`FPS 过低 (均值 ${p.value} fps)，页面动画卡顿`), p.name === "LCP" && y.push(`LCP 过高 (${p.value}ms)，最大内容元素加载慢`), p.name === "CLS" && y.push(`CLS 过高 (${p.value})，页面布局频繁抖动`), p.name === "FCP" && y.push(`FCP 过高 (${p.value}ms)，首次内容渲染慢`), p.name === "TTFB" && y.push(`TTFB 过高 (${p.value}ms)，服务器响应慢`), p.name === "INP" && y.push(`INP 过高 (${p.value}ms)，交互响应慢`), p.name === "LongTasks" && y.push(`长任务过多 (${p.value} 个)，主线程长期阻塞`), p.name === "Resources" && y.push(`资源加载慢 (均值 ${p.value}ms)，建议启用缓存/CDN`)) : p.rating === "needs-improvement" && (p.name === "FPS" && y.push(`FPS 偏低 (均值 ${p.value} fps)，建议优化渲染`), p.name === "LCP" && y.push(`LCP 需改善 (${p.value}ms)，建议优化关键资源`), p.name === "CLS" && y.push(`CLS 需改善 (${p.value})，建议为图片指定尺寸`), p.name === "LongTasks" && y.push(`存在 ${p.value} 个长任务，建议拆分耗时操作`));
-  return { total: d, grade: h, items: u, issues: y, summary: g[h] };
-}
-function L(o) {
-  return o >= 75 ? "good" : o >= 50 ? "needs-improvement" : "poor";
-}
-function et() {
-  const o = document.querySelectorAll("*"), e = o.length;
+function Ne() {
+  const i = document.querySelectorAll("*"), e = i.length;
   let t = 0;
-  function s(i, a) {
+  function s(r, a) {
     if (a > t && (t = a), !(a > 50))
-      for (let c = 0; c < i.children.length && c < 100; c++)
-        s(i.children[c], a + 1);
+      for (let c = 0; c < r.children.length && c < 100; c++)
+        s(r.children[c], a + 1);
   }
   s(document.documentElement, 0);
   let n = 0;
-  o.forEach((i) => {
-    i.children.length > n && (n = i.children.length);
+  i.forEach((r) => {
+    r.children.length > n && (n = r.children.length);
   });
-  let r;
-  return e <= 800 ? r = 100 : e <= 1500 ? r = 75 : e <= 3e3 ? r = 50 : r = Math.max(0, 100 - Math.floor(e / 100)), {
+  let o;
+  return e <= 800 ? o = 100 : e <= 1500 ? o = 75 : e <= 3e3 ? o = 50 : o = Math.max(0, 100 - Math.floor(e / 100)), {
     id: "dom-size",
     title: "DOM 规模",
-    score: r,
-    rating: L(r),
+    score: o,
+    rating: B(o),
     value: `${e} 个元素, 深度 ${t}, 最大宽度 ${n}`,
     details: { totalElements: e, maxDepth: t, maxWidth: n }
   };
 }
-function tt() {
-  const o = [];
+function Fe() {
+  const i = [];
   document.querySelectorAll("script[src]").forEach((s) => {
     const n = s;
-    !n.async && !n.defer && n.type !== "module" && o.push({ tag: "script", url: n.src });
+    !n.async && !n.defer && n.type !== "module" && i.push({ tag: "script", url: n.src });
   }), document.querySelectorAll('link[rel="stylesheet"]').forEach((s) => {
     const n = s;
-    n.media !== "print" && !n.disabled && o.push({ tag: "link/css", url: n.href });
+    n.media !== "print" && !n.disabled && i.push({ tag: "link/css", url: n.href });
   });
-  const e = o.length;
+  const e = i.length;
   let t;
   return e === 0 ? t = 100 : e <= 2 ? t = 75 : e <= 5 ? t = 50 : t = Math.max(10, 100 - e * 10), {
     id: "render-blocking",
     title: "渲染阻塞资源",
     score: t,
-    rating: L(t),
+    rating: B(t),
     value: e === 0 ? "无阻塞资源" : `${e} 个渲染阻塞资源`,
-    details: { count: e, resources: o.slice(0, 10) }
+    details: { count: e, resources: i.slice(0, 10) }
   };
 }
-function st() {
-  const o = [];
+function Ue() {
+  const i = [];
   document.querySelectorAll("img").forEach((s) => {
     const n = s;
     if (!n.src || n.src.startsWith("data:")) return;
-    if (n.naturalWidth > 0 && n.width > 0 && n.naturalWidth * n.naturalHeight / (n.width * n.height) > 4 && o.push({
+    if (n.naturalWidth > 0 && n.width > 0 && n.naturalWidth * n.naturalHeight / (n.width * n.height) > 4 && i.push({
       src: n.src.slice(0, 100),
       problem: "oversized",
       naturalSize: `${n.naturalWidth}x${n.naturalHeight}`,
       displaySize: `${n.width}x${n.height}`
-    }), n.getBoundingClientRect().top > window.innerHeight * 1.5 && n.loading !== "lazy" && o.push({
+    }), n.getBoundingClientRect().top > window.innerHeight * 1.5 && n.loading !== "lazy" && i.push({
       src: n.src.slice(0, 100),
       problem: "missing-lazy-load"
     }), !n.hasAttribute("width") && !n.hasAttribute("height") && !n.style.width && !n.style.height) {
-      const i = getComputedStyle(n);
-      (i.width === "auto" || i.height === "auto") && o.push({
+      const r = getComputedStyle(n);
+      (r.width === "auto" || r.height === "auto") && i.push({
         src: n.src.slice(0, 100),
         problem: "missing-dimensions"
       });
     }
   });
-  const e = o.length;
+  const e = i.length;
   let t;
   return e === 0 ? t = 100 : e <= 2 ? t = 75 : e <= 5 ? t = 50 : t = Math.max(10, 100 - e * 8), {
     id: "image-optimization",
     title: "图片优化",
     score: t,
-    rating: L(t),
+    rating: B(t),
     value: e === 0 ? "图片优化良好" : `${e} 张图片存在优化空间`,
-    details: { count: e, issues: o.slice(0, 10) }
+    details: { count: e, issues: i.slice(0, 10) }
   };
 }
-function nt() {
-  const o = performance.getEntriesByType("resource");
+function Xe() {
+  const i = performance.getEntriesByType("resource");
   let e = 0;
   const t = [];
-  for (const i of o) {
-    const a = Math.round(i.transferSize / 1024);
-    e += a, i.transferSize > 100 * 1024 && t.push({
-      url: i.name.slice(0, 100),
+  for (const r of i) {
+    const a = Math.round(r.transferSize / 1024);
+    e += a, r.transferSize > 100 * 1024 && t.push({
+      url: r.name.slice(0, 100),
       sizeKB: a,
-      type: i.initiatorType
+      type: r.initiatorType
     });
   }
   const s = {};
-  for (const i of o) {
-    const a = i.initiatorType || "other";
-    s[a] = (s[a] || 0) + Math.round(i.transferSize / 1024);
+  for (const r of i) {
+    const a = r.initiatorType || "other";
+    s[a] = (s[a] || 0) + Math.round(r.transferSize / 1024);
   }
   const n = t.length;
-  let r;
-  return e <= 500 ? r = 100 : e <= 1500 ? r = 75 : e <= 3e3 ? r = 50 : r = Math.max(10, 100 - Math.floor(e / 100)), {
+  let o;
+  return e <= 500 ? o = 100 : e <= 1500 ? o = 75 : e <= 3e3 ? o = 50 : o = Math.max(10, 100 - Math.floor(e / 100)), {
     id: "resource-size",
     title: "资源体积",
-    score: r,
-    rating: L(r),
+    score: o,
+    rating: B(o),
     value: `总传输 ${e}KB, ${n} 个大资源(>100KB)`,
     details: { totalTransferKB: e, largeCount: n, byType: s, largeResources: t.slice(0, 10) }
   };
 }
-function ot() {
-  const o = performance.getEntriesByType("resource"), e = [];
-  for (const n of o)
+function We() {
+  const i = performance.getEntriesByType("resource"), e = [];
+  for (const n of i)
     n.transferSize > 1024 && n.decodedBodySize > 0 && n.transferSize / n.decodedBodySize > 0.9 && n.decodedBodySize > 10 * 1024 && e.push({
       url: n.name.slice(0, 100),
       transferKB: Math.round(n.transferSize / 1024),
@@ -2463,12 +2345,12 @@ function ot() {
     id: "compression",
     title: "资源压缩",
     score: s,
-    rating: L(s),
+    rating: B(s),
     value: t === 0 ? "所有资源已压缩" : `${t} 个资源未开启 gzip/br 压缩`,
     details: { count: t, resources: e.slice(0, 10) }
   };
 }
-function rt() {
+function Ke() {
   const e = performance.getEntriesByType("resource").filter(
     (a) => a.initiatorType === "css" && /\.(woff2?|ttf|otf|eot)(\?|$)/i.test(a.name)
   ), t = [], s = e.filter((a) => a.transferSize > 100 * 1024);
@@ -2487,44 +2369,44 @@ function rt() {
   } catch {
   }
   n > 0 && t.push(`${n} 个 @font-face 缺少 font-display: swap`);
-  const r = s.length + n;
-  let i;
-  return r === 0 ? i = 100 : r <= 2 ? i = 70 : i = Math.max(20, 100 - r * 15), {
+  const o = s.length + n;
+  let r;
+  return o === 0 ? r = 100 : o <= 2 ? r = 70 : r = Math.max(20, 100 - o * 15), {
     id: "font-loading",
     title: "字体加载",
-    score: i,
-    rating: L(i),
-    value: r === 0 ? "字体加载良好" : t.join("; "),
+    score: r,
+    rating: B(r),
+    value: o === 0 ? "字体加载良好" : t.join("; "),
     details: { fontCount: e.length, largeFonts: s.length, missingFontDisplay: n }
   };
 }
-function it() {
-  const o = [
-    et(),
-    tt(),
-    st(),
-    nt(),
-    ot(),
-    rt()
+function Je() {
+  const i = [
+    Ne(),
+    Fe(),
+    Ue(),
+    Xe(),
+    We(),
+    Ke()
   ], e = {
-    good: o.filter((t) => t.rating === "good").length,
-    warning: o.filter((t) => t.rating === "needs-improvement").length,
-    poor: o.filter((t) => t.rating === "poor").length
+    good: i.filter((t) => t.rating === "good").length,
+    warning: i.filter((t) => t.rating === "needs-improvement").length,
+    poor: i.filter((t) => t.rating === "poor").length
   };
   return {
     timestamp: Date.now(),
     url: location.href,
-    audits: o,
+    audits: i,
     summary: e
   };
 }
-const V = {
+const J = {
   none: { latency: 0, downloadKbps: 1 / 0 },
   "3g": { latency: 300, downloadKbps: 750 },
   "2g": { latency: 600, downloadKbps: 250 },
   offline: { latency: 0, downloadKbps: 0 }
 };
-class at {
+class Ge {
   constructor() {
     this.preset = "none", this.originalFetch = null, this.originalXHROpen = null, this.originalXHRSend = null, this.active = !1;
   }
@@ -2538,16 +2420,16 @@ class at {
     this.originalFetch = window.fetch.bind(window);
     const e = this;
     window.fetch = async function(t, s) {
-      const n = V[e.preset];
+      const n = J[e.preset];
       if (n.downloadKbps === 0)
         throw new TypeError("Failed to fetch: Network offline (throttled)");
-      return n.latency > 0 && await new Promise((r) => setTimeout(r, n.latency)), e.originalFetch(t, s);
+      return n.latency > 0 && await new Promise((o) => setTimeout(o, n.latency)), e.originalFetch(t, s);
     };
   }
   patchXHR() {
     const e = this;
     this.originalXHROpen = XMLHttpRequest.prototype.open, this.originalXHRSend = XMLHttpRequest.prototype.send, XMLHttpRequest.prototype.send = function(t) {
-      const s = V[e.preset], n = this;
+      const s = J[e.preset], n = this;
       if (s.downloadKbps === 0) {
         setTimeout(() => {
           Object.defineProperty(n, "status", { value: 0, writable: !1 }), n.dispatchEvent(new Event("error"));
@@ -2566,7 +2448,7 @@ class at {
     this.stop();
   }
 }
-class Q {
+class G {
   constructor() {
     this.rules = [], this.originalFetch = null, this.originalXHROpen = null, this.originalXHRSend = null, this.active = !1;
   }
@@ -2582,8 +2464,8 @@ class Q {
         } catch {
           return e.includes(s.pattern);
         }
-      })(), r = !s.method || s.method.toUpperCase() === t.toUpperCase();
-      return n && r;
+      })(), o = !s.method || s.method.toUpperCase() === t.toUpperCase();
+      return n && o;
     });
   }
   patchFetch() {
@@ -2591,10 +2473,10 @@ class Q {
     const e = this;
     window.fetch = async function(t, s) {
       var a;
-      const n = typeof t == "string" ? t : t instanceof URL ? t.href : t.url, r = ((s == null ? void 0 : s.method) ?? "GET").toUpperCase(), i = e.matchRule(n, r);
-      return i ? ((a = e.onMatch) == null || a.call(e, i.id, n), i.delay && i.delay > 0 && await new Promise((c) => setTimeout(c, i.delay)), new Response(i.body, {
-        status: i.status,
-        headers: { "Content-Type": "application/json", ...i.headers }
+      const n = typeof t == "string" ? t : t instanceof URL ? t.href : t.url, o = ((s == null ? void 0 : s.method) ?? "GET").toUpperCase(), r = e.matchRule(n, o);
+      return r ? ((a = e.onMatch) == null || a.call(e, r.id, n), r.delay && r.delay > 0 && await new Promise((c) => setTimeout(c, r.delay)), new Response(r.body, {
+        status: r.status,
+        headers: { "Content-Type": "application/json", ...r.headers }
       })) : e.originalFetch(t, s);
     };
   }
@@ -2602,15 +2484,15 @@ class Q {
     const e = this;
     this.originalXHROpen = XMLHttpRequest.prototype.open, this.originalXHRSend = XMLHttpRequest.prototype.send;
     const t = this.originalXHROpen;
-    XMLHttpRequest.prototype.open = function(n, r, ...i) {
-      return this.__mockUrl = typeof r == "string" ? r : r.href, this.__mockMethod = n, t.call(this, n, r, ...i);
+    XMLHttpRequest.prototype.open = function(n, o, ...r) {
+      return this.__mockUrl = typeof o == "string" ? o : o.href, this.__mockMethod = n, t.call(this, n, o, ...r);
     };
     const s = this.originalXHRSend;
     XMLHttpRequest.prototype.send = function(n) {
       var c;
-      const r = this.__mockUrl || "", i = this.__mockMethod || "GET", a = e.matchRule(r, i);
+      const o = this.__mockUrl || "", r = this.__mockMethod || "GET", a = e.matchRule(o, r);
       if (a) {
-        (c = e.onMatch) == null || c.call(e, a.id, r), setTimeout(() => {
+        (c = e.onMatch) == null || c.call(e, a.id, o), setTimeout(() => {
           Object.defineProperty(this, "status", {
             value: a.status,
             writable: !1,
@@ -2665,59 +2547,59 @@ class Q {
     s && Object.assign(s, t);
   }
 }
-const ct = 5, Y = 50, A = 100;
-function M(o, e = 0, t) {
-  if (o === null) return { t: "null" };
-  if (o === void 0) return { t: "undefined" };
-  const s = typeof o;
-  if (s === "string") return { t: "str", v: o };
-  if (s === "number") return { t: "num", v: o };
-  if (s === "boolean") return { t: "bool", v: o };
-  if (s === "bigint") return { t: "bigint", v: String(o) };
-  if (s === "symbol") return { t: "sym", v: o.toString() };
-  if (s === "function") return { t: "fn", name: o.name || "(anonymous)" };
-  const n = o;
+const Ze = 5, Z = 50, P = 100;
+function T(i, e = 0, t) {
+  if (i === null) return { t: "null" };
+  if (i === void 0) return { t: "undefined" };
+  const s = typeof i;
+  if (s === "string") return { t: "str", v: i };
+  if (s === "number") return { t: "num", v: i };
+  if (s === "boolean") return { t: "bool", v: i };
+  if (s === "bigint") return { t: "bigint", v: String(i) };
+  if (s === "symbol") return { t: "sym", v: i.toString() };
+  if (s === "function") return { t: "fn", name: i.name || "(anonymous)" };
+  const n = i;
   if (t || (t = /* @__PURE__ */ new WeakSet()), t.has(n)) return { t: "circ" };
-  if (t.add(n), o instanceof RegExp) return { t: "regexp", src: o.source, flags: o.flags };
-  if (o instanceof Date) return { t: "date", iso: o.toISOString() };
-  if (o instanceof Error) return { t: "err", name: o.name, msg: o.message, stack: o.stack };
-  if (e >= ct)
-    return Array.isArray(o) ? { t: "arr", items: [], len: o.length, more: !0 } : { t: "obj", tag: ee(o), props: [], more: !0 };
-  if (o instanceof Map) {
+  if (t.add(n), i instanceof RegExp) return { t: "regexp", src: i.source, flags: i.flags };
+  if (i instanceof Date) return { t: "date", iso: i.toISOString() };
+  if (i instanceof Error) return { t: "err", name: i.name, msg: i.message, stack: i.stack };
+  if (e >= Ze)
+    return Array.isArray(i) ? { t: "arr", items: [], len: i.length, more: !0 } : { t: "obj", tag: V(i), props: [], more: !0 };
+  if (i instanceof Map) {
     const l = [];
     let u = 0;
-    for (const [d, h] of o) {
-      if (u++ >= A) break;
-      l.push([M(d, e + 1, t), M(h, e + 1, t)]);
+    for (const [d, h] of i) {
+      if (u++ >= P) break;
+      l.push([T(d, e + 1, t), T(h, e + 1, t)]);
     }
-    return { t: "map", entries: l, size: o.size };
+    return { t: "map", entries: l, size: i.size };
   }
-  if (o instanceof Set) {
+  if (i instanceof Set) {
     const l = [];
     let u = 0;
-    for (const d of o) {
-      if (u++ >= A) break;
-      l.push(M(d, e + 1, t));
+    for (const d of i) {
+      if (u++ >= P) break;
+      l.push(T(d, e + 1, t));
     }
-    return { t: "set", values: l, size: o.size };
+    return { t: "set", values: l, size: i.size };
   }
-  if (Array.isArray(o)) {
-    const l = o.length > A;
-    return { t: "arr", items: o.slice(0, A).map((d) => M(d, e + 1, t)), len: o.length, more: l };
+  if (Array.isArray(i)) {
+    const l = i.length > P;
+    return { t: "arr", items: i.slice(0, P).map((d) => T(d, e + 1, t)), len: i.length, more: l };
   }
-  const r = ee(o), i = Object.keys(n), a = i.length > Y, c = i.slice(0, Y).map((l) => [l, M(n[l], e + 1, t)]);
-  return { t: "obj", tag: r, props: c, more: a };
+  const o = V(i), r = Object.keys(n), a = r.length > Z, c = r.slice(0, Z).map((l) => [l, T(n[l], e + 1, t)]);
+  return { t: "obj", tag: o, props: c, more: a };
 }
-function lt(o) {
+function Ve(i) {
   const e = /* @__PURE__ */ new WeakSet();
-  return o.map((t) => M(t, 0, e));
+  return i.map((t) => T(t, 0, e));
 }
-function ee(o) {
-  const t = Object.prototype.toString.call(o).match(/\[object (.+)\]/);
+function V(i) {
+  const t = Object.prototype.toString.call(i).match(/\[object (.+)\]/);
   return t ? t[1] : "Object";
 }
-const ht = 15;
-class ut {
+const Qe = 15;
+class Ye {
   constructor(e) {
     this.listeners = [], this.shakeLastAcc = { x: 0, y: 0, z: 0 }, this.shakeLastTime = 0, this.cornerTapState = { count: 0, lastTime: 0, corner: -1 }, this.started = !1, this.config = {
       gestures: e.gestures ?? ["shake", "corner-tap"],
@@ -2755,21 +2637,21 @@ class ut {
   }
   _startShake() {
     if (!("DeviceMotionEvent" in window)) return;
-    const e = ht * (1 - this.config.shakeSensitivity + 0.1), t = (s) => {
+    const e = Qe * (1 - this.config.shakeSensitivity + 0.1), t = (s) => {
       const n = s.accelerationIncludingGravity;
       if (!n) return;
-      const r = Date.now();
-      if (r - this.shakeLastTime < 100) return;
-      this.shakeLastTime = r;
-      const i = Math.abs((n.x ?? 0) - this.shakeLastAcc.x), a = Math.abs((n.y ?? 0) - this.shakeLastAcc.y), c = Math.abs((n.z ?? 0) - this.shakeLastAcc.z);
-      this.shakeLastAcc = { x: n.x ?? 0, y: n.y ?? 0, z: n.z ?? 0 }, i + a + c > e && this.config.onActivate();
+      const o = Date.now();
+      if (o - this.shakeLastTime < 100) return;
+      this.shakeLastTime = o;
+      const r = Math.abs((n.x ?? 0) - this.shakeLastAcc.x), a = Math.abs((n.y ?? 0) - this.shakeLastAcc.y), c = Math.abs((n.z ?? 0) - this.shakeLastAcc.z);
+      this.shakeLastAcc = { x: n.x ?? 0, y: n.y ?? 0, z: n.z ?? 0 }, r + a + c > e && this.config.onActivate();
     };
     this._on(window, "devicemotion", t);
   }
   _startCornerTap() {
-    const { cornerRadius: e, cornerTapCount: t } = this.config, s = 800, n = (r) => {
-      if (r.touches.length !== 1) return;
-      const i = r.touches[0], a = window.innerWidth, c = window.innerHeight, l = i.clientX, u = i.clientY;
+    const { cornerRadius: e, cornerTapCount: t } = this.config, s = 800, n = (o) => {
+      if (o.touches.length !== 1) return;
+      const r = o.touches[0], a = window.innerWidth, c = window.innerHeight, l = r.clientX, u = r.clientY;
       let d = -1;
       if (l < e && u < e ? d = 0 : l > a - e && u < e ? d = 1 : l < e && u > c - e ? d = 2 : l > a - e && u > c - e && (d = 3), d === -1) {
         this.cornerTapState = { count: 0, lastTime: 0, corner: -1 };
@@ -2785,13 +2667,13 @@ class ut {
     this._on(window, "touchstart", n);
   }
   _startKey() {
-    const t = this.config.keyShortcut.split("+").map((l) => l.trim()), s = t.pop() ?? "F8", n = t.includes("Alt"), r = t.includes("Ctrl") || t.includes("Control"), i = t.includes("Shift"), a = t.includes("Meta") || t.includes("Cmd"), c = (l) => {
-      l.key === s && (n && !l.altKey || r && !l.ctrlKey || i && !l.shiftKey || a && !l.metaKey || (l.preventDefault(), this.config.onActivate()));
+    const t = this.config.keyShortcut.split("+").map((l) => l.trim()), s = t.pop() ?? "F8", n = t.includes("Alt"), o = t.includes("Ctrl") || t.includes("Control"), r = t.includes("Shift"), a = t.includes("Meta") || t.includes("Cmd"), c = (l) => {
+      l.key === s && (n && !l.altKey || o && !l.ctrlKey || r && !l.shiftKey || a && !l.metaKey || (l.preventDefault(), this.config.onActivate()));
     };
     this._on(window, "keydown", c);
   }
 }
-class dt {
+class et {
   constructor(e = {}) {
     this.entries = [], this.dirty = !1, this.maxEntries = e.maxEntries ?? 500, this.storageKey = e.storageKey ?? "_codeLog_offline_buf", this._load();
   }
@@ -2832,7 +2714,7 @@ class dt {
     }
   }
 }
-class te {
+class Q {
   constructor() {
     this.plugins = /* @__PURE__ */ new Map(), this.ctx = null;
   }
@@ -2864,9 +2746,9 @@ class te {
   }
   /** Fully remove and uninstall a plugin */
   remove(e) {
-    var s, n, r, i;
+    var s, n, o, r;
     const t = this.plugins.get(e);
-    t && (t.state === "enabled" && ((n = (s = t.plugin).disable) == null || n.call(s)), (i = (r = t.plugin).uninstall) == null || i.call(r), t.state = "uninstalled", this.plugins.delete(e));
+    t && (t.state === "enabled" && ((n = (s = t.plugin).disable) == null || n.call(s)), (r = (o = t.plugin).uninstall) == null || r.call(o), t.state = "uninstalled", this.plugins.delete(e));
   }
   /** Uninstall all plugins (called from CodeLog.destroy) */
   destroyAll() {
@@ -2889,24 +2771,24 @@ class te {
     return (t = this.plugins.get(e)) == null ? void 0 : t.plugin;
   }
 }
-const se = [
+const Y = [
   "console",
   "network",
   "storage",
   "dom",
   "performance",
   "screenshot",
-  "perf_run",
+  "perf_run_raw",
   "error",
   "lifecycle",
   "custom"
 ];
-class yt {
+class rt {
   constructor(e = {}) {
-    this.name = "DataHarborPlugin", this.entries = [], this.unsubscribers = [], this.visibilityHandler = null, this.maxEntries = e.maxEntries ?? 1e3, this.storageKey = e.storageKey ?? "_codelog_harbor", this.captureTypes = new Set(e.captureTypes ?? se), this.autoPersist = e.autoPersist ?? !0, this._loadFromStorage();
+    this.name = "DataHarborPlugin", this.entries = [], this.unsubscribers = [], this.visibilityHandler = null, this.maxEntries = e.maxEntries ?? 1e3, this.storageKey = e.storageKey ?? "_codelog_harbor", this.captureTypes = new Set(e.captureTypes ?? Y), this.autoPersist = e.autoPersist ?? !0, this._loadFromStorage();
   }
   install(e) {
-    for (const t of se) {
+    for (const t of Y) {
       if (!this.captureTypes.has(t)) continue;
       const s = e.dataBus.on(t, (n) => {
         this._push(t, n);
@@ -2938,17 +2820,17 @@ class yt {
   }
   /** Export as JSON blob and trigger browser download */
   exportJSON(e = `codelog-harbor-${Date.now()}.json`) {
-    const t = JSON.stringify({ version: 1, entries: this.entries }, null, 2), s = new Blob([t], { type: "application/json" }), n = URL.createObjectURL(s), r = document.createElement("a");
-    r.href = n, r.download = e, r.click(), URL.revokeObjectURL(n);
+    const t = JSON.stringify({ version: 1, entries: this.entries }, null, 2), s = new Blob([t], { type: "application/json" }), n = URL.createObjectURL(s), o = document.createElement("a");
+    o.href = n, o.download = e, o.click(), URL.revokeObjectURL(n);
   }
   /** Export console entries as plain text log */
   exportLog(e = `codelog-log-${Date.now()}.txt`) {
-    const t = this.entries.filter((i) => i.type === "console").map((i) => {
-      const a = i.payload;
-      return `[${new Date(i.ts).toISOString()}] [${(a.level ?? "log").toUpperCase()}] ${a.message ?? ""}`;
+    const t = this.entries.filter((r) => r.type === "console").map((r) => {
+      const a = r.payload;
+      return `[${new Date(r.ts).toISOString()}] [${(a.level ?? "log").toUpperCase()}] ${a.message ?? ""}`;
     }), s = new Blob([t.join(`
-`)], { type: "text/plain" }), n = URL.createObjectURL(s), r = document.createElement("a");
-    r.href = n, r.download = e, r.click(), URL.revokeObjectURL(n);
+`)], { type: "text/plain" }), n = URL.createObjectURL(s), o = document.createElement("a");
+    o.href = n, o.download = e, o.click(), URL.revokeObjectURL(n);
   }
   /** Clear the buffer and remove from localStorage */
   clear() {
@@ -2976,7 +2858,7 @@ class yt {
     }
   }
 }
-class bt {
+class it {
   constructor(e = {}) {
     this.name = "RRWebPlugin", this.ctx = null, this.stopFn = null, this.events = [], this.chunkIndex = 0, this.enabled = !1, this.opts = e;
   }
@@ -3039,7 +2921,7 @@ class bt {
     });
   }
 }
-class wt {
+class at {
   constructor(e = {}) {
     this.name = "OSpyPlugin", this.entries = [], this.errorCount = 0, this.unsubscribers = [], this.badge = null, this.popup = null, this.popupOpen = !1, this.enabled = !1, this.opts = e, this.maxEntries = e.maxEntries ?? 500;
   }
@@ -3149,27 +3031,27 @@ class wt {
     }), s.addEventListener("click", () => this._togglePopup()), t.appendChild(s), e.appendChild(t);
     const n = document.createElement("div");
     Object.assign(n.style, { flex: "1", overflow: "auto", padding: "4px 0" });
-    const r = this.entries.slice(-200);
-    for (const i of r) {
+    const o = this.entries.slice(-200);
+    for (const r of o) {
       const a = document.createElement("div");
       Object.assign(a.style, {
         padding: "4px 12px",
         borderBottom: "1px solid #252540",
-        color: ft(i.level),
+        color: tt(r.level),
         lineHeight: "1.5"
       });
-      const c = new Date(i.ts).toLocaleTimeString("zh-CN", { hour12: !1 });
-      a.textContent = `[${c}] [${i.level.toUpperCase()}] ${i.message}`, n.appendChild(a);
+      const c = new Date(r.ts).toLocaleTimeString("zh-CN", { hour12: !1 });
+      a.textContent = `[${c}] [${r.level.toUpperCase()}] ${r.message}`, n.appendChild(a);
     }
-    if (r.length === 0) {
-      const i = document.createElement("div");
-      Object.assign(i.style, { padding: "16px", textAlign: "center", color: "#666" }), i.textContent = "No logs yet", n.appendChild(i);
+    if (o.length === 0) {
+      const r = document.createElement("div");
+      Object.assign(r.style, { padding: "16px", textAlign: "center", color: "#666" }), r.textContent = "No logs yet", n.appendChild(r);
     }
     e.appendChild(n), document.body.appendChild(e), this.popup = e, this.popupOpen = !0, n.scrollTop = n.scrollHeight;
   }
 }
-function ft(o) {
-  switch (o) {
+function tt(i) {
+  switch (i) {
     case "error":
       return "#ff6b6b";
     case "warn":
@@ -3180,37 +3062,45 @@ function ft(o) {
       return "#a8e6cf";
   }
 }
-const St = "0.1.0", pt = 3e4, P = Symbol.for("codelog.instance");
-class gt {
+const ct = "0.1.0", st = 3e4, M = Symbol.for("codelog.instance");
+class nt {
   constructor(e) {
     var a, c, l, u, d;
-    if (this.heartbeatTimerId = null, this.originalConsole = null, this.erudaInitialized = !1, this.eruda = null, this.networkInterceptor = null, this.wsInterceptor = null, this.sseInterceptor = null, this.beaconInterceptor = null, this.storageReader = null, this.errorInterceptor = null, this.domCollector = null, this.performanceCollector = null, this.screenshotCollector = null, this.zenMode = !1, this.perfRunning = !1, this.perfRunCollector = null, this.perfRunStartTime = 0, this.lastPerfRunSession = null, this.networkThrottle = null, this.mockApi = null, this.visibilityHandler = null, this.beforeUnloadHandler = null, this.systemCollector = null, this.idbInterceptor = null, this.gestureActivator = null, this.offlineBuffer = null, this.pluginManager = new te(), !e.projectId)
+    if (this.heartbeatTimerId = null, this.originalConsole = null, this.erudaInitialized = !1, this.eruda = null, this.networkInterceptor = null, this.wsInterceptor = null, this.sseInterceptor = null, this.beaconInterceptor = null, this.storageReader = null, this.errorInterceptor = null, this.domCollector = null, this.performanceCollector = null, this.screenshotCollector = null, this.zenMode = !1, this.perfRunning = !1, this.perfRunCollector = null, this.perfRunStartTime = 0, this.lastPerfRunSession = null, this.networkThrottle = null, this.mockApi = null, this.visibilityHandler = null, this.beforeUnloadHandler = null, this.systemCollector = null, this.idbInterceptor = null, this.gestureActivator = null, this.offlineBuffer = null, this.pluginManager = new Q(), !e.projectId)
       throw new Error("projectId is required");
-    if (globalThis[P] && console.warn("codeLog: 检测到已存在的实例，多个实例可能导致竞态条件"), this.projectId = e.projectId, this.platform = e.platform ?? new Ue(), this.deviceInfo = pe(e.projectId, this.platform), this.tabId = ae(), this.heartbeatIntervalMs = e.heartbeatInterval ?? pt, this.consoleProcessor = e.consoleProcessor, this.networkProcessor = e.networkProcessor, this.storageProcessor = e.storageProcessor, this.databaseProcessor = e.databaseProcessor, this.disabledPlugins = new Set(e.disabledPlugins ?? []), ((a = e.offline) == null ? void 0 : a.enabled) !== !1 && typeof localStorage < "u" && (this.offlineBuffer = new dt(e.offline ?? {})), this.dataBus = new me(), this.reporter = new Ce(this.deviceInfo, this.tabId, this.platform), this.reporter.attachDataBus(this.dataBus), this.offlineBuffer) {
+    if (globalThis[M] && console.warn("codeLog: 检测到已存在的实例，多个实例可能导致竞态条件"), this.projectId = e.projectId, this.platform = e.platform ?? new qe(), this.deviceInfo = ue(e.projectId, this.platform), this.tabId = oe(), this.heartbeatIntervalMs = e.heartbeatInterval ?? st, this.consoleProcessor = e.consoleProcessor, this.networkProcessor = e.networkProcessor, this.storageProcessor = e.storageProcessor, this.databaseProcessor = e.databaseProcessor, this.disabledPlugins = new Set(e.disabledPlugins ?? []), ((a = e.offline) == null ? void 0 : a.enabled) !== !1 && typeof localStorage < "u" && (this.offlineBuffer = new et(e.offline ?? {})), this.dataBus = new pe(), this.reporter = new Se(this.deviceInfo, this.tabId, this.platform), this.reporter.attachDataBus(this.dataBus), this.offlineBuffer) {
       const h = this.offlineBuffer;
-      this.dataBus.on("console", (g) => h.push("console", g)), this.dataBus.on("error", (g) => h.push("error", g)), typeof document < "u" && document.addEventListener("visibilitychange", () => {
+      this.dataBus.on("console", (f) => h.push("console", f)), this.dataBus.on("error", (f) => h.push("error", f)), typeof document < "u" && document.addEventListener("visibilitychange", () => {
         document.visibilityState === "hidden" && h.save();
       });
     }
-    this.erudaPlugin = new qe();
-    const s = e.server ?? mt(e.port);
+    this.erudaPlugin = new je();
+    const s = e.server ?? ot(e.port);
     this.resolvedServerUrl = s, this.platform.storage.getItem(`codelog_remote_${this.projectId}`) === "false" || this.reporter.connect(s), this.disabledPlugins.has("console") || this.interceptConsole(), this.networkConfig = e.network, this.disabledPlugins.has("network") || this.initNetworkInterceptor(e.network), this.disabledPlugins.has("storage") || this.initStorageReader(), e.captureErrors !== !1 && !this.disabledPlugins.has("error") && this.initErrorInterceptor(), ((c = e.dom) == null ? void 0 : c.enabled) !== !1 && !this.disabledPlugins.has("dom") && this.initDOMCollector((l = e.dom) == null ? void 0 : l.initialDelay), ((u = e.performance) == null ? void 0 : u.enabled) !== !1 && !this.disabledPlugins.has("performance") && this.initPerformanceCollector(), this.disabledPlugins.has("screenshot") || this.initScreenshotCollector(), this.reporter.onStartPerfRun(() => {
       this.startPerfRun();
     }), this.reporter.onStopPerfRun(() => {
       this.stopPerfRun();
+    }), this.reporter.onPerfRunDone((h) => {
+      const b = { A: "🏆", B: "🥈", C: "🥉", D: "⚠️", F: "❌" }[h.grade] ?? "🏁";
+      this.dataBus.emit("console", {
+        timestamp: Date.now(),
+        level: "log",
+        message: `[codeLog] ${b} 跑分完成！综合分: ${h.total} (${h.grade}) — 请去 Web 面板查看详情`,
+        args: [`[codeLog] ${b} 跑分完成！综合分: ${h.total} (${h.grade}) — 请去 Web 面板查看详情`]
+      });
     }), this.reporter.onSetNetworkThrottle((h) => {
       this.setNetworkThrottle(h);
     }), this.reporter.onAddMock((h) => {
-      this.mockApi || (this.mockApi = new Q(), this.mockApi.onMatch = (g, y) => {
-        this.reporter.reportMockMatch(g, y);
+      this.mockApi || (this.mockApi = new G(), this.mockApi.onMatch = (f, b) => {
+        this.reporter.reportMockMatch(f, b);
       }, this.mockApi.start()), this.mockApi.addRule(h);
     }), this.reporter.onRemoveMock((h) => {
       this.removeMock(h);
     }), this.reporter.onClearMocks(() => {
       this.clearMocks();
-    }), this.reporter.onUpdateMockRule((h, g) => {
-      var y;
-      (y = this.mockApi) == null || y.updateRule(h, { enabled: g });
+    }), this.reporter.onUpdateMockRule((h, f) => {
+      var b;
+      (b = this.mockApi) == null || b.updateRule(h, { enabled: f });
     }), this.reporter.onRequestIDBSnapshot(async () => {
       if (this.idbInterceptor)
         try {
@@ -3218,18 +3108,18 @@ class gt {
           this.reporter.reportIDBSnapshot(h);
         } catch {
         }
-    }), this.reporter.onRequestIDBStoreData(async (h, g, y, p, S) => {
+    }), this.reporter.onRequestIDBStoreData(async (h, f, b, w, S) => {
       if (this.idbInterceptor)
         try {
-          const f = await this.idbInterceptor.getStoreData(h, g, y, p);
-          this.reporter.reportIDBStoreData({ ...f, reqId: S });
+          const p = await this.idbInterceptor.getStoreData(h, f, b, w);
+          this.reporter.reportIDBStoreData({ ...p, reqId: S });
         } catch {
         }
     }), this.reporter.onGetComputedStyles((h) => {
       try {
-        const g = document.querySelector(h);
-        if (!g) return;
-        const y = window.getComputedStyle(g), p = [
+        const f = document.querySelector(h);
+        if (!f) return;
+        const b = window.getComputedStyle(f), w = [
           "color",
           "background-color",
           "background",
@@ -3290,31 +3180,31 @@ class gt {
           "pointer-events",
           "user-select"
         ], S = {};
-        for (const f of p) {
-          const b = y.getPropertyValue(f);
-          b && (S[f] = b);
+        for (const p of w) {
+          const g = b.getPropertyValue(p);
+          g && (S[p] = g);
         }
         this.reporter.reportComputedStyles(h, S);
       } catch {
       }
-    }), this.reporter.onSetElementAttr((h, g, y) => {
-      var p;
+    }), this.reporter.onSetElementAttr((h, f, b) => {
+      var w;
       try {
         const S = document.querySelector(h);
         if (!S) return;
-        y === "" ? S.removeAttribute(g) : S.setAttribute(g, y), (p = this.domCollector) == null || p.collect();
+        b === "" ? S.removeAttribute(f) : S.setAttribute(f, b), (w = this.domCollector) == null || w.collect();
       } catch {
       }
     }), this.reporter.onStartElementPicker(() => {
       let h = null;
-      const g = (b) => {
-        if (b.id) return `#${b.id}`;
-        const m = b.tagName.toLowerCase(), w = Array.from(b.classList).slice(0, 2).join(".");
-        return w ? `${m}.${w}` : m;
-      }, y = (b) => {
-        const m = b.target;
+      const f = (g) => {
+        if (g.id) return `#${g.id}`;
+        const m = g.tagName.toLowerCase(), y = Array.from(g.classList).slice(0, 2).join(".");
+        return y ? `${m}.${y}` : m;
+      }, b = (g) => {
+        const m = g.target;
         if (!m || m === h) return;
-        const w = m.getBoundingClientRect();
+        const y = m.getBoundingClientRect();
         h || (h = document.createElement("div"), h.style.cssText = [
           "position:fixed",
           "pointer-events:none",
@@ -3323,22 +3213,22 @@ class gt {
           "background:rgba(0,122,204,0.15)",
           "box-sizing:border-box",
           "transition:all 60ms ease"
-        ].join(";"), document.body.appendChild(h)), h.style.top = `${w.top}px`, h.style.left = `${w.left}px`, h.style.width = `${w.width}px`, h.style.height = `${w.height}px`;
-      }, p = (b) => {
+        ].join(";"), document.body.appendChild(h)), h.style.top = `${y.top}px`, h.style.left = `${y.left}px`, h.style.width = `${y.width}px`, h.style.height = `${y.height}px`;
+      }, w = (g) => {
         var v;
-        b.preventDefault(), b.stopPropagation();
-        const m = b.target;
+        g.preventDefault(), g.stopPropagation();
+        const m = g.target;
         if (S(), !m) return;
-        const w = g(m);
-        this.reporter.reportPickedElement(w, m.tagName), (v = this.domCollector) == null || v.collect();
+        const y = f(m);
+        this.reporter.reportPickedElement(y, m.tagName), (v = this.domCollector) == null || v.collect();
       }, S = () => {
-        document.removeEventListener("mousemove", y, !0), document.removeEventListener("click", p, !0), document.removeEventListener("keydown", f, !0), h && (h.remove(), h = null), document.body.style.cursor = "";
-      }, f = (b) => {
-        b.key === "Escape" && S();
+        document.removeEventListener("mousemove", b, !0), document.removeEventListener("click", w, !0), document.removeEventListener("keydown", p, !0), h && (h.remove(), h = null), document.body.style.cursor = "";
+      }, p = (g) => {
+        g.key === "Escape" && S();
       };
-      document.body.style.cursor = "crosshair", document.addEventListener("mousemove", y, !0), document.addEventListener("click", p, !0), document.addEventListener("keydown", f, !0);
-    }), globalThis[P] = this, this.heartbeatTimerId = this.platform.timer.setInterval(() => {
-      ge(this.projectId, this.platform), this.reporter.updateDeviceInfo();
+      document.body.style.cursor = "crosshair", document.addEventListener("mousemove", b, !0), document.addEventListener("click", w, !0), document.addEventListener("keydown", p, !0);
+    }), globalThis[M] = this, this.heartbeatTimerId = this.platform.timer.setInterval(() => {
+      de(this.projectId, this.platform), this.reporter.updateDeviceInfo();
     }, this.heartbeatIntervalMs), ((d = e.eruda) == null ? void 0 : d.enabled) !== !1 && this.initEruda(e.eruda, e.lang), this.dataBus.emit("lifecycle", {
       event: "connect",
       url: typeof location < "u" ? location.href : void 0
@@ -3347,28 +3237,28 @@ class gt {
       this.dataBus.emit("lifecycle", { event: h, url: location.href });
     }, document.addEventListener("visibilitychange", this.visibilityHandler), this.beforeUnloadHandler = () => {
       this.dataBus.emit("lifecycle", { event: "page_unload", url: location.href });
-    }, window.addEventListener("beforeunload", this.beforeUnloadHandler), this.disabledPlugins.has("system") || (this.systemCollector = new ze((h) => {
+    }, window.addEventListener("beforeunload", this.beforeUnloadHandler), this.disabledPlugins.has("system") || (this.systemCollector = new $e((h) => {
       this.dataBus.emit("system", h);
-    }), this.systemCollector.startWatching()), this.disabledPlugins.has("indexeddb") || (this.idbInterceptor = new Fe((h) => {
+    }), this.systemCollector.startWatching()), this.disabledPlugins.has("indexeddb") || (this.idbInterceptor = new He((h) => {
       if (this.databaseProcessor) {
-        const g = this.databaseProcessor({
+        const f = this.databaseProcessor({
           dbName: h.dbName,
           storeName: h.storeName,
           operation: h.operation,
           key: h.key,
           value: h.value
         });
-        if (!g) return;
-        this.dataBus.emit("indexeddb", { ...h, ...g });
+        if (!f) return;
+        this.dataBus.emit("indexeddb", { ...h, ...f });
         return;
       }
       this.dataBus.emit("indexeddb", h);
-    }), this.idbInterceptor.start()), e.gesture && (this.gestureActivator = new ut(e.gesture), this.gestureActivator.start()), this.pluginManager = new te();
-    const r = s ? s.replace(/^ws:\/\//, "http://").replace(/^wss:\/\//, "https://").replace(/\/ws$/, "") : void 0;
+    }), this.idbInterceptor.start()), e.gesture && (this.gestureActivator = new Ye(e.gesture), this.gestureActivator.start()), this.pluginManager = new Q();
+    const o = s ? s.replace(/^ws:\/\//, "http://").replace(/^wss:\/\//, "https://").replace(/\/ws$/, "") : void 0;
     this.pluginManager.setContext({
       dataBus: this.dataBus,
       projectId: this.projectId,
-      serverUrl: r
+      serverUrl: o
     });
     for (const h of e.plugins ?? [])
       this.pluginManager.use(h);
@@ -3378,7 +3268,7 @@ class gt {
     }, 2e3);
   }
   async initEruda(e, t) {
-    var s, n, r, i, a, c, l;
+    var s, n, o, r, a, c, l;
     try {
       const u = await import("./eruda-CeLRF2MY.js").then((d) => d.e);
       if (this.eruda = u.default || u, this.eruda && typeof this.eruda.init == "function") {
@@ -3389,16 +3279,16 @@ class gt {
           defaults: e == null ? void 0 : e.defaults,
           lang: (() => {
             try {
-              const g = typeof localStorage < "u" && localStorage.getItem("codelog-lang");
-              if (g === "en") return "en";
-              if (g === "zh") return "zh-CN";
+              const f = typeof localStorage < "u" && localStorage.getItem("codelog-lang");
+              if (f === "en") return "en";
+              if (f === "zh") return "zh-CN";
             } catch {
             }
             return t === "en" ? "en" : "zh-CN";
           })()
-        }), typeof localStorage < "u" && Object.keys(localStorage).filter((g) => g.startsWith("eruda")).forEach((g) => localStorage.removeItem(g));
+        }), typeof localStorage < "u" && Object.keys(localStorage).filter((f) => f.startsWith("eruda")).forEach((f) => localStorage.removeItem(f));
         const d = (n = (s = this.eruda).get) == null ? void 0 : n.call(s, "entryBtn");
-        (i = (r = d == null ? void 0 : d.config) == null ? void 0 : r.set) == null || i.call(r, "rememberPos", !1);
+        (r = (o = d == null ? void 0 : d.config) == null ? void 0 : o.set) == null || r.call(o, "rememberPos", !1);
         const h = (c = (a = this.eruda).get) == null ? void 0 : c.call(a, "console");
         (l = h == null ? void 0 : h.restoreConsole) == null || l.call(h), this.erudaPlugin.attach(this.eruda, this.dataBus, this, this.deviceInfo.deviceId), this.erudaInitialized = !0;
       } else
@@ -3419,80 +3309,80 @@ class gt {
     };
     const e = this;
     let t = 0;
-    const s = /* @__PURE__ */ new Map(), n = /* @__PURE__ */ new Map(), r = (f, b, m = !1) => function(...w) {
+    const s = /* @__PURE__ */ new Map(), n = /* @__PURE__ */ new Map(), o = (p, g, m = !1) => function(...y) {
       try {
-        let v = D(w), C = w;
+        let v = x(y), k = y;
         if (e.consoleProcessor) {
-          const $ = e.consoleProcessor({ level: f, message: v, args: w, timestamp: Date.now() });
-          if (!$) {
-            b.apply(console, w);
+          const A = e.consoleProcessor({ level: p, message: v, args: y, timestamp: Date.now() });
+          if (!A) {
+            g.apply(console, y);
             return;
           }
-          v = $.message, C = $.args;
+          v = A.message, k = A.args;
         }
-        const k = ve(C), z = ke(C), oe = lt(C), re = {
+        const I = be(k), C = we(k), te = Ve(k), se = {
           timestamp: Date.now(),
-          level: f,
+          level: p,
           message: v,
-          args: C,
-          serializedArgs: oe,
+          args: k,
+          serializedArgs: te,
           indent: t,
-          ...k.length > 0 ? { cssStyles: k } : {},
-          ...z ? { styledParts: z } : {},
-          ...m ? { stack: _(new Error().stack) } : {}
+          ...I.length > 0 ? { cssStyles: I } : {},
+          ...C ? { styledParts: C } : {},
+          ...m ? { stack: O(new Error().stack) } : {}
         };
-        e.dataBus.emit("console", re);
+        e.dataBus.emit("console", se);
       } catch {
       }
-      b.apply(console, w);
+      g.apply(console, y);
     };
-    console.log = r("log", this.originalConsole.log), console.warn = r("warn", this.originalConsole.warn), console.error = r("error", this.originalConsole.error, !0), console.info = r("info", this.originalConsole.info), console.debug = r("debug", this.originalConsole.debug), console.trace = r("warn", this.originalConsole.trace, !0);
-    const i = console.table;
-    console.table = function(f, b) {
+    console.log = o("log", this.originalConsole.log), console.warn = o("warn", this.originalConsole.warn), console.error = o("error", this.originalConsole.error, !0), console.info = o("info", this.originalConsole.info), console.debug = o("debug", this.originalConsole.debug), console.trace = o("warn", this.originalConsole.trace, !0);
+    const r = console.table;
+    console.table = function(p, g) {
       try {
         let m = [];
-        Array.isArray(f) ? m = f.map(
-          (w, v) => w !== null && typeof w == "object" ? { "(index)": v, ...w } : { "(index)": v, Value: w }
-        ) : f !== null && typeof f == "object" && (m = Object.entries(f).map(([w, v]) => ({
-          "(index)": w,
+        Array.isArray(p) ? m = p.map(
+          (y, v) => y !== null && typeof y == "object" ? { "(index)": v, ...y } : { "(index)": v, Value: y }
+        ) : p !== null && typeof p == "object" && (m = Object.entries(p).map(([y, v]) => ({
+          "(index)": y,
           Value: v
         }))), e.dataBus.emit("console", {
           timestamp: Date.now(),
           level: "table",
-          message: D([f]),
-          args: [f],
+          message: x([p]),
+          args: [p],
           indent: t,
           tableData: m
         });
       } catch {
       }
-      i == null || i.apply(console, [f]);
+      r == null || r.apply(console, [p]);
     };
     const a = console.group, c = console.groupCollapsed, l = console.groupEnd;
-    console.group = function(...f) {
+    console.group = function(...p) {
       try {
         e.dataBus.emit("console", {
           timestamp: Date.now(),
           level: "group",
-          message: f.length ? D(f) : "console.group",
-          args: f,
+          message: p.length ? x(p) : "console.group",
+          args: p,
           indent: t
         }), t++;
       } catch {
       }
-      a == null || a.apply(console, f);
-    }, console.groupCollapsed = function(...f) {
+      a == null || a.apply(console, p);
+    }, console.groupCollapsed = function(...p) {
       try {
         e.dataBus.emit("console", {
           timestamp: Date.now(),
           level: "group-collapsed",
-          message: f.length ? D(f) : "console.groupCollapsed",
-          args: f,
+          message: p.length ? x(p) : "console.groupCollapsed",
+          args: p,
           indent: t
         }), t++;
       } catch {
       }
-      c == null || c.apply(console, f);
+      c == null || c.apply(console, p);
     }, console.groupEnd = function() {
       try {
         t > 0 && t--, e.dataBus.emit("console", {
@@ -3507,82 +3397,82 @@ class gt {
       l == null || l.apply(console);
     };
     const u = console.count, d = console.countReset;
-    console.count = function(f = "default") {
+    console.count = function(p = "default") {
       try {
-        const b = (n.get(f) ?? 0) + 1;
-        n.set(f, b), e.dataBus.emit("console", {
+        const g = (n.get(p) ?? 0) + 1;
+        n.set(p, g), e.dataBus.emit("console", {
           timestamp: Date.now(),
           level: "count",
-          message: `${f}: ${b}`,
-          args: [`${f}: ${b}`],
+          message: `${p}: ${g}`,
+          args: [`${p}: ${g}`],
           indent: t
         });
       } catch {
       }
-      u == null || u.call(console, f);
-    }, console.countReset = function(f = "default") {
+      u == null || u.call(console, p);
+    }, console.countReset = function(p = "default") {
       try {
-        n.set(f, 0), e.dataBus.emit("console", {
+        n.set(p, 0), e.dataBus.emit("console", {
           timestamp: Date.now(),
           level: "count",
-          message: `${f}: 0`,
-          args: [`${f}: 0`],
+          message: `${p}: 0`,
+          args: [`${p}: 0`],
           indent: t
         });
       } catch {
       }
-      d == null || d.call(console, f);
+      d == null || d.call(console, p);
     };
-    const h = console.time, g = console.timeEnd, y = console.timeLog;
-    console.time = function(f = "default") {
+    const h = console.time, f = console.timeEnd, b = console.timeLog;
+    console.time = function(p = "default") {
       try {
-        s.set(f, performance.now());
+        s.set(p, performance.now());
       } catch {
       }
-      h == null || h.call(console, f);
-    }, console.timeEnd = function(f = "default") {
+      h == null || h.call(console, p);
+    }, console.timeEnd = function(p = "default") {
       try {
-        const b = s.get(f), m = b !== void 0 ? (performance.now() - b).toFixed(3) : "?";
-        s.delete(f), e.dataBus.emit("console", {
+        const g = s.get(p), m = g !== void 0 ? (performance.now() - g).toFixed(3) : "?";
+        s.delete(p), e.dataBus.emit("console", {
           timestamp: Date.now(),
           level: "time-log",
-          message: `${f}: ${m}ms`,
-          args: [`${f}: ${m}ms`],
+          message: `${p}: ${m}ms`,
+          args: [`${p}: ${m}ms`],
           indent: t
         });
       } catch {
       }
-      g == null || g.call(console, f);
-    }, console.timeLog = function(f = "default", ...b) {
+      f == null || f.call(console, p);
+    }, console.timeLog = function(p = "default", ...g) {
       try {
-        const m = s.get(f), w = m !== void 0 ? (performance.now() - m).toFixed(3) : "?";
+        const m = s.get(p), y = m !== void 0 ? (performance.now() - m).toFixed(3) : "?";
         e.dataBus.emit("console", {
           timestamp: Date.now(),
           level: "time-log",
-          message: `${f}: ${w}ms ${b.length ? D(b) : ""}`.trim(),
-          args: [`${f}: ${w}ms`, ...b],
+          message: `${p}: ${y}ms ${g.length ? x(g) : ""}`.trim(),
+          args: [`${p}: ${y}ms`, ...g],
           indent: t
         });
       } catch {
       }
-      y == null || y.call(console, f, ...b);
+      b == null || b.call(console, p, ...g);
     };
-    const p = console.assert;
-    console.assert = function(f, ...b) {
-      if (!f)
+    const w = console.assert;
+    console.assert = function(p, ...g) {
+      if (!p)
         try {
-          const m = b.length ? `Assertion failed: ${D(b)}` : "Assertion failed";
+          const m = g.length ? `Assertion failed: ${x(g)}` : "Assertion failed";
           e.dataBus.emit("console", {
             timestamp: Date.now(),
             level: "assert",
             message: m,
-            args: b.length ? b : ["Assertion failed"],
+            args: g.length ? g : ["Assertion failed"],
             indent: t,
-            stack: _(new Error().stack)
+            stack: O(new Error().stack)
           });
         } catch {
         }
-      p == null || p.apply(console, [f, ...b]);
+      w == null || w.apply(console, [p, ...g]);
     };
     const S = console.clear;
     console.clear = function() {
@@ -3600,27 +3490,27 @@ class gt {
     };
   }
   initNetworkInterceptor(e) {
-    const t = this.dataBus, s = this.networkProcessor, n = (r) => {
+    const t = this.dataBus, s = this.networkProcessor, n = (o) => {
       if (s) {
-        const i = s({
-          url: r.url,
-          method: r.method,
-          type: r.type,
-          status: r.status,
-          requestBody: r.requestBody,
-          responseBody: r.responseBody
+        const r = s({
+          url: o.url,
+          method: o.method,
+          type: o.type,
+          status: o.status,
+          requestBody: o.requestBody,
+          responseBody: o.responseBody
         });
-        if (!i) return;
-        t.emit("network", { ...r, ...i });
+        if (!r) return;
+        t.emit("network", { ...o, ...r });
         return;
       }
-      t.emit("network", r);
+      t.emit("network", o);
     };
-    this.networkInterceptor = new Ie(n, e), this.networkInterceptor.start(), this.wsInterceptor = new Re(n), this.wsInterceptor.start(), this.sseInterceptor = new Ee(n), this.sseInterceptor.start(), this.beaconInterceptor = new Te(n), this.beaconInterceptor.start();
+    this.networkInterceptor = new ve(n, e), this.networkInterceptor.start(), this.wsInterceptor = new ke(n), this.wsInterceptor.start(), this.sseInterceptor = new Ce(n), this.sseInterceptor.start(), this.beaconInterceptor = new Ie(n), this.beaconInterceptor.start();
   }
   initStorageReader() {
     const e = this.dataBus, t = this.storageProcessor;
-    this.storageReader = new xe((s) => {
+    this.storageReader = new Re((s) => {
       if (t) {
         const n = t({
           localStorage: s.localStorage,
@@ -3638,11 +3528,11 @@ class gt {
     });
   }
   initErrorInterceptor() {
-    this.errorInterceptor = new De(this.platform, this.dataBus), this.errorInterceptor.start();
+    this.errorInterceptor = new Ee(this.platform, this.dataBus), this.errorInterceptor.start();
   }
   initDOMCollector(e = 2e3) {
     const t = this.dataBus;
-    this.domCollector = new Oe(this.platform, (s) => {
+    this.domCollector = new Me(this.platform, (s) => {
       t.emit("dom", s);
     }), this.platform.timer.setTimeout(() => {
       var s;
@@ -3653,10 +3543,10 @@ class gt {
     });
   }
   initPerformanceCollector() {
-    this.performanceCollector = new Z(this.dataBus), this.performanceCollector.start();
+    this.performanceCollector = new K(this.dataBus), this.performanceCollector.start();
   }
   initScreenshotCollector() {
-    this.screenshotCollector = new je(this.dataBus), this.reporter.onTakeScreenshot(() => {
+    this.screenshotCollector = new _e(this.dataBus), this.reporter.onTakeScreenshot(() => {
       var e;
       (e = this.screenshotCollector) == null || e.capture();
     }), this.reporter.onZenMode((e) => {
@@ -3669,7 +3559,7 @@ class gt {
     return (e = this.screenshotCollector) == null ? void 0 : e.capture();
   }
   startPerfRun() {
-    this.perfRunning || (this.enterZenMode(), this.perfRunCollector = new Z(this.dataBus), this.perfRunCollector.start(), this.perfRunStartTime = Date.now(), this.perfRunning = !0, this.dataBus.emit("console", {
+    this.perfRunning || (this.enterZenMode(), this.perfRunCollector = new K(this.dataBus), this.perfRunCollector.start(), this.perfRunStartTime = Date.now(), this.perfRunning = !0, this.dataBus.emit("console", {
       timestamp: Date.now(),
       level: "log",
       message: "[codeLog] 🏁 跑分开始...",
@@ -3677,42 +3567,40 @@ class gt {
     }));
   }
   async stopPerfRun() {
-    var i, a;
+    var o, r;
     if (!this.perfRunning) return null;
-    const e = ((i = this.perfRunCollector) == null ? void 0 : i.getSnapshot()) ?? {
+    const e = ((o = this.perfRunCollector) == null ? void 0 : o.getSnapshot()) ?? {
       vitals: [],
       samples: [],
       longTasks: [],
       resources: [],
       interactions: []
     };
-    (a = this.perfRunCollector) == null || a.destroy(), this.perfRunCollector = null, this.exitZenMode();
-    const t = Ye(e), s = it(), n = Date.now(), r = {
+    (r = this.perfRunCollector) == null || r.destroy(), this.perfRunCollector = null, this.exitZenMode();
+    const t = Je(), s = Date.now(), n = {
       sessionId: Date.now().toString(36),
-      deviceId: this.deviceInfo.deviceId,
       tabId: this.tabId,
       startTime: this.perfRunStartTime,
-      endTime: n,
-      duration: n - this.perfRunStartTime,
+      endTime: s,
+      duration: s - this.perfRunStartTime,
       snapshot: e,
-      score: t,
-      audit: s
+      audit: t
     };
-    return this.dataBus.emit("perf_run", r), this.lastPerfRunSession = r, this.perfRunning = !1, this.dataBus.emit("console", {
+    return this.dataBus.emit("perf_run_raw", n), this.perfRunning = !1, this.dataBus.emit("console", {
       timestamp: Date.now(),
       level: "log",
-      message: `[codeLog] 🏁 跑分结束，综合评分: ${t.total}`,
-      args: [`[codeLog] 🏁 跑分结束，综合评分: ${t.total}`]
-    }), r;
+      message: "[codeLog] 🏁 跑分数据已上传，服务正在计算分数...",
+      args: ["[codeLog] 🏁 跑分数据已上传，服务正在计算分数..."]
+    }), n;
   }
   getPerfReport() {
     return this.lastPerfRunSession;
   }
   setNetworkThrottle(e) {
-    this.networkThrottle || (this.networkThrottle = new at()), this.networkThrottle.setPreset(e);
+    this.networkThrottle || (this.networkThrottle = new Ge()), this.networkThrottle.setPreset(e);
   }
   addMock(e, t) {
-    return this.mockApi || (this.mockApi = new Q(), this.mockApi.onMatch = (s, n) => {
+    return this.mockApi || (this.mockApi = new G(), this.mockApi.onMatch = (s, n) => {
       this.reporter.reportMockMatch(s, n);
     }, this.mockApi.start()), this.mockApi.addRule({ pattern: e, ...t });
   }
@@ -3775,9 +3663,9 @@ class gt {
    * Call this to persist the current session's logs before the page unloads.
    */
   async uploadLogs(e) {
-    var n, r, i;
+    var n, o, r;
     if (!this.resolvedServerUrl) return null;
-    const t = this.resolvedServerUrl.replace(/^ws:\/\//, "http://").replace(/^wss:\/\//, "https://").replace(/\/ws$/, ""), s = ((i = (r = (n = this.dataBus).getBuffer) == null ? void 0 : r.call(n, "console")) == null ? void 0 : i.map((a) => ({
+    const t = this.resolvedServerUrl.replace(/^ws:\/\//, "http://").replace(/^wss:\/\//, "https://").replace(/\/ws$/, ""), s = ((r = (o = (n = this.dataBus).getBuffer) == null ? void 0 : o.call(n, "console")) == null ? void 0 : r.map((a) => ({
       timestamp: a.timestamp,
       level: a.level,
       message: a.message,
@@ -3807,22 +3695,22 @@ class gt {
    * Returns the saved session ID, or null if upload failed.
    */
   async flushOfflineBuffer() {
-    var n, r;
+    var n, o;
     if (!this.offlineBuffer || !this.resolvedServerUrl) return null;
     const e = this.offlineBuffer.flush();
     if (e.length === 0) return null;
-    const t = this.resolvedServerUrl.replace(/^ws:\/\//, "http://").replace(/^wss:\/\//, "https://").replace(/\/ws$/, ""), s = e.filter((i) => i.type === "console" || i.type === "error").map((i) => {
+    const t = this.resolvedServerUrl.replace(/^ws:\/\//, "http://").replace(/^wss:\/\//, "https://").replace(/\/ws$/, ""), s = e.filter((r) => r.type === "console" || r.type === "error").map((r) => {
       var a, c, l;
       return {
-        timestamp: i.ts,
-        level: ((a = i.payload) == null ? void 0 : a.level) ?? "log",
-        message: ((c = i.payload) == null ? void 0 : c.message) ?? "",
-        stack: (l = i.payload) == null ? void 0 : l.stack,
+        timestamp: r.ts,
+        level: ((a = r.payload) == null ? void 0 : a.level) ?? "log",
+        message: ((c = r.payload) == null ? void 0 : c.message) ?? "",
+        stack: (l = r.payload) == null ? void 0 : l.stack,
         tabId: this.tabId
       };
     });
     try {
-      const i = await fetch(`${t}/api/saved-logs`, {
+      const r = await fetch(`${t}/api/saved-logs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -3830,17 +3718,17 @@ class gt {
           ua: this.deviceInfo.ua,
           projectId: this.projectId,
           startTime: ((n = e[0]) == null ? void 0 : n.ts) ?? Date.now(),
-          endTime: ((r = e[e.length - 1]) == null ? void 0 : r.ts) ?? Date.now(),
+          endTime: ((o = e[e.length - 1]) == null ? void 0 : o.ts) ?? Date.now(),
           logs: s
         })
       });
-      return i.ok ? (await i.json()).id ?? null : null;
+      return r.ok ? (await r.json()).id ?? null : null;
     } catch {
       return null;
     }
   }
   destroy() {
-    this.dataBus.emit("lifecycle", { event: "disconnect" }), this.visibilityHandler && (document.removeEventListener("visibilitychange", this.visibilityHandler), this.visibilityHandler = null), this.beforeUnloadHandler && (window.removeEventListener("beforeunload", this.beforeUnloadHandler), this.beforeUnloadHandler = null), this.heartbeatTimerId !== null && (this.platform.timer.clearInterval(this.heartbeatTimerId), this.heartbeatTimerId = null), this.originalConsole && (console.log = this.originalConsole.log, console.warn = this.originalConsole.warn, console.error = this.originalConsole.error, console.info = this.originalConsole.info, console.debug = this.originalConsole.debug, console.trace = this.originalConsole.trace, console.clear = this.originalConsole.clear, this.originalConsole = null), globalThis[P] === this && delete globalThis[P], this.erudaPlugin.detach(), this.erudaInitialized && this.eruda && (this.eruda.destroy(), this.erudaInitialized = !1, this.eruda = null), this.networkInterceptor && (this.networkInterceptor.stop(), this.networkInterceptor = null), this.wsInterceptor && (this.wsInterceptor.stop(), this.wsInterceptor = null), this.sseInterceptor && (this.sseInterceptor.stop(), this.sseInterceptor = null), this.beaconInterceptor && (this.beaconInterceptor.stop(), this.beaconInterceptor = null), this.errorInterceptor && (this.errorInterceptor.stop(), this.errorInterceptor = null), this.domCollector && (this.domCollector.destroy(), this.domCollector = null), this.performanceCollector && (this.performanceCollector.destroy(), this.performanceCollector = null), this.storageReader && (this.storageReader.unwatch(), this.storageReader = null), this.systemCollector && (this.systemCollector.stopWatching(), this.systemCollector = null), this.idbInterceptor && (this.idbInterceptor.stop(), this.idbInterceptor = null), this.gestureActivator && (this.gestureActivator.stop(), this.gestureActivator = null), this.networkThrottle && (this.networkThrottle.destroy(), this.networkThrottle = null), this.mockApi && (this.mockApi.stop(), this.mockApi = null), this.perfRunCollector && (this.perfRunCollector.destroy(), this.perfRunCollector = null), this.reporter.detachDataBus(), this.dataBus.clear(), this.pluginManager.destroyAll(), this.reporter.disconnect();
+    this.dataBus.emit("lifecycle", { event: "disconnect" }), this.visibilityHandler && (document.removeEventListener("visibilitychange", this.visibilityHandler), this.visibilityHandler = null), this.beforeUnloadHandler && (window.removeEventListener("beforeunload", this.beforeUnloadHandler), this.beforeUnloadHandler = null), this.heartbeatTimerId !== null && (this.platform.timer.clearInterval(this.heartbeatTimerId), this.heartbeatTimerId = null), this.originalConsole && (console.log = this.originalConsole.log, console.warn = this.originalConsole.warn, console.error = this.originalConsole.error, console.info = this.originalConsole.info, console.debug = this.originalConsole.debug, console.trace = this.originalConsole.trace, console.clear = this.originalConsole.clear, this.originalConsole = null), globalThis[M] === this && delete globalThis[M], this.erudaPlugin.detach(), this.erudaInitialized && this.eruda && (this.eruda.destroy(), this.erudaInitialized = !1, this.eruda = null), this.networkInterceptor && (this.networkInterceptor.stop(), this.networkInterceptor = null), this.wsInterceptor && (this.wsInterceptor.stop(), this.wsInterceptor = null), this.sseInterceptor && (this.sseInterceptor.stop(), this.sseInterceptor = null), this.beaconInterceptor && (this.beaconInterceptor.stop(), this.beaconInterceptor = null), this.errorInterceptor && (this.errorInterceptor.stop(), this.errorInterceptor = null), this.domCollector && (this.domCollector.destroy(), this.domCollector = null), this.performanceCollector && (this.performanceCollector.destroy(), this.performanceCollector = null), this.storageReader && (this.storageReader.unwatch(), this.storageReader = null), this.systemCollector && (this.systemCollector.stopWatching(), this.systemCollector = null), this.idbInterceptor && (this.idbInterceptor.stop(), this.idbInterceptor = null), this.gestureActivator && (this.gestureActivator.stop(), this.gestureActivator = null), this.networkThrottle && (this.networkThrottle.destroy(), this.networkThrottle = null), this.mockApi && (this.mockApi.stop(), this.mockApi = null), this.perfRunCollector && (this.perfRunCollector.destroy(), this.perfRunCollector = null), this.reporter.detachDataBus(), this.dataBus.clear(), this.pluginManager.destroyAll(), this.reporter.disconnect();
   }
   /** Install a plugin dynamically at runtime */
   async use(e) {
@@ -3863,33 +3751,33 @@ class gt {
     return this.pluginManager.list();
   }
 }
-let B = null;
-function vt(o) {
-  if (B)
-    B.destroy(), B = null;
+let D = null;
+function lt(i) {
+  if (D)
+    D.destroy(), D = null;
   else {
-    const e = globalThis[P];
+    const e = globalThis[M];
     e && typeof e.destroy == "function" && e.destroy();
   }
-  return B = new gt(o), B;
+  return D = new nt(i), D;
 }
-function kt() {
-  return B;
+function ht() {
+  return D;
 }
-function mt(o) {
-  if (!o) return;
+function ot(i) {
+  if (!i) return;
   const e = typeof location < "u" && location.protocol === "https:" ? "wss" : "ws", t = typeof location < "u" ? location.hostname : "localhost";
-  return `${e}://${t}:${o}`;
+  return `${e}://${t}:${i}`;
 }
 export {
-  Ue as BrowserAdapter,
-  gt as CodeLog,
-  yt as DataHarborPlugin,
-  wt as OSpyPlugin,
-  bt as RRWebPlugin,
-  gt as default,
-  kt as getInstance,
-  vt as init,
-  mt as resolveServerUrl,
-  St as version
+  qe as BrowserAdapter,
+  nt as CodeLog,
+  rt as DataHarborPlugin,
+  at as OSpyPlugin,
+  it as RRWebPlugin,
+  nt as default,
+  ht as getInstance,
+  lt as init,
+  ot as resolveServerUrl,
+  ct as version
 };

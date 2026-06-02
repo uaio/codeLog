@@ -96,8 +96,8 @@ declare class CodeLog {
     /** 手动触发截图（供外部调用） */
     takeScreenshot(): Promise<void>;
     startPerfRun(): void;
-    stopPerfRun(): Promise<PerfRunSession | null>;
-    getPerfReport(): PerfRunSession | null;
+    stopPerfRun(): Promise<PerfRunRawPayload | null>;
+    getPerfReport(): PerfRunRawPayload | null;
     setNetworkThrottle(preset: ThrottlePreset): void;
     addMock(urlPattern: string, response: Omit<MockRule, 'id' | 'pattern'>): string;
     removeMock(id: string): void;
@@ -310,6 +310,7 @@ declare type DataBusEventMap = {
     performance: PerformancePayload;
     screenshot: Omit<ScreenshotData, 'deviceId' | 'tabId'>;
     perf_run: PerfRunSession;
+    perf_run_raw: PerfRunRawPayload;
     error: ErrorPayload;
     lifecycle: LifecyclePayload;
     custom: CustomPayload;
@@ -489,6 +490,17 @@ declare interface PageAuditReport {
         warning: number;
         poor: number;
     };
+}
+
+/** SDK 发给服务端的原始数据（未评分），服务端负责计算分数 */
+declare interface PerfRunRawPayload {
+    sessionId: string;
+    tabId: string;
+    startTime: number;
+    endTime: number;
+    duration: number;
+    snapshot: PerformancePayload;
+    audit?: PageAuditReport;
 }
 
 declare interface PerfRunScore {

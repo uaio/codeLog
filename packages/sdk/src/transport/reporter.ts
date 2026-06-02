@@ -6,6 +6,8 @@ import type {
   DOMSnapshot,
   PerformancePayload,
   ScreenshotData,
+  PerfRunRawPayload,
+  PerfRunScore,
 } from '../types/index.js';
 import type { PlatformAdapter } from '../platform/types.js';
 import type { DataBus } from '../core/DataBus.js';
@@ -28,6 +30,7 @@ export class Reporter {
   private onZenModeCallback: ((enabled: boolean) => void) | null = null;
   private onStartPerfRunCallback: (() => void) | null = null;
   private onStopPerfRunCallback: (() => void) | null = null;
+  private onPerfRunDoneCallback: ((score: PerfRunScore) => void) | null = null;
   private onSetNetworkThrottleCallback: ((preset: string) => void) | null = null;
   private onAddMockCallback: ((rule: any) => void) | null = null;
   private onRemoveMockCallback: ((id: string) => void) | null = null;
@@ -159,6 +162,9 @@ export class Reporter {
           if (data.type === 'stop_perf_run') {
             this.onStopPerfRunCallback?.();
           }
+          if (data.type === 'perf_run_done' && data.score) {
+            this.onPerfRunDoneCallback?.(data.score);
+          }
           if (data.type === 'set_network_throttle' && data.preset) {
             this.onSetNetworkThrottleCallback?.(data.preset);
           }
@@ -266,6 +272,9 @@ export class Reporter {
   onStopPerfRun(callback: () => void): void {
     this.onStopPerfRunCallback = callback;
   }
+  onPerfRunDone(callback: (score: PerfRunScore) => void): void {
+    this.onPerfRunDoneCallback = callback;
+  }
   onSetNetworkThrottle(callback: (preset: string) => void): void {
     this.onSetNetworkThrottleCallback = callback;
   }
@@ -316,9 +325,9 @@ export class Reporter {
     this.sendEnvelope('element_picked', { selector, tagName });
   }
 
-  reportPerfRun(session: import('../types/index.js').PerfRunSession): void {
+  reportPerfRunRaw(payload: PerfRunRawPayload): void {
     if (!this.remoteEnabled || !this.transport) return;
-    this.sendEnvelope('perf_run', session);
+    this.sendEnvelope('perf_run_raw', payload);
   }
 
   reportIDBSnapshot(snapshot: import('@codelog/types').IDBSnapshotPayload): void {
@@ -349,7 +358,7 @@ export class Reporter {
       bus.on('dom', (snap) => this.reportDOM(snap)),
       bus.on('performance', (report) => this.reportPerformance(report)),
       bus.on('screenshot', (data) => this.reportScreenshot(data)),
-      bus.on('perf_run', (session) => this.reportPerfRun(session)),
+      bus.on('perf_run_raw', (payload) => this.reportPerfRunRaw(payload)),
     ];
   }
 

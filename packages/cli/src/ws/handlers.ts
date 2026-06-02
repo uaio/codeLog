@@ -13,6 +13,7 @@ import {
   IDBSnapshotStore,
   ComputedStylesStore,
 } from '../store/index.js';
+import { scorePerfRun } from '../core/perf-score.js';
 
 export interface MessageContext {
   ws: WebSocket;
@@ -138,6 +139,38 @@ export const handlers: Record<string, MessageHandler> = {
     const { perfRunStore } = context;
     perfRunStore.add({ ...envelope.data, deviceId: envelope.device.deviceId });
     broadcastEvent(envelope, context);
+  },
+
+  perf_run_raw: (envelope, context) => {
+    const { perfRunStore } = context;
+    const deviceId = envelope.device.deviceId;
+    const raw = envelope.data;
+
+    // 服务端计算评分
+    const score = scorePerfRun(raw.snapshot ?? { vitals: [], samples: [], longTasks: [], resources: [], interactions: [] });
+
+    const session = {
+      sessionId: raw.sessionId ?? Date.now().toString(36),
+      deviceId,
+      tabId: envelope.tabId,
+      startTime: raw.startTime ?? envelope.ts,
+      endTime: raw.endTime ?? envelope.ts,
+      duration: raw.duration ?? 0,
+      snapshot: raw.snapshot,
+      score,
+      audit: raw.audit,
+    };
+
+    perfRunStore.add(session);
+
+    // 广播评分结果到 Web 面板（以 perf_run 事件类型发出，保持 Web 兼容）
+    broadcastEvent(
+      { ...envelope, type: 'perf_run', data: session },
+      context,
+    );
+
+    // 通知 SDK 设备跑分完成
+    sendToDevice(deviceId, { type: 'perf_run_done', score });
   },
 
   system: (envelope, context) => {

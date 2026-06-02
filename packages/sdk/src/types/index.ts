@@ -98,6 +98,17 @@ export interface PerfRunSession {
   audit?: PageAuditReport;
 }
 
+/** SDK 发给服务端的原始数据（未评分），服务端负责计算分数 */
+export interface PerfRunRawPayload {
+  sessionId: string;
+  tabId: string;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  snapshot: PerformancePayload;
+  audit?: PageAuditReport;
+}
+
 // ─── 统一类型（Payload + Transport 字段） ───────────────────────────────────
 
 /** Transport 标识字段（SDK 发送 Envelope 时携带） */

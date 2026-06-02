@@ -40,6 +40,8 @@ export class PerfRunStore {
   add(session: PerfRunSession): void {
     const existing = this.sessions.get(session.deviceId) ?? [];
     existing.push(session);
+    // 只保留最近 5 次跑分
+    if (existing.length > 5) existing.splice(0, existing.length - 5);
     this.sessions.set(session.deviceId, existing);
 
     this.db?.insertPerfSession({
@@ -70,6 +72,8 @@ export class PerfRunStore {
         snapshot: s.snapshot,
         score: s.score as PerfRunScore,
       }));
+      // 只保留最近 5 次
+      if (sessions.length > 5) sessions = sessions.slice(sessions.length - 5);
       if (sessions.length > 0) {
         this.sessions.set(deviceId, sessions);
       }

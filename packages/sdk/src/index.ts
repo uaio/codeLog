@@ -14,7 +14,6 @@ import { SystemInfoCollector } from './interceptors/system.js';
 import { IndexedDBInterceptor } from './interceptors/indexeddb.js';
 import { ErudaPlugin } from './plugins/ErudaPlugin.js';
 import { BrowserAdapter } from './platform/browser/index.js';
-import { scorePerfRun } from './core/perf-score.js';
 import { runPageAudit } from './interceptors/page-audit.js';
 import { NetworkThrottle } from './interceptors/network-throttle.js';
 import { MockAPI } from './interceptors/mock-api.js';
@@ -22,7 +21,7 @@ import type { PlatformAdapter } from './platform/types.js';
 import type { RemoteConfig, ErudaConfig, NetworkInterceptorConfig } from './types/index.js';
 import type { ThrottlePreset } from './interceptors/network-throttle.js';
 import type { MockRule } from './types/index.js';
-import type { PerfRunSession } from './types/index.js';
+import type { PerfRunSession, PerfRunRawPayload } from './types/index.js';
 import { serializeArgs, cleanStackTrace, extractConsoleCssStyles, formatConsoleStyledParts } from './core/utils/serialize.js';
 import { serializeConsoleArgs } from './core/utils/atom.js';
 import { GestureActivator, type GestureConfig } from './core/gesture.js';
@@ -161,7 +160,7 @@ export class CodeLog {
   private perfRunning = false;
   private perfRunCollector: PerformanceCollector | null = null;
   private perfRunStartTime = 0;
-  private lastPerfRunSession: PerfRunSession | null = null;
+  private lastPerfRunSession: PerfRunRawPayload | null = null;
   private networkThrottle: NetworkThrottle | null = null;
   private mockApi: MockAPI | null = null;
   private visibilityHandler: (() => void) | null = null;
@@ -274,6 +273,16 @@ export class CodeLog {
     });
     this.reporter.onStopPerfRun(() => {
       this.stopPerfRun();
+    });
+    this.reporter.onPerfRunDone((score) => {
+      const gradeEmoji: Record<string, string> = { A: '🏆', B: '🥈', C: '🥉', D: '⚠️', F: '❌' };
+      const emoji = gradeEmoji[score.grade] ?? '🏁';
+      this.dataBus.emit('console', {
+        timestamp: Date.now(),
+        level: 'log',
+        message: `[codeLog] ${emoji} 跑分完成！综合分: ${score.total} (${score.grade}) — 请去 Web 面板查看详情`,
+        args: [`[codeLog] ${emoji} 跑分完成！综合分: ${score.total} (${score.grade}) — 请去 Web 面板查看详情`],
+      });
     });
     this.reporter.onSetNetworkThrottle((preset) => {
       this.setNetworkThrottle(preset as ThrottlePreset);
@@ -952,7 +961,7 @@ export class CodeLog {
     });
   }
 
-  async stopPerfRun(): Promise<PerfRunSession | null> {
+  async stopPerfRun(): Promise<PerfRunRawPayload | null> {
     if (!this.perfRunning) return null;
     const snapshot = this.perfRunCollector?.getSnapshot() ?? {
       vitals: [],
@@ -964,33 +973,29 @@ export class CodeLog {
     this.perfRunCollector?.destroy();
     this.perfRunCollector = null;
     this.exitZenMode();
-    const scoreResult = scorePerfRun(snapshot);
     const audit = runPageAudit();
     const endTime = Date.now();
-    const session: PerfRunSession = {
+    const rawPayload: PerfRunRawPayload = {
       sessionId: Date.now().toString(36),
-      deviceId: this.deviceInfo.deviceId,
       tabId: this.tabId,
       startTime: this.perfRunStartTime,
       endTime,
       duration: endTime - this.perfRunStartTime,
       snapshot,
-      score: scoreResult,
       audit,
     };
-    this.dataBus.emit('perf_run', session);
-    this.lastPerfRunSession = session;
+    this.dataBus.emit('perf_run_raw', rawPayload);
     this.perfRunning = false;
     this.dataBus.emit('console', {
       timestamp: Date.now(),
       level: 'log',
-      message: `[codeLog] 🏁 跑分结束，综合评分: ${scoreResult.total}`,
-      args: [`[codeLog] 🏁 跑分结束，综合评分: ${scoreResult.total}`],
+      message: '[codeLog] 🏁 跑分数据已上传，服务正在计算分数...',
+      args: ['[codeLog] 🏁 跑分数据已上传，服务正在计算分数...'],
     });
-    return session;
+    return rawPayload;
   }
 
-  getPerfReport(): PerfRunSession | null {
+  getPerfReport(): PerfRunRawPayload | null {
     return this.lastPerfRunSession;
   }
 

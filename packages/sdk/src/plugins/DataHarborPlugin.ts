@@ -32,7 +32,7 @@ const ALL_TYPES: Array<keyof DataBusEventMap> = [
   'dom',
   'performance',
   'screenshot',
-  'perf_run',
+  'perf_run_raw',
   'error',
   'lifecycle',
   'custom',

@@ -6,6 +6,7 @@ import type {
   PerformancePayload,
   ScreenshotData,
   PerfRunSession,
+  PerfRunRawPayload,
   ErrorPayload,
   LifecyclePayload,
   CustomPayload,
@@ -25,6 +26,7 @@ export type DataBusEventMap = {
   performance: PerformancePayload;
   screenshot: Omit<ScreenshotData, 'deviceId' | 'tabId'>;
   perf_run: PerfRunSession;
+  perf_run_raw: PerfRunRawPayload;
   error: ErrorPayload;
   lifecycle: LifecyclePayload;
   custom: CustomPayload;
