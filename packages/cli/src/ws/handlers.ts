@@ -146,8 +146,11 @@ export const handlers: Record<string, MessageHandler> = {
     const deviceId = envelope.device.deviceId;
     const raw = envelope.data;
 
-    // 服务端计算评分
-    const score = scorePerfRun(raw.snapshot ?? { vitals: [], samples: [], longTasks: [], resources: [], interactions: [] });
+    // 服务端计算评分（含 Lighthouse 类别评分）
+    const score = scorePerfRun(
+      raw.snapshot ?? { vitals: [], samples: [], longTasks: [], resources: [], interactions: [] },
+      raw.audit,
+    );
 
     const session = {
       sessionId: raw.sessionId ?? Date.now().toString(36),

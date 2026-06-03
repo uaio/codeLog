@@ -1,4 +1,5 @@
 import type { Persistence } from './persistence.js';
+import type { CategoryScore, FullAuditReport } from '@codelog/types';
 
 export interface PerfScoreItem {
   name: string;
@@ -15,6 +16,8 @@ export interface PerfRunScore {
   items: PerfScoreItem[];
   issues: string[];
   summary: string;
+  /** Lighthouse 风格 4 类别评分（A11y/BP/SEO） */
+  categories?: Record<string, CategoryScore>;
 }
 
 export interface PerfRunSession {
@@ -26,7 +29,7 @@ export interface PerfRunSession {
   duration: number;
   snapshot: any;
   score: PerfRunScore;
-  audit?: any;
+  audit?: FullAuditReport;
 }
 
 export class PerfRunStore {
