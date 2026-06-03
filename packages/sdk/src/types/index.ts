@@ -17,6 +17,7 @@ import type {
   ErrorPayload,
   LifecyclePayload,
   CustomPayload,
+  FullAuditReport,
 } from '@codelog/types';
 
 // ─── SDK 特有的配置类型（@codelog/types 未定义） ───────────────────────
@@ -106,7 +107,7 @@ export interface PerfRunRawPayload {
   endTime: number;
   duration: number;
   snapshot: PerformancePayload;
-  audit?: PageAuditReport;
+  audit?: FullAuditReport;
 }
 
 // ─── 统一类型（Payload + Transport 字段） ───────────────────────────────────

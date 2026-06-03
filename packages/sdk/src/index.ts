@@ -14,7 +14,8 @@ import { SystemInfoCollector } from './interceptors/system.js';
 import { IndexedDBInterceptor } from './interceptors/indexeddb.js';
 import { ErudaPlugin } from './plugins/ErudaPlugin.js';
 import { BrowserAdapter } from './platform/browser/index.js';
-import { runPageAudit } from './interceptors/page-audit.js';
+import { runPageAudit, runFullAudit } from './interceptors/page-audit.js';
+import { installRuntimeAuditHooks, resetRuntimeAuditState } from './interceptors/audits/runtime-hooks.js';
 import { NetworkThrottle } from './interceptors/network-throttle.js';
 import { MockAPI } from './interceptors/mock-api.js';
 import type { PlatformAdapter } from './platform/types.js';
@@ -161,6 +162,8 @@ export class CodeLog {
   private perfRunCollector: PerformanceCollector | null = null;
   private perfRunStartTime = 0;
   private lastPerfRunSession: PerfRunRawPayload | null = null;
+  /** 页面加载阶段主 performanceCollector 已采集的 vitals，跑分时合并使用 */
+  private prePerfRunVitals: import('./types/index.js').WebVital[] = [];
   private networkThrottle: NetworkThrottle | null = null;
   private mockApi: MockAPI | null = null;
   private visibilityHandler: (() => void) | null = null;
@@ -271,6 +274,9 @@ export class CodeLog {
     this.reporter.onStartPerfRun(() => {
       this.startPerfRun();
     });
+
+    // 安装运行时审计 Hook（document.write 监控、废弃 API 检测等）
+    installRuntimeAuditHooks();
     this.reporter.onStopPerfRun(() => {
       this.stopPerfRun();
     });
@@ -949,6 +955,9 @@ export class CodeLog {
 
   startPerfRun(): void {
     if (this.perfRunning) return;
+    // 保存主 performanceCollector 已采集的 Web Vitals（LCP/FCP/TTFB 等），
+    // 因为这些指标只在页面加载时触发一次，跑分期间新建的 collector 收不到。
+    this.prePerfRunVitals = this.performanceCollector?.getSnapshot()?.vitals ?? [];
     this.enterZenMode(true); // silent: don't show zen mode message during perf run
     this.perfRunCollector = new PerformanceCollector(this.dataBus);
     this.perfRunCollector.start();
@@ -974,7 +983,18 @@ export class CodeLog {
     this.perfRunCollector?.destroy();
     this.perfRunCollector = null;
     this.exitZenMode(true); // silent: don't show zen mode off message after perf run
-    const audit = runPageAudit();
+
+    // 合并预采集的 Web Vitals（页面加载阶段的 LCP/FCP/TTFB 等）到跑分 snapshot。
+    // 跑分期间的 collector 新采集的 vitals 优先（覆盖同名旧值）。
+    const collectedNames = new Set(snapshot.vitals.map((v) => v.name));
+    const mergedVitals = [
+      ...this.prePerfRunVitals.filter((v) => !collectedNames.has(v.name)),
+      ...snapshot.vitals,
+    ];
+    snapshot.vitals = mergedVitals;
+    this.prePerfRunVitals = [];
+
+    const audit = runFullAudit();
     const endTime = Date.now();
     const rawPayload: PerfRunRawPayload = {
       sessionId: Date.now().toString(36),
