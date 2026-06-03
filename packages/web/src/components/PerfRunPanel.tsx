@@ -371,7 +371,7 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
                         fontWeight: activeCategoryTab === 'performance' ? 600 : 400,
                       }}
                     >
-                      Performance
+                      {categoryLabel('performance')}
                     </button>
                     {Object.keys(selected.score.categories!).map(id => (
                       <button
@@ -388,7 +388,51 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
                       </button>
                     ))}
                   </div>
-                  {activeCategoryTab !== 'performance' && selected.score.categories![activeCategoryTab] && (
+                  {activeCategoryTab === 'performance' ? (
+                    <div>
+                      {/* Performance tab: 显示已有的指标卡片 */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
+                        {selected.score.items.map((item) => (
+                          <div key={item.name} style={{
+                            padding: 12,
+                            borderRadius: 8,
+                            background: '#fafafa',
+                            border: '1px solid #f0f0f0',
+                          }}>
+                            <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>
+                              {item.name}
+                            </div>
+                            <div style={{ fontSize: 20, fontWeight: 600, color: RATING_COLOR[item.rating] || '#333' }}>
+                              {item.score}
+                            </div>
+                            {item.value !== null && (
+                              <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>
+                                {item.value}{item.unit ? ` ${item.unit}` : ''}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {/* Performance issues */}
+                      {selected.score.issues.length > 0 && (
+                        <div style={{ marginTop: 12 }}>
+                          <div style={{ fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>
+                            ⚠️ Issues
+                          </div>
+                          {selected.score.issues.map((issue, i) => (
+                            <div key={i} style={{
+                              padding: '6px 0',
+                              borderBottom: '1px solid #f5f5f5',
+                              fontSize: 13,
+                              color: '#595959',
+                            }}>
+                              • {issue}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : selected.score.categories![activeCategoryTab] && (
                     <div style={{ fontSize: 13 }}>
                       {selected.score.categories![activeCategoryTab].audits.map(audit => (
                         <div key={audit.id} style={{
