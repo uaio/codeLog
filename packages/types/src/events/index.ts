@@ -239,6 +239,8 @@ export interface PerfRunPayload {
     items: PerfScoreItem[];
     issues: string[];
     summary: string;
+    /** Lighthouse 风格 4 类别评分（A11y/BP/SEO + Perf 指标） */
+    categories?: Record<string, import('../audit.js').CategoryScore>;
   };
 }
 

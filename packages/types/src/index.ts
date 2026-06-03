@@ -96,6 +96,17 @@ export type {
   ApiResult,
 } from './protocol.js';
 
+// ─── Lighthouse Audit Types ──────────────────────────────────────────────────
+export type {
+  CategoryId,
+  AuditRating,
+  LighthouseAuditResult,
+  LighthouseCategoryResult,
+  DiagnosticAuditItem,
+  FullAuditReport,
+  CategoryScore,
+} from './audit.js';
+
 // ─── Schema version constant ──────────────────────────────────────────────────
 export { SCHEMA_VERSION } from './constants.js';
 export type { SchemaVersion } from './constants.js';
