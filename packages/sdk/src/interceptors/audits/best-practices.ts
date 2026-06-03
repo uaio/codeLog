@@ -5,45 +5,83 @@
 
 import type { LighthouseAuditResult, LighthouseCategoryResult } from '@codelog/types';
 import type { RuntimeAuditState } from './runtime-hooks.js';
-import { VULNERABLE_LIBRARIES, isVersionBelow } from './helpers.js';
+import { VULNERABLE_LIBRARIES, isVersionBelow, t, isZhLang } from './helpers.js';
+import type { BilingualText } from './helpers.js';
+
+const TEXTS: Record<string, { title: BilingualText; description: BilingualText }> = {
+  'bp-is-on-https': {
+    title: { zh: '使用 HTTPS', en: 'Uses HTTPS' },
+    description: { zh: 'HTTPS 提供安全的数据传输', en: 'HTTPS provides secure data transfer' },
+  },
+  'bp-console-errors': {
+    title: { zh: '无控制台错误', en: 'No Console Errors' },
+    description: { zh: '控制台错误可能影响页面功能', en: 'Console errors may affect page functionality' },
+  },
+  'bp-no-document-write': {
+    title: { zh: '无 document.write', en: 'No document.write' },
+    description: { zh: 'document.write 会阻塞页面解析', en: 'document.write blocks page parsing' },
+  },
+  'bp-no-vulnerable-libraries': {
+    title: { zh: '无已知漏洞 JS 库', en: 'No Vulnerable JS Libraries' },
+    description: { zh: '检测已知安全漏洞的 JavaScript 库', en: 'Detects JavaScript libraries with known vulnerabilities' },
+  },
+  'bp-no-deprecated-apis': {
+    title: { zh: '无废弃 API', en: 'No Deprecated APIs' },
+    description: { zh: '废弃 API 可能被移除', en: 'Deprecated APIs may be removed' },
+  },
+  'bp-password-inputs-paste': {
+    title: { zh: '密码输入允许粘贴', en: 'Password Fields Allow Paste' },
+    description: { zh: '阻止粘贴降低安全性', en: 'Preventing paste undermines security' },
+  },
+  'bp-notification-permission': {
+    title: { zh: '通知权限未滥用', en: 'Notification Permission Not Abused' },
+    description: { zh: '非用户手势触发的通知请求会打扰用户', en: 'Non-gesture permission requests disturb users' },
+  },
+  'bp-geolocation-permission': {
+    title: { zh: '地理位置权限未滥用', en: 'Geolocation Permission Not Abused' },
+    description: { zh: '非用户手势触发的定位请求会打扰用户', en: 'Non-gesture geolocation requests disturb users' },
+  },
+};
 
 export function auditBestPractices(state: RuntimeAuditState): LighthouseCategoryResult {
   const audits: LighthouseAuditResult[] = [
     // 1. bp-is-on-https
     {
       id: 'bp-is-on-https',
-      title: 'Uses HTTPS',
-      description:
-        'All sites should be served over HTTPS, even those that do not collect sensitive data. HTTPS prevents intruders from tampering with or passively listening in on the communications between your app and your users.',
+      title: t(TEXTS['bp-is-on-https'].title),
+      description: t(TEXTS['bp-is-on-https'].description),
       score:
         typeof location !== 'undefined' &&
         (location.protocol === 'https:' || location.hostname === 'localhost')
           ? 1
           : 0,
       weight: 1,
+      value:
+        typeof location !== 'undefined' &&
+        (location.protocol === 'https:' || location.hostname === 'localhost')
+          ? 'HTTPS'
+          : location.protocol,
     },
 
     // 2. bp-console-errors
     {
       id: 'bp-console-errors',
-      title: 'No browser errors logged to the console',
-      description:
-        'Errors logged to the console indicate unresolved problems. They can also break application logic.',
+      title: t(TEXTS['bp-console-errors'].title),
+      description: t(TEXTS['bp-console-errors'].description),
       score: state.consoleErrorCount === 0 ? 1 : 0,
       weight: 1,
-      value: state.consoleErrorCount > 0 ? `${state.consoleErrorCount} error(s)` : undefined,
+      value: state.consoleErrorCount > 0 ? `${state.consoleErrorCount} ${isZhLang() ? '个错误' : 'error(s)'}` : undefined,
     },
 
     // 3. bp-no-document-write
     {
       id: 'bp-no-document-write',
-      title: 'Avoids document.write()',
-      description:
-        'For users on slow connections, external scripts dynamically injected via document.write() can delay page load by tens of seconds.',
+      title: t(TEXTS['bp-no-document-write'].title),
+      description: t(TEXTS['bp-no-document-write'].description),
       score: state.documentWriteCount === 0 ? 1 : 0,
       weight: 1,
       value:
-        state.documentWriteCount > 0 ? `${state.documentWriteCount} call(s)` : undefined,
+        state.documentWriteCount === 0 ? (isZhLang() ? '未使用' : 'Not used') : `${isZhLang() ? '调用了' : 'Called'} ${state.documentWriteCount} ${isZhLang() ? '次' : 'time(s)'}`,
     },
 
     // 4. bp-no-vulnerable-libraries
@@ -52,15 +90,12 @@ export function auditBestPractices(state: RuntimeAuditState): LighthouseCategory
     // 5. bp-no-deprecated-apis
     {
       id: 'bp-no-deprecated-apis',
-      title: 'Avoids deprecated APIs',
-      description:
-        'Deprecated APIs will eventually be removed from the browser. Using them may break your application.',
+      title: t(TEXTS['bp-no-deprecated-apis'].title),
+      description: t(TEXTS['bp-no-deprecated-apis'].description),
       score: state.deprecatedApiCalls.length === 0 ? 1 : 0,
       weight: 1,
       value:
-        state.deprecatedApiCalls.length > 0
-          ? state.deprecatedApiCalls.join(', ')
-          : undefined,
+        state.deprecatedApiCalls.length === 0 ? (isZhLang() ? '未使用' : 'Not used') : `${isZhLang() ? '调用了' : 'Called'} ${state.deprecatedApiCalls.join(', ')}`,
       details:
         state.deprecatedApiCalls.length > 0
           ? { calls: state.deprecatedApiCalls }
@@ -73,21 +108,21 @@ export function auditBestPractices(state: RuntimeAuditState): LighthouseCategory
     // 7. bp-notification-permission
     {
       id: 'bp-notification-permission',
-      title: 'Requests the notification permission on user gesture',
-      description:
-        'Using the Notification API requires a user gesture. Sites that request permission without a user gesture annoy their users and erode trust.',
+      title: t(TEXTS['bp-notification-permission'].title),
+      description: t(TEXTS['bp-notification-permission'].description),
       score: !state.notificationRequestedWithoutGesture ? 1 : 0,
       weight: 1,
+      value: state.notificationRequestedWithoutGesture ? (isZhLang() ? '检测到非用户手势请求' : 'Non-gesture request detected') : (isZhLang() ? '正常' : 'Normal'),
     },
 
     // 8. bp-geolocation-permission
     {
       id: 'bp-geolocation-permission',
-      title: 'Requests the geolocation permission on user gesture',
-      description:
-        'Using the Geolocation API requires a user gesture. Sites that request permission without a user gesture annoy their users and erode trust.',
+      title: t(TEXTS['bp-geolocation-permission'].title),
+      description: t(TEXTS['bp-geolocation-permission'].description),
       score: !state.geolocationRequestedWithoutGesture ? 1 : 0,
       weight: 1,
+      value: state.geolocationRequestedWithoutGesture ? (isZhLang() ? '检测到非用户手势请求' : 'Non-gesture request detected') : (isZhLang() ? '正常' : 'Normal'),
     },
   ];
 
@@ -108,6 +143,7 @@ export function auditBestPractices(state: RuntimeAuditState): LighthouseCategory
 
 /** 检测已知漏洞 JS 库 */
 function auditVulnerableLibraries(): LighthouseAuditResult {
+  const isZh = isZhLang();
   const vulnerabilities: { library: string; version: string; minSafe: string }[] = [];
 
   const scripts = Array.from(document.querySelectorAll('script[src]'));
@@ -130,15 +166,11 @@ function auditVulnerableLibraries(): LighthouseAuditResult {
 
   return {
     id: 'bp-no-vulnerable-libraries',
-    title: 'Avoids vulnerable JavaScript libraries',
-    description:
-      'Some third-party scripts may contain known security vulnerabilities that are easily identified and exploited by attackers.',
+    title: t(TEXTS['bp-no-vulnerable-libraries'].title),
+    description: t(TEXTS['bp-no-vulnerable-libraries'].description),
     score: vulnerabilities.length === 0 ? 1 : 0,
     weight: 1,
-    value:
-      vulnerabilities.length > 0
-        ? `${vulnerabilities.length} vulnerable librar(y|ies) found`
-        : undefined,
+    value: vulnerabilities.length === 0 ? (isZh ? '未检测到漏洞库' : 'No vulnerable libraries detected') : `${vulnerabilities.length} ${isZh ? '个漏洞库' : 'vulnerable librarie(s)'}`,
     details:
       vulnerabilities.length > 0 ? { vulnerabilities } : undefined,
   };
@@ -146,6 +178,7 @@ function auditVulnerableLibraries(): LighthouseAuditResult {
 
 /** 检测密码输入框是否禁止粘贴 */
 function auditPasswordInputsCanPaste(): LighthouseAuditResult {
+  const isZh = isZhLang();
   const passwordInputs = document.querySelectorAll<HTMLInputElement>(
     'input[type="password"]',
   );
@@ -153,9 +186,8 @@ function auditPasswordInputsCanPaste(): LighthouseAuditResult {
   if (passwordInputs.length === 0) {
     return {
       id: 'bp-password-inputs-paste',
-      title: 'Allows users to paste into password fields',
-      description:
-        'Preventing password pasting undermines good security policy. Users should be able to paste into password fields.',
+      title: t(TEXTS['bp-password-inputs-paste'].title),
+      description: t(TEXTS['bp-password-inputs-paste'].description),
       score: null, // notApplicable
       weight: 1,
     };
@@ -179,12 +211,11 @@ function auditPasswordInputsCanPaste(): LighthouseAuditResult {
 
   return {
     id: 'bp-password-inputs-paste',
-    title: 'Allows users to paste into password fields',
-    description:
-      'Preventing password pasting undermines good security policy. Users should be able to paste into password fields.',
+    title: t(TEXTS['bp-password-inputs-paste'].title),
+    description: t(TEXTS['bp-password-inputs-paste'].description),
     score: blocked.length === 0 ? 1 : 0,
     weight: 1,
-    value: blocked.length > 0 ? `${blocked.length} input(s) block pasting` : undefined,
+    value: blocked.length === 0 ? (isZh ? '允许粘贴' : 'Paste allowed') : `${blocked.length} ${isZh ? '个密码框阻止粘贴' : 'password field(s) block paste'}`,
     details:
       blocked.length > 0
         ? {

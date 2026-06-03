@@ -130,6 +130,16 @@ const en: Locale = {
     history: 'History',
     waiting: 'Waiting for benchmark results from device...',
     running: 'Computing...',
+    categoryPerformance: 'Performance',
+    categoryAccessibility: 'Accessibility',
+    categoryBestPractices: 'Best Practices',
+    categorySEO: 'SEO',
+    auditPass: 'Pass',
+    auditFail: 'Fail',
+    auditNA: 'N/A',
+    noSession: 'No benchmark records',
+    selectSession: 'Select a benchmark record',
+    exportJson: 'Export JSON',
   },
 };
 

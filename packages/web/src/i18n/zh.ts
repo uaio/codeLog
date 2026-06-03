@@ -130,6 +130,16 @@ const zh: Locale = {
     history: '历史记录',
     waiting: '等待设备跑分结果...',
     running: '计算中...',
+    categoryPerformance: '性能',
+    categoryAccessibility: '无障碍',
+    categoryBestPractices: '最佳实践',
+    categorySEO: 'SEO',
+    auditPass: '通过',
+    auditFail: '未通过',
+    auditNA: '不适用',
+    noSession: '暂无跑分记录',
+    selectSession: '请选择一条跑分记录',
+    exportJson: '导出 JSON',
   },
 };
 

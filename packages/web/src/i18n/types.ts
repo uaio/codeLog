@@ -140,5 +140,18 @@ export interface Locale {
     history: string;
     waiting: string;
     running: string;
+    // 类别标签
+    categoryPerformance: string;
+    categoryAccessibility: string;
+    categoryBestPractices: string;
+    categorySEO: string;
+    // 审计状态
+    auditPass: string;
+    auditFail: string;
+    auditNA: string;
+    // 其他
+    noSession: string;
+    selectSession: string;
+    exportJson: string;
   };
 }

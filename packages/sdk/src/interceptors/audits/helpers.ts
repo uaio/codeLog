@@ -214,3 +214,28 @@ export function isVersionBelow(version: string, minSafe: string): boolean {
   }
   return false;
 }
+
+// ─── 国际化工具 ───────────────────────────────────────────────
+
+/** 检测当前语言是否为中文 */
+export function isZhLang(): boolean {
+  try {
+    const stored = typeof localStorage !== 'undefined' && localStorage.getItem('codelog-lang');
+    if (stored === 'en') return false;
+    if (stored === 'zh') return true;
+    return navigator.language.toLowerCase().startsWith('zh');
+  } catch {
+    return navigator.language.toLowerCase().startsWith('zh');
+  }
+}
+
+/** 双语文本类型 */
+export interface BilingualText {
+  zh: string;
+  en: string;
+}
+
+/** 根据当前语言选择中文或英文 */
+export function t(text: BilingualText): string {
+  return isZhLang() ? text.zh : text.en;
+}

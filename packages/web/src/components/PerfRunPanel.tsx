@@ -8,13 +8,6 @@ interface PerfRunPanelProps {
   deviceId?: string;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  'performance': 'Performance',
-  'accessibility': 'Accessibility',
-  'best-practices': 'Best Practices',
-  'seo': 'SEO',
-};
-
 const GRADE_COLOR: Record<string, string> = {
   A: '#4caf50',
   B: '#8bc34a',
@@ -87,6 +80,17 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
   const [selected, setSelected] = useState<PerfRunSession | null>(null);
   const [activeCategoryTab, setActiveCategoryTab] = useState<string>('performance');
   const { t } = useI18n();
+
+  // 动态类别标签（跟随中英文切换）
+  const categoryLabel = (id: string): string => {
+    const map: Record<string, string> = {
+      'performance': t.perfRunPanel.categoryPerformance,
+      'accessibility': t.perfRunPanel.categoryAccessibility,
+      'best-practices': t.perfRunPanel.categoryBestPractices,
+      'seo': t.perfRunPanel.categorySEO,
+    };
+    return map[id] || id;
+  };
 
   const hasCategories = !!selected?.score?.categories && Object.keys(selected.score.categories).length > 0;
 
@@ -305,7 +309,7 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
                   {Object.entries(selected.score.categories!).map(([id, cat]) => (
                     <div key={id} style={{ textAlign: 'center', flex: 1 }}>
                       <ScoreCircle score={cat.score} color={gradeColor(cat.grade)} size={80} />
-                      <div style={{ fontSize: 12, marginTop: 4, color: '#666' }}>{CATEGORY_LABELS[id] || id}</div>
+                      <div style={{ fontSize: 12, marginTop: 4, color: '#666' }}>{categoryLabel(id)}</div>
                     </div>
                   ))}
                 </div>
@@ -380,7 +384,7 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
                           fontWeight: activeCategoryTab === id ? 600 : 400,
                         }}
                       >
-                        {CATEGORY_LABELS[id] || id}
+                        {categoryLabel(id)}
                       </button>
                     ))}
                   </div>

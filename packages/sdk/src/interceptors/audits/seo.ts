@@ -4,7 +4,52 @@
  */
 
 import type { LighthouseAuditResult, LighthouseCategoryResult } from '@codelog/types';
-import { VAGUE_LINK_TEXTS } from './helpers.js';
+import { VAGUE_LINK_TEXTS, t, isZhLang } from './helpers.js';
+import type { BilingualText } from './helpers.js';
+
+/** SEO 审计文案（中英文） */
+const TEXTS: Record<string, { title: BilingualText; description: BilingualText }> = {
+  'seo-document-title': {
+    title: { zh: '页面标题', en: 'Document Title' },
+    description: { zh: '标题应存在且长度 10-60 字符', en: 'Title should exist and be 10-60 characters' },
+  },
+  'seo-meta-description': {
+    title: { zh: 'Meta 描述', en: 'Meta Description' },
+    description: { zh: '描述应存在且长度 50-160 字符', en: 'Description should exist and be 50-160 characters' },
+  },
+  'seo-http-status-code': {
+    title: { zh: 'HTTP 状态码', en: 'HTTP Status Code' },
+    description: { zh: '页面应返回成功状态码', en: 'Page should return a successful status code' },
+  },
+  'seo-link-text': {
+    title: { zh: '链接文本', en: 'Link Text' },
+    description: { zh: '链接文本应清晰描述目标', en: 'Link text should clearly describe the target' },
+  },
+  'seo-meta-viewport': {
+    title: { zh: 'Viewport 配置', en: 'Meta Viewport' },
+    description: { zh: '应设置 width=device-width', en: 'Should include width=device-width' },
+  },
+  'seo-crawlable-anchors': {
+    title: { zh: '可爬取链接', en: 'Crawlable Anchors' },
+    description: { zh: '链接应有有效的 href 属性', en: 'Links should have valid href attributes' },
+  },
+  'seo-hreflang': {
+    title: { zh: 'Hreflang 标签', en: 'Hreflang Tags' },
+    description: { zh: 'hreflang 值应为合法 BCP 47', en: 'hreflang values should be valid BCP 47' },
+  },
+  'seo-canonical': {
+    title: { zh: 'Canonical URL', en: 'Canonical URL' },
+    description: { zh: 'canonical URL 应为合法 URL', en: 'canonical URL should be a valid URL' },
+  },
+  'seo-robots-meta': {
+    title: { zh: 'Robots Meta', en: 'Robots Meta' },
+    description: { zh: '页面应允许搜索引擎索引', en: 'Page should allow search engine indexing' },
+  },
+  'seo-structured-data': {
+    title: { zh: '结构化数据', en: 'Structured Data' },
+    description: { zh: '结构化数据帮助搜索引擎理解页面', en: 'Structured data helps search engines understand the page' },
+  },
+};
 
 /** 创建一个审计结果 */
 function audit(
@@ -22,6 +67,7 @@ function audit(
  */
 export function auditSEO(): LighthouseCategoryResult {
   const audits: LighthouseAuditResult[] = [];
+  const isZh = isZhLang();
 
   // 1. seo-document-title
   {
@@ -31,8 +77,10 @@ export function auditSEO(): LighthouseCategoryResult {
     audits.push(
       audit(
         'seo-document-title',
-        'Document has a title',
-        `Title should be 10-60 characters. Current: ${len} characters.`,
+        t(TEXTS['seo-document-title'].title),
+        isZh
+          ? `标题应为 10-60 字符，当前 ${len} 字符`
+          : `Title should be 10-60 characters. Current: ${len} characters.`,
         pass ? 1 : 0,
         { value: title, length: len },
       ),
@@ -48,8 +96,10 @@ export function auditSEO(): LighthouseCategoryResult {
     audits.push(
       audit(
         'seo-meta-description',
-        'Document has a meta description',
-        `Meta description should be 50-160 characters. Current: ${len} characters.`,
+        t(TEXTS['seo-meta-description'].title),
+        isZh
+          ? `描述应为 50-160 字符，当前 ${len} 字符`
+          : `Meta description should be 50-160 characters. Current: ${len} characters.`,
         pass ? 1 : 0,
         { value: content, length: len },
       ),
@@ -67,8 +117,10 @@ export function auditSEO(): LighthouseCategoryResult {
         audits.push(
           audit(
             'seo-http-status-code',
-            'Page has successful HTTP status code',
-            `HTTP status ${status}. Expected 200-399.`,
+            t(TEXTS['seo-http-status-code'].title),
+            isZh
+              ? `HTTP 状态码 ${status}，期望 200-399`
+              : `HTTP status ${status}. Expected 200-399.`,
             pass ? 1 : 0,
             { statusCode: status },
           ),
@@ -78,8 +130,10 @@ export function auditSEO(): LighthouseCategoryResult {
         audits.push(
           audit(
             'seo-http-status-code',
-            'Page has successful HTTP status code',
-            'Navigation API unavailable; assumed 200 because JS is executing.',
+            t(TEXTS['seo-http-status-code'].title),
+            isZh
+              ? 'Navigation API 不可用，因页面 JS 正在执行，假定状态码 200'
+              : 'Navigation API unavailable; assumed 200 because JS is executing.',
             1,
           ),
         );
@@ -88,8 +142,10 @@ export function auditSEO(): LighthouseCategoryResult {
       audits.push(
         audit(
           'seo-http-status-code',
-          'Page has successful HTTP status code',
-          'Navigation API unavailable; assumed 200 because JS is executing.',
+          t(TEXTS['seo-http-status-code'].title),
+          isZh
+            ? 'Navigation API 不可用，因页面 JS 正在执行，假定状态码 200'
+            : 'Navigation API unavailable; assumed 200 because JS is executing.',
           1,
         ),
       );
@@ -111,10 +167,14 @@ export function auditSEO(): LighthouseCategoryResult {
     audits.push(
       audit(
         'seo-link-text',
-        'Links have descriptive text',
+        t(TEXTS['seo-link-text'].title),
         vagueLinks.length > 0
-          ? `Found ${vagueLinks.length} link(s) with vague text: ${vagueLinks.slice(0, 5).join(', ')}`
-          : 'All links have descriptive text.',
+          ? isZh
+            ? `发现 ${vagueLinks.length} 个模糊链接文本：${vagueLinks.slice(0, 5).join(', ')}`
+            : `Found ${vagueLinks.length} link(s) with vague text: ${vagueLinks.slice(0, 5).join(', ')}`
+          : isZh
+            ? '所有链接文本均清晰描述'
+            : 'All links have descriptive text.',
         pass ? 1 : 0,
         { vagueCount: vagueLinks.length, examples: vagueLinks.slice(0, 5) },
       ),
@@ -129,10 +189,14 @@ export function auditSEO(): LighthouseCategoryResult {
     audits.push(
       audit(
         'seo-meta-viewport',
-        'Has a meta viewport tag with width=device-width',
+        t(TEXTS['seo-meta-viewport'].title),
         pass
-          ? 'Viewport meta tag includes width=device-width.'
-          : 'Viewport meta tag is missing or does not include width=device-width.',
+          ? isZh
+            ? 'Viewport 标签已包含 width=device-width'
+            : 'Viewport meta tag includes width=device-width.'
+          : isZh
+            ? 'Viewport 标签缺失或未包含 width=device-width'
+            : 'Viewport meta tag is missing or does not include width=device-width.',
         pass ? 1 : 0,
         { content },
       ),
@@ -154,10 +218,14 @@ export function auditSEO(): LighthouseCategoryResult {
     audits.push(
       audit(
         'seo-crawlable-anchors',
-        'Links are crawlable',
+        t(TEXTS['seo-crawlable-anchors'].title),
         nonCrawlable.length > 0
-          ? `Found ${nonCrawlable.length} non-crawlable anchor(s).`
-          : 'All anchors are crawlable.',
+          ? isZh
+            ? `发现 ${nonCrawlable.length} 个不可爬取的链接`
+            : `Found ${nonCrawlable.length} non-crawlable anchor(s).`
+          : isZh
+            ? '所有链接均可爬取'
+            : 'All anchors are crawlable.',
         pass ? 1 : 0,
         { nonCrawlableCount: nonCrawlable.length, examples: nonCrawlable.slice(0, 5) },
       ),
@@ -171,8 +239,10 @@ export function auditSEO(): LighthouseCategoryResult {
       audits.push(
         audit(
           'seo-hreflang',
-          'Document has valid hreflang',
-          'No hreflang tags found.',
+          t(TEXTS['seo-hreflang'].title),
+          isZh
+            ? '未发现 hreflang 标签'
+            : 'No hreflang tags found.',
           null, // notApplicable
         ),
       );
@@ -190,10 +260,14 @@ export function auditSEO(): LighthouseCategoryResult {
       audits.push(
         audit(
           'seo-hreflang',
-          'Document has valid hreflang',
+          t(TEXTS['seo-hreflang'].title),
           invalidValues.length > 0
-            ? `Invalid hreflang value(s): ${invalidValues.join(', ')}`
-            : 'All hreflang values are valid BCP 47.',
+            ? isZh
+              ? `无效的 hreflang 值：${invalidValues.join(', ')}`
+              : `Invalid hreflang value(s): ${invalidValues.join(', ')}`
+            : isZh
+              ? '所有 hreflang 值均为合法 BCP 47'
+              : 'All hreflang values are valid BCP 47.',
           pass ? 1 : 0,
           { total: hreflangs.length, invalidValues },
         ),
@@ -208,8 +282,10 @@ export function auditSEO(): LighthouseCategoryResult {
       audits.push(
         audit(
           'seo-canonical',
-          'Document has a valid canonical link',
-          'No canonical link found.',
+          t(TEXTS['seo-canonical'].title),
+          isZh
+            ? '未发现 canonical 链接'
+            : 'No canonical link found.',
           null, // notApplicable
         ),
       );
@@ -225,8 +301,14 @@ export function auditSEO(): LighthouseCategoryResult {
       audits.push(
         audit(
           'seo-canonical',
-          'Document has a valid canonical link',
-          isValid ? 'Canonical URL is valid.' : `Canonical URL is invalid: ${href}`,
+          t(TEXTS['seo-canonical'].title),
+          isValid
+            ? isZh
+              ? 'Canonical URL 合法'
+              : 'Canonical URL is valid.'
+            : isZh
+              ? `Canonical URL 无效：${href}`
+              : `Canonical URL is invalid: ${href}`,
           isValid ? 1 : 0,
           { href },
         ),
@@ -242,8 +324,10 @@ export function auditSEO(): LighthouseCategoryResult {
       audits.push(
         audit(
           'seo-robots-meta',
-          'Page is not blocked from indexing',
-          'No robots meta tag found; page is indexable by default.',
+          t(TEXTS['seo-robots-meta'].title),
+          isZh
+            ? '未发现 robots meta 标签，页面默认可被索引'
+            : 'No robots meta tag found; page is indexable by default.',
           1,
         ),
       );
@@ -253,10 +337,14 @@ export function auditSEO(): LighthouseCategoryResult {
       audits.push(
         audit(
           'seo-robots-meta',
-          'Page is not blocked from indexing',
+          t(TEXTS['seo-robots-meta'].title),
           pass
-            ? 'Robots meta tag does not contain noindex.'
-            : 'Robots meta tag contains noindex, page may not be indexed.',
+            ? isZh
+              ? 'Robots meta 标签不包含 noindex'
+              : 'Robots meta tag does not contain noindex.'
+            : isZh
+              ? 'Robots meta 标签包含 noindex，页面可能不被索引'
+              : 'Robots meta tag contains noindex, page may not be indexed.',
           pass ? 1 : 0,
           { content },
         ),
@@ -271,8 +359,10 @@ export function auditSEO(): LighthouseCategoryResult {
       audits.push(
         audit(
           'seo-structured-data',
-          'Page has valid structured data',
-          'No structured data (JSON-LD) found.',
+          t(TEXTS['seo-structured-data'].title),
+          isZh
+            ? '未发现结构化数据（JSON-LD）'
+            : 'No structured data (JSON-LD) found.',
           null, // notApplicable
         ),
       );
@@ -290,10 +380,14 @@ export function auditSEO(): LighthouseCategoryResult {
       audits.push(
         audit(
           'seo-structured-data',
-          'Page has valid structured data',
+          t(TEXTS['seo-structured-data'].title),
           pass
-            ? `All ${ldScripts.length} JSON-LD script(s) parsed successfully.`
-            : `${parseErrors} of ${ldScripts.length} JSON-LD script(s) failed to parse.`,
+            ? isZh
+              ? `全部 ${ldScripts.length} 个 JSON-LD 脚本解析成功`
+              : `All ${ldScripts.length} JSON-LD script(s) parsed successfully.`
+            : isZh
+              ? `${parseErrors}/${ldScripts.length} 个 JSON-LD 脚本解析失败`
+              : `${parseErrors} of ${ldScripts.length} JSON-LD script(s) failed to parse.`,
           pass ? 1 : 0,
           { total: ldScripts.length, parseErrors },
         ),
