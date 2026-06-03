@@ -187,6 +187,20 @@ export interface PerfRunScore {
   items: PerfScoreItem[];
   issues: string[];
   summary: string;
+  /** Lighthouse 风格 4 类别评分 */
+  categories?: Record<string, {
+    score: number;
+    grade: 'A' | 'B' | 'C' | 'D' | 'F';
+    audits: Array<{
+      id: string;
+      title: string;
+      description: string;
+      score: number | null;
+      weight: number;
+      value?: string;
+      details?: any;
+    }>;
+  }>;
 }
 
 export interface PerfRunSession {
@@ -198,6 +212,7 @@ export interface PerfRunSession {
   duration: number;
   snapshot: any;
   score: PerfRunScore;
+  audit?: any;
 }
 
 // ── System Info ───────────────────────────────────────────────────────────────

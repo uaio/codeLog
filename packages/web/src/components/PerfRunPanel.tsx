@@ -8,6 +8,13 @@ interface PerfRunPanelProps {
   deviceId?: string;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  'performance': 'Performance',
+  'accessibility': 'Accessibility',
+  'best-practices': 'Best Practices',
+  'seo': 'SEO',
+};
+
 const GRADE_COLOR: Record<string, string> = {
   A: '#4caf50',
   B: '#8bc34a',
@@ -23,24 +30,30 @@ const RATING_COLOR: Record<string, string> = {
   unknown: '#9e9e9e',
 };
 
-function ScoreCircle({ score, grade }: { score: number; grade: string }) {
-  const color = GRADE_COLOR[grade] ?? '#9e9e9e';
+function gradeColor(grade: string): string {
+  return GRADE_COLOR[grade] ?? '#9e9e9e';
+}
+
+function ScoreCircle({ score, grade, color: colorProp, size = 96 }: { score: number; grade?: string; color?: string; size?: number }) {
+  const color = colorProp ?? (grade ? GRADE_COLOR[grade] ?? '#9e9e9e' : '#9e9e9e');
+  const fontSize = size >= 80 ? 32 : 20;
+  const gradeSize = size >= 80 ? 18 : 12;
   return (
-    <div style={{ textAlign: 'center', padding: '16px' }}>
+    <div style={{ textAlign: 'center', padding: size >= 80 ? '16px' : '8px' }}>
       <div
         style={{
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: 96,
-          height: 96,
+          width: size,
+          height: size,
           borderRadius: '50%',
-          border: `4px solid ${color}`,
+          border: `${Math.max(2, size / 24)}px solid ${color}`,
           flexDirection: 'column',
         }}
       >
-        <div style={{ fontSize: 32, fontWeight: 'bold', color, lineHeight: 1 }}>{score}</div>
-        <div style={{ fontSize: 18, color, fontWeight: 600 }}>{grade}</div>
+        <div style={{ fontSize, fontWeight: 'bold', color, lineHeight: 1 }}>{score}</div>
+        {grade && <div style={{ fontSize: gradeSize, color, fontWeight: 600 }}>{grade}</div>}
       </div>
     </div>
   );
@@ -72,7 +85,10 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
   const [computing, setComputing] = useState(false);
   const [sessions, setSessions] = useState<PerfRunSession[]>([]);
   const [selected, setSelected] = useState<PerfRunSession | null>(null);
+  const [activeCategoryTab, setActiveCategoryTab] = useState<string>('performance');
   const { t } = useI18n();
+
+  const hasCategories = !!selected?.score?.categories && Object.keys(selected.score.categories).length > 0;
 
   const loadSessions = useCallback(async () => {
     if (!deviceId) return;
@@ -279,6 +295,22 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
                 </div>
               </div>
 
+              {/* Category gauges */}
+              {hasCategories && (
+                <div style={{ display: 'flex', gap: 16, marginBottom: 20, justifyContent: 'center' }}>
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <ScoreCircle score={selected.score.total} color={gradeColor(selected.score.grade)} size={80} />
+                    <div style={{ fontSize: 12, marginTop: 4, color: '#666' }}>Performance</div>
+                  </div>
+                  {Object.entries(selected.score.categories!).map(([id, cat]) => (
+                    <div key={id} style={{ textAlign: 'center', flex: 1 }}>
+                      <ScoreCircle score={cat.score} color={gradeColor(cat.grade)} size={80} />
+                      <div style={{ fontSize: 12, marginTop: 4, color: '#666' }}>{CATEGORY_LABELS[id] || id}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Metrics grid */}
               <div
                 style={{
@@ -319,6 +351,58 @@ export function PerfRunPanel({ deviceId }: PerfRunPanelProps) {
                       • {issue}
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Category audit details */}
+              {hasCategories && (
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 12, borderBottom: '1px solid #e0e0e0', paddingBottom: 8 }}>
+                    <button
+                      onClick={() => setActiveCategoryTab('performance')}
+                      style={{
+                        padding: '6px 16px', border: 'none', borderRadius: 4, cursor: 'pointer',
+                        background: activeCategoryTab === 'performance' ? '#1a73e8' : 'transparent',
+                        color: activeCategoryTab === 'performance' ? '#fff' : '#333',
+                        fontWeight: activeCategoryTab === 'performance' ? 600 : 400,
+                      }}
+                    >
+                      Performance
+                    </button>
+                    {Object.keys(selected.score.categories!).map(id => (
+                      <button
+                        key={id}
+                        onClick={() => setActiveCategoryTab(id)}
+                        style={{
+                          padding: '6px 16px', border: 'none', borderRadius: 4, cursor: 'pointer',
+                          background: activeCategoryTab === id ? '#1a73e8' : 'transparent',
+                          color: activeCategoryTab === id ? '#fff' : '#333',
+                          fontWeight: activeCategoryTab === id ? 600 : 400,
+                        }}
+                      >
+                        {CATEGORY_LABELS[id] || id}
+                      </button>
+                    ))}
+                  </div>
+                  {activeCategoryTab !== 'performance' && selected.score.categories![activeCategoryTab] && (
+                    <div style={{ fontSize: 13 }}>
+                      {selected.score.categories![activeCategoryTab].audits.map(audit => (
+                        <div key={audit.id} style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '8px 12px', borderBottom: '1px solid #f0f0f0',
+                        }}>
+                          <span style={{ fontSize: 16 }}>
+                            {audit.score === null ? '⚠️' : audit.score === 1 ? '✅' : '❌'}
+                          </span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 500 }}>{audit.title}</div>
+                            {audit.description && <div style={{ color: '#666', fontSize: 12 }}>{audit.description}</div>}
+                          </div>
+                          {audit.value && <div style={{ color: '#888', fontSize: 12 }}>{audit.value}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
