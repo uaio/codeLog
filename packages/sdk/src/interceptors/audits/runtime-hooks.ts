@@ -41,11 +41,11 @@ export function installRuntimeAuditHooks(): void {
     const origWriteln = document.writeln.bind(document);
     document.write = function (...args: string[]): Document {
       state.documentWriteCount++;
-      return origWrite(...args);
+      return origWrite(...args) as unknown as Document;
     };
     document.writeln = function (...args: string[]): Document {
       state.documentWriteCount++;
-      return origWriteln(...args);
+      return origWriteln(...args) as unknown as Document;
     };
   } catch {
     // 有些环境不允许覆盖 document.write
@@ -98,12 +98,12 @@ export function installRuntimeAuditHooks(): void {
       document.addEventListener('click', markGesture, true);
       document.addEventListener('keydown', markGesture, true);
 
-      (navigator.geolocation as any).getCurrentPosition = function (...args: any[]): void {
+      (navigator.geolocation as any).getCurrentPosition = function (success: any, error?: any, options?: any): void {
         if (!geoUserGesture) {
           state.geolocationRequestedWithoutGesture = true;
         }
         geoUserGesture = false;
-        return origGetGeo(...args);
+        return origGetGeo(success, error, options);
       };
     }
   } catch {

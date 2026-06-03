@@ -110,7 +110,7 @@ export function auditBestPractices(state: RuntimeAuditState): LighthouseCategory
 function auditVulnerableLibraries(): LighthouseAuditResult {
   const vulnerabilities: { library: string; version: string; minSafe: string }[] = [];
 
-  const scripts = document.querySelectorAll('script[src]');
+  const scripts = Array.from(document.querySelectorAll('script[src]'));
   for (const script of scripts) {
     const src = script.getAttribute('src') ?? '';
     for (const lib of VULNERABLE_LIBRARIES) {
@@ -162,7 +162,7 @@ function auditPasswordInputsCanPaste(): LighthouseAuditResult {
   }
 
   const blocked: HTMLInputElement[] = [];
-  for (const input of passwordInputs) {
+  for (const input of Array.from(passwordInputs)) {
     // 检查 onpaste 属性（内联事件处理器）
     const onpaste = input.getAttribute('onpaste');
     if (onpaste !== null && /return\s+false/i.test(onpaste)) {
