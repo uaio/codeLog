@@ -20,7 +20,7 @@
 
 | 类别 | 评分机制 | 细节 |
 |------|----------|------|
-| **Performance** | Log-normal 加权指标分 | FCP 10%, LCP 25%, TBT 30%, CLS 25%, INP 10% (codeLog 扩展: TBT 20%, FPS 10%) |
+| **Performance** | Log-normal 加权指标分 | FCP 10%, LCP 25%, CLS 25%, TBT 20%, INP 10%, FPS 10% (codeLog 扩展: 原版 TBT 30% 拆出 10% 给 FPS) |
 | **Accessibility** | 加权 pass/fail | 权重来自 axe 影响分级: weight 10 (critical) / 7 (serious) / 3 (minor) |
 | **Best Practices** | 等权 pass/fail | 每项 ~6 分 |
 | **SEO** | 等权 pass/fail | 每项 ~8 分 |
@@ -132,43 +132,62 @@ seoScore = passedCount / applicableCount × 100
 
 ### 4.3 Best Practices（新增，8 项）
 
-等权 pass/fail：
+等权 pass/fail。ID 使用 `bp-` 前缀避免与 A11y/SEO 冲突。
 
-| ID | 审计项 | 实现方式 |
-|----|--------|----------|
-| `is-on-https` | 使用 HTTPS | 检查 `location.protocol` |
-| `console-errors` | 无控制台错误 | 采集 `window.onerror` + `unhandledrejection` + console.error 计数 |
-| `no-document-write` | 无 document.write | 运行前覆盖 `document.write` 记录调用 |
-| `no-vulnerable-libraries` | 无已知漏洞 JS 库 | 匹配 script src 中的版本号与已知漏洞列表子集 |
-| `no-deprecated-apis` | 无废弃 API | 检测 `event.keyCode`、`document.execCommand`、`document.registerElement` 等 |
-| `password-inputs-paste` | 密码输入允许粘贴 | 检查 `onpaste` 事件阻止、CSS user-select:none |
-| `notification-permission` | 非用户手势未请求通知 | 检查 `Notification.permission` 为 denied 或默认 |
-| `geolocation-permission` | 非用户手势未请求地理定位 | 运行时检测 |
+> **实现策略说明**：部分审计（`console-errors`、`no-document-write`、`no-deprecated-apis`、`notification-permission`、`geolocation-permission`）需要**运行时 Hook**，不能仅在 `stopPerfRun` 时执行。这些 Hook 在 SDK 初始化时安装，跑分时读取累计结果。
+
+| ID | 审计项 | 实现方式 | 运行时机 |
+|----|--------|----------|----------|
+| `bp-is-on-https` | 使用 HTTPS | 检查 `location.protocol` | stopPerfRun |
+| `bp-console-errors` | 无控制台错误 | SDK 初始化时 Hook `window.onerror` + `unhandledrejection` + `console.error`，记录错误计数 | SDK 初始化 |
+| `bp-no-document-write` | 无 document.write | SDK 初始化时覆盖 `document.write`/`document.writeln`，记录调用 | SDK 初始化 |
+| `bp-no-vulnerable-libraries` | 无已知漏洞 JS 库 | 匹配 `<script src>` 中的库版本号与精简版漏洞列表（jQuery<3.5.0、Angular<1.7.9、Loash<4.17.21 等高频库） | stopPerfRun |
+| `bp-no-deprecated-apis` | 无废弃 API | SDK 初始化时 Hook 废弃 API（`document.execCommand`、`document.registerElement`），记录调用 | SDK 初始化 |
+| `bp-password-inputs-paste` | 密码输入允许粘贴 | 检查密码框 `onpaste` 阻止、CSS `user-select:none` | stopPerfRun |
+| `bp-notification-permission` | 非用户手势未请求通知 | SDK 初始化时 Hook `Notification.requestPermission`，记录是否在非用户交互事件中调用 | SDK 初始化 |
+| `bp-geolocation-permission` | 非用户手势未请求地理定位 | SDK 初始化时 Hook `navigator.geolocation.getCurrentPosition`，记录是否在非用户交互事件中调用 | SDK 初始化 |
 
 ### 4.4 SEO（新增，10 项）
 
-等权 pass/fail：
+等权 pass/fail。ID 使用 `seo-` 前缀避免与 A11y 冲突。
 
 | ID | 审计项 | 实现方式 |
 |----|--------|----------|
-| `document-title` | 标题存在且长度 10-60 字符 | 检查 `<title>` |
-| `meta-description` | description 存在且长度 50-160 字符 | 检查 `<meta name="description">` |
-| `http-status-code` | 页面可正常加载 | 检查 `performance.getEntriesByType('navigation')` |
-| `link-text` | 链接文本具描述性 | 检查链接文本不在模糊列表中（"点击这里"等） |
-| `meta-viewport` | viewport 正确配置 | 检查 `<meta name="viewport">` 含 width=device-width |
-| `crawlable-anchors` | a 标签有 href 属性 | 遍历 `<a>` 检查 |
-| `hreflang` | hreflang 标签正确 | 检查 `<link rel="alternate" hreflang>` 格式 |
-| `canonical` | canonical URL 正确 | 检查 `<link rel="canonical">` |
-| `robots-meta` | 未阻止索引 | 检查 `<meta name="robots">` 无 noindex |
-| `structured-data` | 有 JSON-LD 结构化数据 | 检查 `<script type="application/ld+json">` |
+| `seo-document-title` | 标题存在且长度 10-60 字符 | 检查 `<title>` 非空且长度在范围内 |
+| `seo-meta-description` | description 存在且长度 50-160 字符 | 检查 `<meta name="description">` |
+| `seo-http-status-code` | 页面正常加载（无 JS 错误） | 检查 `performance.getEntriesByType('navigation')` 中 `responseStatus`，且页面能执行 JS 即视为加载成功 |
+| `seo-link-text` | 链接文本具描述性 | 检查链接文本不在模糊词列表中（"点击这里"、"more"、"click here" 等 20 个常见词） |
+| `seo-meta-viewport` | viewport 正确配置 | 检查 `<meta name="viewport">` 含 `width=device-width` |
+| `seo-crawlable-anchors` | a 标签有 href 属性 | 遍历 `<a>` 检查 `[href]` 非空且非 `javascript:` |
+| `seo-hreflang` | hreflang 标签正确 | 检查 `<link rel="alternate" hreflang>` 格式为合法 BCP 47 |
+| `seo-canonical` | canonical URL 合法 | 检查 `<link rel="canonical">` 的 href 为合法 URL |
+| `seo-robots-meta` | 未阻止索引 | 检查 `<meta name="robots">` 无 `noindex` |
+| `seo-structured-data` | 有 JSON-LD 结构化数据 | 检查 `<script type="application/ld+json">` 内 JSON 可解析 |
 
 ## 5. 数据结构
+
+### 5.0 类型定义归属（SSOT 原则）
+
+所有共享类型定义在 `packages/types/src/` 中（作为 SSOT），SDK / CLI / Web 通过 `import from '@codelog/types'` 引用。避免在 4 处重复定义。
+
+需要新增/修改的 types 文件：
+- `packages/types/src/audit.ts` — 新增 `LighthouseAuditResult`、`LighthouseCategoryResult`、`CategoryId`、`FullAuditReport`
+- `packages/types/src/events/index.ts` — 扩展 `PerfRunRawPayload.audit` 类型从 `PageAuditReport` 改为 `FullAuditReport`
 
 ### 5.1 审计结果
 
 ```typescript
+/**
+ * 单个审计项结果。
+ * score 使用 Lighthouse 标准的 0/1/null 三值：
+ *   1 = pass, 0 = fail, null = notApplicable（不参与评分）
+ *
+ * 注意：与已有的 Performance 诊断审计（AuditItem，score 0-100）是不同的体系。
+ * Performance 诊断审计保留在 PageAuditReport 中作为参考信息，不参与类别评分。
+ * A11y/BP/SEO 审计使用此二值类型，遵循 Lighthouse 标准。
+ */
 interface LighthouseAuditResult {
-  id: string;           // 审计项唯一标识
+  id: string;           // 审计项唯一标识（含类别前缀，如 bp-xxx, seo-xxx）
   title: string;        // 审计项标题
   description: string;  // 审计说明
   score: number | null; // 1=pass, 0=fail, null=notApplicable
@@ -186,7 +205,7 @@ type CategoryId = 'performance' | 'accessibility' | 'best-practices' | 'seo';
 interface LighthouseCategoryResult {
   id: CategoryId;
   title: string;
-  score: number;                   // 0-100
+  score: number;                   // 0-100，SDK 端计算
   audits: LighthouseAuditResult[];
 }
 ```
@@ -194,6 +213,10 @@ interface LighthouseCategoryResult {
 ### 5.3 完整报告
 
 ```typescript
+/**
+ * 替代旧的 PageAuditReport。
+ * PerfRunRawPayload.audit 字段类型从 PageAuditReport 变更为 FullAuditReport。
+ */
 interface FullAuditReport {
   timestamp: number;
   url: string;
@@ -206,14 +229,14 @@ interface FullAuditReport {
 
 ```typescript
 interface PerfRunScore {
-  // 已有字段保持不变
+  // 已有字段保持不变（Performance 类别的 log-normal 加权评分）
   total: number;
   grade: 'A' | 'B' | 'C' | 'D' | 'F';
   items: PerfScoreItem[];
   issues: string[];
   summary: string;
 
-  // 新增：4 类别独立分数
+  // 新增：4 类别独立分数（服务端从 FullAuditReport 中提取并计算）
   categories: Record<CategoryId, {
     score: number;
     grade: 'A' | 'B' | 'C' | 'D' | 'F';
@@ -225,22 +248,30 @@ interface PerfRunScore {
 ## 6. 数据流
 
 ```
+SDK 初始化时（需要运行时 Hook 的审计）:
+  安装 Hook：document.write、console.error、window.onerror、
+            Notification.requestPermission、navigator.geolocation、
+            废弃 API（execCommand 等）
+  → 累计记录到 sdkRuntimeAuditState
+
 SDK 端 stopPerfRun():
   1. 采集性能快照（已有 PerformanceCollector）
   2. 运行 runFullAudit():
-     ├── auditAccessibility()  → ~39 项 pass/fail + axe 权重
-     ├── auditBestPractices()  → 8 项 pass/fail 等权
-     └── auditSEO()            → 10 项 pass/fail 等权
-     (Performance 诊断审计沿用已有 6 项)
-  3. 通过 DataBus → Reporter → WebSocket 发送 FullAuditReport
+     ├── auditAccessibility()       → ~39 项 pass/fail + axe 权重
+     ├── auditBestPractices(state)  → 8 项（从 sdkRuntimeAuditState 读取运行时数据）
+     └── auditSEO()                 → 10 项 pass/fail
+     (Performance 诊断审计沿用已有 6 项，保留在 audit 字段中)
+  3. 构造 PerfRunRawPayload { snapshot, audit: FullAuditReport }
+  4. DataBus.emit('perf_run_raw') → Reporter → WebSocket 发送
 
 服务端 handlers.perf_run_raw():
-  1. Performance 指标用 log-normal 评分（已有）
-  2. Accessibility = Σ(passed×weight) / Σ(applicable×weight) × 100
-  3. Best Practices = passed / applicable × 100
-  4. SEO = passed / applicable × 100
-  5. 各类别独立 grade (A-F)
-  6. 存入 PerfRunSession，广播到 Web 面板
+  1. scorePerfRun(raw.snapshot) — Performance log-normal 评分（已有）
+  2. scoreCategories(raw.audit) — 新增：从 FullAuditReport 计算各类别评分
+     ├── Accessibility = Σ(passed×weight) / Σ(applicable×weight) × 100
+     ├── Best Practices = passed / applicable × 100
+     └── SEO = passed / applicable × 100
+  3. 合并为 PerfRunScore { ...已有, categories }
+  4. 存入 PerfRunSession，广播 perf_run 到 Web 面板
 
 Web 面板 PerfRunPanel:
   ┌─────────────────────────────────────────┐
@@ -268,36 +299,38 @@ Web 面板 PerfRunPanel:
 | `packages/sdk/src/interceptors/audits/accessibility.ts` | Accessibility ~39 项审计实现 |
 | `packages/sdk/src/interceptors/audits/best-practices.ts` | Best Practices 8 项审计实现 |
 | `packages/sdk/src/interceptors/audits/seo.ts` | SEO 10 项审计实现 |
-| `packages/sdk/src/interceptors/audits/types.ts` | 共享类型定义（LighthouseAuditResult 等） |
-| `packages/sdk/src/interceptors/audits/helpers.ts` | 共享工具函数（颜色对比度计算、ARIA role 字典等） |
+| `packages/sdk/src/interceptors/audits/helpers.ts` | 共享工具函数（颜色对比度计算、ARIA role 字典、WCAG 相对亮度计算等） |
+| `packages/types/src/audit.ts` | 共享类型定义（LighthouseAuditResult、LighthouseCategoryResult、FullAuditReport 等） |
 
 ### 7.2 修改文件
 
 | 文件 | 变更说明 |
 |------|----------|
+| `packages/types/src/audit.ts` | 新增 Lighthouse 审计类型 |
+| `packages/types/src/events/index.ts` | `PerfRunRawPayload.audit` 类型从 `PageAuditReport` 变更为 `FullAuditReport` |
 | `packages/sdk/src/interceptors/page-audit.ts` | 重构：调用 `audits/` 各模块，统一入口函数 `runFullAudit()` |
-| `packages/sdk/src/index.ts` | `stopPerfRun()` 调用 `runFullAudit()` 替代 `runPageAudit()` |
-| `packages/sdk/src/types/index.ts` | 新增 `FullAuditReport`、`LighthouseCategoryResult` 等类型 |
-| `packages/cli/src/core/perf-score.ts` | 扩展为 4 类别评分，增加 `scoreAccessibility()`、`scoreBestPractices()`、`scoreSEO()` |
+| `packages/sdk/src/index.ts` | SDK 初始化时安装运行时 Hook；`stopPerfRun()` 调用 `runFullAudit()` 替代 `runPageAudit()` |
+| `packages/cli/src/core/perf-score.ts` | 新增 `scoreCategories()` 函数处理 A11y/BP/SEO 评分 |
 | `packages/cli/src/store/perfRun.ts` | `PerfRunScore` 增加 `categories` 字段 |
-| `packages/types/src/events/` | 同步新增类型 |
+| `packages/cli/src/ws/handlers.ts` | `perf_run_raw` handler 调用 `scoreCategories(raw.audit)` 并合并结果 |
 | `packages/web/src/components/PerfRunPanel.tsx` | 重写：4 类别仪表盘 + Tab 详情切换 |
+| `packages/web/src/types/index.ts` | 同步 `PerfRunScore` 类型变更 |
 
 ### 7.3 不变文件
 
 | 文件 | 原因 |
 |------|------|
 | `packages/sdk/src/interceptors/performance.ts` | 性能数据采集逻辑不变 |
-| `packages/sdk/src/transport/reporter.ts` | 传输层不变，只传数据 |
-| `packages/cli/src/ws/handlers.ts` | 处理流程不变，调用 `scorePerfRun()` 即可 |
+| `packages/sdk/src/transport/reporter.ts` | 传输层不变，DataBus 事件类型不变 |
 | `packages/cli/src/core/__tests__/perf-score.test.ts` | 已有测试保持通过，新增测试覆盖 4 类别 |
 
 ## 8. 约束与限制
 
 1. **移动端 API 限制**：部分 Lighthouse 审计（如 Service Worker、HTTP/2 推送）在移动端浏览器无法检测，标记为 `notApplicable`
-2. **SDK 体积**：审计代码约增加 ~15KB（gzip 后 ~5KB），仅在 perf run 时加载执行
-3. **颜色对比度**：无法读取背景图片/渐变下的文本颜色，仅检测纯色背景
-4. **漏洞库检测**：使用精简版的已知漏洞列表（Top 50 常见库），不等同于完整 Snyk 扫描
+2. **SDK 体积**：审计代码约增加 ~25KB（gzip 后 ~8KB），其中 ARIA role 字典约 5KB、审计逻辑约 15KB、漏洞列表约 3KB。仅在 perf run 时执行审计逻辑，但运行时 Hook（~2KB）在 SDK 初始化时安装
+3. **颜色对比度**：使用 `getComputedStyle` 获取前景色和背景色，计算相对亮度后应用 WCAG 2.0 对比度公式。限制：无法处理背景图片/渐变、伪元素背景、rgba 叠加继承。遇到 `rgba(0,0,0,0)` 或 `transparent` 时标记为 `notApplicable`
+4. **漏洞库检测**：硬编码高频漏洞库列表（jQuery<3.5.0、AngularJS<1.8.3、Lodash<4.17.21、Moment.js<2.29.4 等约 10 个库），通过 `<script src>` 中的版本号正则匹配
+5. **http-status-code 审计**：由于页面能执行 JS 即说明加载成功（200/3xx），此审计改为检查 Navigation Timing 的 `responseStatus` + `transferSize > 0`。如浏览器不支持该 API 则标记 `notApplicable`
 
 ## 9. 测试策略
 
