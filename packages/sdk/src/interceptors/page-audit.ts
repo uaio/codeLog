@@ -3,6 +3,12 @@
  * 在 stop_perf_run 时运行一次，扫描 DOM 状态产出审计报告
  */
 
+import type { FullAuditReport, LighthouseCategoryResult } from '@codelog/types';
+import { auditAccessibility } from './audits/accessibility.js';
+import { auditBestPractices } from './audits/best-practices.js';
+import { auditSEO } from './audits/seo.js';
+import { getRuntimeAuditState, resetRuntimeAuditState } from './audits/runtime-hooks.js';
+
 export interface AuditItem {
   id: string;
   title: string;
@@ -322,5 +328,36 @@ export function runPageAudit(): PageAuditReport {
     url: location.href,
     audits,
     summary,
+  };
+}
+
+/**
+ * 运行完整的 Lighthouse 风格 4 类别审计
+ *
+ * 同时运行已有的 Performance 诊断审计（runPageAudit），
+ * 结果存入 performanceDiagnostics 字段供 Web 面板展示。
+ */
+export function runFullAudit(): FullAuditReport {
+  const runtimeState = getRuntimeAuditState();
+
+  // 运行已有的 Performance 诊断审计
+  const legacyAudit = runPageAudit();
+
+  const categories: LighthouseCategoryResult[] = [
+    auditAccessibility(),
+    auditBestPractices(runtimeState),
+    auditSEO(),
+    // Performance 类别的分数由服务端 log-normal 计算，这里不重复
+  ];
+
+  // 跑分完成后重置运行时状态
+  resetRuntimeAuditState();
+
+  return {
+    timestamp: Date.now(),
+    url: location.href,
+    userAgent: navigator.userAgent,
+    categories,
+    performanceDiagnostics: legacyAudit.audits,
   };
 }
