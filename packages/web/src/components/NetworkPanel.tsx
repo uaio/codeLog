@@ -1,4 +1,5 @@
 import { CSSProperties, useState, useMemo, useCallback } from 'react';
+import { api } from '../api/client.js';
 import {
   CheckOutlined,
   CopyOutlined,
@@ -443,6 +444,15 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchText, setSearchText] = useState('');
   const { t } = useI18n();
+  const [networkThrottle, setNetworkThrottle] = useState<string>('none');
+
+  const handleNetworkThrottle = useCallback(async (preset: string) => {
+    if (!deviceId) return;
+    setNetworkThrottle(preset);
+    try {
+      await api.post(`/api/devices/${deviceId}/network-throttle`, { preset });
+    } catch { /* ignore */ }
+  }, [deviceId]);
 
   const isWsGroupMode = filterType === 'ws';
 
@@ -525,6 +535,21 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
           <option value="all">{t.networkPanel.allStatus}</option>
           <option value="success">Success (&lt;400)</option>
           <option value="error">{t.networkPanel.errorOnly}</option>
+        </select>
+        <select
+          value={networkThrottle}
+          onChange={(e) => handleNetworkThrottle(e.target.value)}
+          disabled={!deviceId}
+          style={{
+            ...styles.select,
+            ...(networkThrottle !== 'none' ? { backgroundColor: 'rgba(250,173,20,0.1)', color: '#fa8c16' } : {}),
+          }}
+          title="网络节流"
+        >
+          <option value="none">正常</option>
+          <option value="3g">3G</option>
+          <option value="2g">2G</option>
+          <option value="offline">离线</option>
         </select>
         <button onClick={clearRequests} style={styles.clearBtn} title={t.common.clear}>
           <DeleteOutlined />

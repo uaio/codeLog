@@ -9,6 +9,7 @@ import {
   CheckOutlined,
   DownOutlined,
   PauseOutlined,
+  BugOutlined,
 } from '@ant-design/icons';
 import { useLogs } from '../hooks/useLogs.js';
 import { useI18n } from '../i18n/index.js';
@@ -32,7 +33,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
   const [jsInput, setJsInput] = useState('');
   const [jsHistory, setJsHistory] = useState<string[]>([]);
   const [jsHistoryIndex, setJsHistoryIndex] = useState(-1);
-  const [networkThrottle, setNetworkThrottleState] = useState<string>('none');
+
   const [aiModal, setAiModal] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
   const jsInputRef = useRef<HTMLInputElement>(null);
@@ -68,19 +69,6 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
     if (!deviceId) return;
     api.post(`/api/devices/${deviceId}/reload`).catch(() => {});
   }, [deviceId]);
-
-  const handleNetworkThrottle = useCallback(
-    async (preset: string) => {
-      if (!deviceId) return;
-      setNetworkThrottleState(preset);
-      try {
-        await api.post(`/api/devices/${deviceId}/network-throttle`, { preset });
-      } catch {
-        /* ignore */
-      }
-    },
-    [deviceId],
-  );
 
   const handleJsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -136,6 +124,8 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
       }),
     [logs, filterLevel, searchText],
   );
+
+  const errorCount = useMemo(() => logs.filter(l => l.level === 'error' || l.level === 'warn').length, [logs]);
 
   const handleExportLogs = useCallback(() => {
     if (!logs.length) return;
@@ -195,26 +185,6 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
           >
             <ExportOutlined style={{ marginRight: 4 }} />导出
           </button>
-          <select
-            value={networkThrottle}
-            onChange={(e) => handleNetworkThrottle(e.target.value)}
-            disabled={!deviceId}
-            style={{
-              padding: '4px 8px',
-              fontSize: 12,
-              border: '1px solid var(--ant-color-border, #424242)',
-              borderRadius: 2,
-              backgroundColor: networkThrottle !== 'none' ? 'rgba(250,173,20,0.1)' : 'transparent',
-              color: networkThrottle !== 'none' ? '#fa8c16' : 'var(--ant-color-text)',
-              cursor: 'pointer',
-            }}
-            title="网络节流"
-          >
-            <option value="none">网速: 正常</option>
-            <option value="3g">网速: 3G</option>
-            <option value="2g">网速: 2G</option>
-            <option value="offline">网速: 离线</option>
-          </select>
           <button
             onClick={() => setAiModal(true)}
             disabled={!logs.length}
@@ -281,6 +251,17 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
               {level === 'all' ? t.logPanel.all : level === 'repl-input' ? 'REPL' : level.toUpperCase()}
             </button>
           ))}
+          <button
+            onClick={() => setFilterLevel(prev => prev === 'error' ? 'all' : 'error')}
+            style={{
+              ...styles.levelButton,
+              ...(filterLevel === 'error' ? { backgroundColor: 'rgba(255,77,79,0.2)', borderColor: '#ff4d4f', color: '#ff4d4f' } : {}),
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+            }}
+          >
+            <BugOutlined style={{ fontSize: 12 }} />
+            {errorCount > 0 && <span style={{ fontSize: 10, opacity: 0.7 }}>({errorCount})</span>}
+          </button>
         </div>
         <button
           onClick={() => setAutoScroll((v) => !v)}

@@ -9,6 +9,7 @@ import {
   Descriptions,
   Input,
   Tooltip,
+  Tag,
 } from 'antd';
 import {
   ReloadOutlined,
@@ -425,9 +426,37 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
     return unsub;
   }, [deviceId]);
 
-  // Capture preview on first connect
+  // Inject pulse animation keyframes for LIVE indicator and preview
   useEffect(() => {
-    if (deviceId) capturePreview();
+    const id = 'dom-panel-pulse-anim';
+    if (document.getElementById(id)) return;
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = `
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+      @keyframes previewPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.4); }
+        50% { box-shadow: 0 0 8px 2px rgba(82, 196, 26, 0.2); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    };
+  }, []);
+
+  // Auto-refresh preview every 5 seconds when deviceId is present
+  useEffect(() => {
+    if (!deviceId) return;
+    // Capture immediately
+    capturePreview();
+    // Then every 5 seconds
+    const timer = setInterval(capturePreview, 5000);
+    return () => clearInterval(timer);
   }, [deviceId, capturePreview]);
 
   // Listen for element_picked events from device
@@ -601,16 +630,6 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
               </Button>
             </Tooltip>
           )}
-          <Tooltip title="截取页面预览">
-            <Button
-              size="small"
-              icon={<CameraOutlined />}
-              loading={previewLoading}
-              onClick={capturePreview}
-            >
-              预览
-            </Button>
-          </Tooltip>
         </Space>
       </div>
 
@@ -663,19 +682,37 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
               <Text strong style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Page Preview
               </Text>
+              <Tag color="success" style={{ fontSize: 10, lineHeight: '16px', padding: '0 4px', margin: 0, border: 'none' }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: '#52c41a', display: 'inline-block', marginRight: 4, animation: 'pulse 2s infinite' }} />
+                LIVE
+              </Tag>
             </Space>
           </div>
-          <div style={{ flex: 1, overflow: 'auto', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8 }}>
+          <div style={{ flex: 1, overflow: 'auto', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8, position: 'relative' }}>
+            {previewLoading && previewSrc && (
+              <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>
+                <Spin size="small" />
+              </div>
+            )}
             {previewSrc ? (
-              <img
-                src={previewSrc}
-                alt="Page preview"
-                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', border: '1px solid #333', borderRadius: 4 }}
-              />
+              <div style={{ position: 'relative', maxWidth: '100%', maxHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img
+                  src={previewSrc}
+                  alt="Page preview"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain',
+                    borderRadius: 4,
+                    border: previewLoading ? '1px solid rgba(82, 196, 26, 0.6)' : '1px solid #333',
+                    animation: previewLoading ? 'previewPulse 1.5s ease-in-out infinite' : 'none',
+                  }}
+                />
+              </div>
             ) : (
               <Empty
                 image={<CameraOutlined style={{ fontSize: 32, opacity: 0.3 }} />}
-                description="点击「预览」截取页面"
+                description="正在获取页面预览…"
                 style={{ margin: 'auto' }}
               />
             )}
