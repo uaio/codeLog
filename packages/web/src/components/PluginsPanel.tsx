@@ -1,4 +1,6 @@
 import { useState, useEffect, CSSProperties } from 'react';
+import { MobileOutlined, AppstoreOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Empty, Button } from 'antd';
 import { api } from '../api/client.js';
 
 interface PluginInfo {
@@ -41,10 +43,11 @@ export function PluginsPanel({ deviceId }: PluginsPanelProps) {
 
   if (!deviceId) {
     return (
-      <div style={styles.empty}>
-        <div style={styles.emptyIcon}>📱</div>
-        <div>请先选择设备</div>
-      </div>
+      <Empty
+        image={<MobileOutlined style={{ fontSize: 48, color: '#64748b' }} />}
+        description="请先选择设备"
+        style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+      />
     );
   }
 
@@ -53,11 +56,17 @@ export function PluginsPanel({ deviceId }: PluginsPanelProps) {
 
   if (plugins.length === 0) {
     return (
-      <div style={styles.empty}>
-        <div style={styles.emptyIcon}>🔌</div>
-        <div>该设备未注册任何插件</div>
-        <div style={styles.emptyHint}>通过 SDK 的 plugins 选项注册自定义插件</div>
-      </div>
+      <Empty
+        image={<AppstoreOutlined style={{ fontSize: 48, color: '#64748b' }} />}
+        description={
+          <span>
+            该设备未注册任何插件
+            <br />
+            <span style={{ fontSize: 12, color: '#475569' }}>通过 SDK 的 plugins 选项注册自定义插件</span>
+          </span>
+        }
+        style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+      />
     );
   }
 
@@ -65,15 +74,22 @@ export function PluginsPanel({ deviceId }: PluginsPanelProps) {
     <div style={styles.container}>
       <div style={styles.toolbar}>
         <span style={styles.toolbarTitle}>已安装插件 ({plugins.length})</span>
-        <button style={styles.refreshBtn} onClick={() => void load(deviceId!)}>
-          ↻ 刷新
-        </button>
+        <Button
+          size="small"
+          icon={<ReloadOutlined />}
+          onClick={() => void load(deviceId!)}
+          style={{ background: 'transparent', borderColor: '#334155', color: '#94a3b8' }}
+        >
+          刷新
+        </Button>
       </div>
       <div style={styles.list}>
         {plugins.map((plugin) => (
           <div key={plugin.name} style={styles.card}>
             <div style={styles.cardLeft}>
-              <span style={styles.icon}>{plugin.panelIcon ?? '🔌'}</span>
+              <span style={styles.icon}>
+                <AppstoreOutlined style={{ fontSize: 24, color: '#94a3b8' }} />
+              </span>
               <div style={styles.info}>
                 <span style={styles.name}>{plugin.panelTitle ?? plugin.name}</span>
                 {plugin.name !== (plugin.panelTitle ?? plugin.name) && (
@@ -118,15 +134,6 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 600,
     color: '#94a3b8',
   },
-  refreshBtn: {
-    background: 'transparent',
-    border: '1px solid #334155',
-    color: '#94a3b8',
-    borderRadius: '4px',
-    padding: '4px 10px',
-    fontSize: '12px',
-    cursor: 'pointer',
-  },
   list: {
     flex: 1,
     overflowY: 'auto',
@@ -152,6 +159,8 @@ const styles: Record<string, CSSProperties> = {
   icon: {
     fontSize: '24px',
     lineHeight: 1,
+    display: 'inline-flex',
+    alignItems: 'center',
   },
   info: {
     display: 'flex',
@@ -187,13 +196,5 @@ const styles: Record<string, CSSProperties> = {
     gap: '8px',
     color: '#64748b',
     fontSize: '14px',
-  },
-  emptyIcon: {
-    fontSize: '36px',
-    marginBottom: '4px',
-  },
-  emptyHint: {
-    fontSize: '12px',
-    color: '#475569',
   },
 };

@@ -1,4 +1,32 @@
-import { CSSProperties, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import {
+  Tabs,
+  Table,
+  Button,
+  Input,
+  Modal,
+  Form,
+  Space,
+  Typography,
+  Statistic,
+  Popconfirm,
+  Empty,
+  Spin,
+  Tooltip,
+  Tag,
+  Flex,
+  App,
+} from 'antd';
+import {
+  DatabaseOutlined,
+  ReloadOutlined,
+  PlusOutlined,
+  ClearOutlined,
+  DeleteOutlined,
+  InboxOutlined,
+  SearchOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import { useStorage } from '../hooks/useStorage.js';
 import { useI18n } from '../i18n/index.js';
 import { api } from '../api/client.js';
@@ -19,180 +47,129 @@ function formatTime(ts: number): string {
   return new Date(ts).toLocaleTimeString();
 }
 
-function EditableRow({
-  rowKey,
-  value,
-  onSave,
-  onDelete,
-}: {
-  rowKey: string;
-  value: string;
-  onSave: (v: string) => void;
-  onDelete: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [editVal, setEditVal] = useState(value);
-
-  const commit = () => {
-    if (editVal !== value) onSave(editVal);
-    setEditing(false);
-  };
-
-  if (editing) {
-    return (
-      <tr style={styles.tr}>
-        <td style={{ ...styles.td, ...styles.keyCell }}>{rowKey}</td>
-        <td style={{ ...styles.td, ...styles.valueCell }}>
-          <textarea
-            autoFocus
-            value={editVal}
-            onChange={(e) => setEditVal(e.target.value)}
-            onBlur={commit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commit(); }
-              if (e.key === 'Escape') { setEditing(false); setEditVal(value); }
-            }}
-            style={{
-              width: '100%',
-              fontFamily: 'monospace',
-              fontSize: '12px',
-              padding: '4px',
-              border: '1px solid #1890ff',
-              borderRadius: '3px',
-              resize: 'vertical',
-              minHeight: '40px',
-            }}
-          />
-        </td>
-        <td style={{ ...styles.td, textAlign: 'center', padding: '0 4px' }}>
-          <button title="删除" onClick={onDelete} style={styles.deleteBtn}>🗑</button>
-        </td>
-      </tr>
-    );
-  }
-
-  return (
-    <tr style={styles.tr}>
-      <td style={{ ...styles.td, ...styles.keyCell }}>{rowKey}</td>
-      <td
-        style={{ ...styles.td, ...styles.valueCell, cursor: 'text' }}
-        title="点击编辑"
-        onClick={() => { setEditVal(value); setEditing(true); }}
-      >
-        <span style={styles.valueText}>{value}</span>
-      </td>
-      <td style={{ ...styles.td, textAlign: 'center', padding: '0 4px' }}>
-        <button title="删除" onClick={onDelete} style={styles.deleteBtn}>🗑</button>
-      </td>
-    </tr>
-  );
-}
-
-function CookieEditableRow({
-  cookie,
-  onSave,
-  onDelete,
-}: {
-  cookie: CookieEntry;
-  onSave: (v: string) => void;
-  onDelete: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [editVal, setEditVal] = useState(cookie.value ?? '');
-
-  const commit = () => {
-    if (editVal !== cookie.value) onSave(editVal);
-    setEditing(false);
-  };
-
-  return (
-    <tr style={styles.tr}>
-      <td style={{ ...styles.td, ...styles.keyCell }}>{cookie.name}</td>
-      <td
-        style={{ ...styles.td, ...styles.valueCell, cursor: editing ? 'auto' : 'text' }}
-        title={editing ? undefined : '点击编辑 Value'}
-        onClick={editing ? undefined : () => { setEditVal(cookie.value ?? ''); setEditing(true); }}
-      >
-        {editing ? (
-          <input
-            autoFocus
-            value={editVal}
-            onChange={(e) => setEditVal(e.target.value)}
-            onBlur={commit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') { e.preventDefault(); commit(); }
-              if (e.key === 'Escape') { setEditing(false); setEditVal(cookie.value ?? ''); }
-            }}
-            style={{
-              width: '100%',
-              fontFamily: 'monospace',
-              fontSize: '12px',
-              padding: '2px 4px',
-              border: '1px solid #1890ff',
-              borderRadius: '3px',
-            }}
-          />
-        ) : (
-          <span style={styles.valueText}>{cookie.value}</span>
-        )}
-      </td>
-      <td style={{ ...styles.td, ...styles.metaCell }}>{cookie.path ?? '/'}</td>
-      <td style={{ ...styles.td, ...styles.metaCell }}>{cookie.domain ?? ''}</td>
-      <td style={{ ...styles.td, ...styles.metaCell }}>
-        {cookie.expires
-          ? new Date(cookie.expires).toLocaleString()
-          : <span style={{ color: '#bbb' }}>Session</span>}
-      </td>
-      <td style={{ ...styles.td, ...styles.metaCell }}>
-        {cookie.secure ? <span style={{ color: '#52c41a' }}>✓</span> : ''}
-      </td>
-      <td style={{ ...styles.td, ...styles.metaCell }}>{cookie.sameSite ?? ''}</td>
-      <td style={{ ...styles.td, textAlign: 'center' }}>
-        <button onClick={onDelete} title={`删除 ${cookie.name}`} style={styles.deleteBtn}>🗑</button>
-      </td>
-    </tr>
-  );
-}
-
 export function StoragePanel({ deviceId }: StoragePanelProps) {
   const { snapshot, loading, refresh } = useStorage(deviceId);
   const [activeTab, setActiveTab] = useState<StorageTab>('localStorage');
-  const [setKey, setSetKey] = useState('');
-  const [setValue, setSetValue] = useState('');
-  const [setLoading, setSetLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addForm] = Form.useForm();
+  const [setLoading, setSetLoading] = useState(false);
+  // Inline edit state
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  // Cookie edit state
+  const [editingCookie, setEditingCookie] = useState<string | null>(null);
+  const [editCookieValue, setEditCookieValue] = useState('');
+  const { message } = App.useApp();
   const { t } = useI18n();
 
   const storageType = activeTab === 'sessionStorage' ? 'session' : 'local';
 
-  const handleSetItem = useCallback(async () => {
-    if (!deviceId || !setKey.trim()) return;
+  // ── Handlers ──
+
+  const handleDeleteKey = useCallback(
+    async (key: string) => {
+      if (!deviceId) return;
+      try {
+        await api.post(`/api/devices/${deviceId}/storage/delete`, { key, storageType });
+        setTimeout(refresh, 300);
+      } catch {
+        message.error('删除失败');
+      }
+    },
+    [deviceId, storageType, refresh, message],
+  );
+
+  const handleDeleteCookie = useCallback(
+    async (cookieName: string) => {
+      if (!deviceId) return;
+      try {
+        await api.post(`/api/devices/${deviceId}/storage/delete`, {
+          key: cookieName,
+          storageType: 'cookie',
+        });
+        setTimeout(refresh, 600);
+      } catch {
+        message.error('删除失败');
+      }
+    },
+    [deviceId, refresh, message],
+  );
+
+  const handleEditKey = useCallback(
+    async (key: string, value: string) => {
+      if (!deviceId) return;
+      try {
+        await api.post(`/api/devices/${deviceId}/storage/set`, { key, value, storageType });
+        setEditingKey(null);
+        setTimeout(refresh, 300);
+      } catch {
+        message.error('保存失败');
+      }
+    },
+    [deviceId, storageType, refresh, message],
+  );
+
+  const handleEditCookieValue = useCallback(
+    async (cookie: CookieEntry, newValue: string) => {
+      if (!deviceId) return;
+      try {
+        await api.post(`/api/devices/${deviceId}/storage/set`, {
+          key: cookie.name,
+          value: newValue,
+          storageType: 'cookie',
+          path: cookie.path ?? '/',
+          domain: cookie.domain,
+          expires: cookie.expires,
+          secure: cookie.secure,
+          sameSite: cookie.sameSite,
+        });
+        setEditingCookie(null);
+        setTimeout(refresh, 600);
+      } catch {
+        message.error('保存失败');
+      }
+    },
+    [deviceId, refresh, message],
+  );
+
+  const handleAddItem = useCallback(async () => {
+    if (!deviceId) return;
+    const values = addForm.getFieldsValue();
+    if (!values.key?.trim()) return;
     setSetLoading(true);
     try {
-      await api.post(`/api/devices/${deviceId}/storage/set`, {
-        key: setKey.trim(),
-        value: setValue,
-        storageType,
-      });
+      const st = activeTab === 'cookies' ? 'cookie' : storageType;
+      const body: Record<string, unknown> = {
+        key: values.key.trim(),
+        value: values.value ?? '',
+        storageType: st,
+      };
+      if (activeTab === 'cookies') {
+        body.path = '/';
+      }
+      await api.post(`/api/devices/${deviceId}/storage/set`, body);
       setTimeout(refresh, 300);
-      setSetKey('');
-      setSetValue('');
+      addForm.resetFields();
+      setAddModalOpen(false);
     } catch {
-      /* ignore */
+      message.error('写入失败');
     } finally {
       setSetLoading(false);
     }
-  }, [deviceId, setKey, setValue, storageType, refresh]);
+  }, [deviceId, activeTab, storageType, refresh, addForm, message]);
 
   const handleClearStorage = useCallback(async () => {
     if (!deviceId) return;
-    if (!window.confirm(t.storagePanel.clearConfirm)) return;
     try {
       if (activeTab === 'cookies') {
         const entries = snapshot?.cookieEntries ?? [];
         await Promise.all(
           entries.map((c) =>
-            api.post(`/api/devices/${deviceId}/storage/delete`, { key: c.name, storageType: 'cookie' }),
+            api.post(`/api/devices/${deviceId}/storage/delete`, {
+              key: c.name,
+              storageType: 'cookie',
+            }),
           ),
         );
       } else {
@@ -200,216 +177,257 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
       }
       setTimeout(refresh, 300);
     } catch {
-      /* ignore */
+      message.error('清空失败');
     }
-  }, [deviceId, activeTab, storageType, snapshot, refresh]);
+  }, [deviceId, activeTab, storageType, snapshot, refresh, message]);
 
-  const handleDeleteKey = useCallback(async (key: string) => {
-    if (!deviceId) return;
-    try {
-      await api.post(`/api/devices/${deviceId}/storage/delete`, { key, storageType });
-      setTimeout(refresh, 300);
-    } catch {
-      /* ignore */
-    }
-  }, [deviceId, storageType, refresh]);
-
-  const handleDeleteCookie = useCallback(async (cookieName: string) => {
-    if (!deviceId) return;
-    try {
-      await api.post(`/api/devices/${deviceId}/storage/delete`, { key: cookieName, storageType: 'cookie' });
-      setTimeout(refresh, 600);
-    } catch {
-      /* ignore */
-    }
-  }, [deviceId, refresh]);
-
-  const handleEditKey = useCallback(async (key: string, value: string) => {
-    if (!deviceId) return;
-    try {
-      await api.post(`/api/devices/${deviceId}/storage/set`, { key, value, storageType });
-      setTimeout(refresh, 300);
-    } catch {
-      /* ignore */
-    }
-  }, [deviceId, storageType, refresh]);
-
-  const handleSetCookie = useCallback(async () => {
-    if (!deviceId || !setKey.trim()) return;
-    setSetLoading(true);
-    try {
-      await api.post(`/api/devices/${deviceId}/storage/set`, {
-        key: setKey.trim(),
-        value: setValue,
-        storageType: 'cookie',
-        path: '/',
-      });
-      setTimeout(refresh, 600);
-      setSetKey('');
-      setSetValue('');
-    } catch {
-      /* ignore */
-    } finally {
-      setSetLoading(false);
-    }
-  }, [deviceId, setKey, setValue, refresh]);
-
-  const handleEditCookieValue = useCallback(async (cookie: CookieEntry, newValue: string) => {
-    if (!deviceId) return;
-    try {
-      await api.post(`/api/devices/${deviceId}/storage/set`, {
-        key: cookie.name,
-        value: newValue,
-        storageType: 'cookie',
-        path: cookie.path ?? '/',
-        domain: cookie.domain,
-        expires: cookie.expires,
-        secure: cookie.secure,
-        sameSite: cookie.sameSite,
-      });
-      setTimeout(refresh, 600);
-    } catch {
-      /* ignore */
-    }
-  }, [deviceId, refresh]);
+  // ── No device placeholder ──
 
   if (!deviceId) {
     return (
-      <div style={styles.container}>
-        <div style={styles.placeholder}>
-          <div style={styles.placeholderIcon}>💾</div>
-          <div style={styles.placeholderText}>从左侧选择一个设备查看存储</div>
-        </div>
-      </div>
+      <Flex vertical align="center" justify="center" style={{ height: '100%' }}>
+        <DatabaseOutlined style={{ fontSize: 48, opacity: 0.3, marginBottom: 12 }} />
+        <Typography.Text type="secondary">从左侧选择一个设备查看存储</Typography.Text>
+      </Flex>
     );
   }
 
-  const tabs: { id: StorageTab; label: string; count?: number }[] = [
+  // ── KV Table columns (localStorage / sessionStorage) ──
+
+  const getKVColumns = () => [
     {
-      id: 'localStorage',
-      label: 'localStorage',
-      count: snapshot ? Object.keys(snapshot.localStorage).length : undefined,
+      title: 'Key',
+      dataIndex: 'key',
+      width: '35%',
+      render: (key: string) => (
+        <Typography.Text code style={{ color: '#d56161' }}>
+          {key}
+        </Typography.Text>
+      ),
     },
     {
-      id: 'sessionStorage',
-      label: 'sessionStorage',
-      count: snapshot ? Object.keys(snapshot.sessionStorage).length : undefined,
+      title: 'Value',
+      dataIndex: 'value',
+      render: (value: string, record: { key: string }) => {
+        const isEditing = editingKey === record.key;
+        if (isEditing) {
+          return (
+            <Input.TextArea
+              autoFocus
+              size="small"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onPressEnter={(e) => {
+                if (!e.shiftKey) {
+                  e.preventDefault();
+                  handleEditKey(record.key, editValue);
+                }
+              }}
+              onBlur={() => handleEditKey(record.key, editValue)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setEditingKey(null);
+                }
+              }}
+              rows={2}
+              style={{ fontFamily: 'monospace', fontSize: 12 }}
+            />
+          );
+        }
+        return (
+          <Typography.Text
+            style={{ fontFamily: 'monospace', fontSize: 12, cursor: 'pointer', wordBreak: 'break-all' }}
+            ellipsis={{ tooltip: value }}
+            onClick={() => {
+              setEditingKey(record.key);
+              setEditValue(value);
+            }}
+          >
+            {value}
+          </Typography.Text>
+        );
+      },
     },
     {
-      id: 'cookies',
-      label: 'Cookies',
-      count: snapshot
-        ? (snapshot.cookieEntries?.length ?? snapshot.cookies?.split(';').filter(Boolean).length ?? 0)
-        : undefined,
+      title: '',
+      width: 60,
+      render: (_: unknown, record: { key: string }) => (
+        <Popconfirm
+          title={`确认删除 "${record.key}"？`}
+          onConfirm={() => handleDeleteKey(record.key)}
+          okText="删除"
+          cancelText="取消"
+        >
+          <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+        </Popconfirm>
+      ),
     },
   ];
 
+  // ── Cookie Table columns ──
+
+  const getCookieColumns = () => [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      width: '18%',
+      render: (name: string) => (
+        <Typography.Text code style={{ color: '#d56161' }}>
+          {name}
+        </Typography.Text>
+      ),
+    },
+    {
+      title: 'Value',
+      dataIndex: 'value',
+      width: '22%',
+      render: (value: string, record: CookieEntry) => {
+        const isEditing = editingCookie === record.name;
+        if (isEditing) {
+          return (
+            <Input
+              autoFocus
+              size="small"
+              value={editCookieValue}
+              onChange={(e) => setEditCookieValue(e.target.value)}
+              onPressEnter={() => handleEditCookieValue(record, editCookieValue)}
+              onBlur={() => handleEditCookieValue(record, editCookieValue)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setEditingCookie(null);
+              }}
+              style={{ fontFamily: 'monospace', fontSize: 12 }}
+            />
+          );
+        }
+        return (
+          <Typography.Text
+            style={{ fontFamily: 'monospace', fontSize: 12, cursor: 'pointer' }}
+            ellipsis={{ tooltip: value }}
+            onClick={() => {
+              setEditingCookie(record.name);
+              setEditCookieValue(value ?? '');
+            }}
+          >
+            {value}
+          </Typography.Text>
+        );
+      },
+    },
+    { title: 'Path', dataIndex: 'path', width: '10%', render: (v: string) => v ?? '/' },
+    { title: 'Domain', dataIndex: 'domain', width: '14%', render: (v: string) => v ?? '' },
+    {
+      title: 'Expires',
+      dataIndex: 'expires',
+      width: '18%',
+      render: (v: string) =>
+        v ? new Date(v).toLocaleString() : <Typography.Text type="secondary">Session</Typography.Text>,
+    },
+    {
+      title: 'Secure',
+      dataIndex: 'secure',
+      width: '8%',
+      render: (v: boolean) =>
+        v ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : null,
+    },
+    { title: 'SameSite', dataIndex: 'sameSite', width: '10%', render: (v: string) => v ?? '' },
+    {
+      title: '',
+      width: 60,
+      render: (_: unknown, record: CookieEntry) => (
+        <Popconfirm
+          title={`确认删除 "${record.name}"？`}
+          onConfirm={() => handleDeleteCookie(record.name)}
+          okText="删除"
+          cancelText="取消"
+        >
+          <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+        </Popconfirm>
+      ),
+    },
+  ];
+
+  // ── Render helpers ──
+
   const renderKVTable = (data: Record<string, string>, totalSize?: number) => {
     const q = searchQuery.toLowerCase();
-    const entries = Object.entries(data).filter(
+    const allEntries = Object.entries(data);
+    const filteredEntries = allEntries.filter(
       ([k, v]) => !q || k.toLowerCase().includes(q) || v.toLowerCase().includes(q),
     );
-    const totalCount = Object.keys(data).length;
+    const totalCount = allEntries.length;
+
     if (totalCount === 0) {
-      return (
-        <div style={styles.empty}>
-          <span style={styles.emptyIcon}>📭</span>
-          <span>暂无数据</span>
-        </div>
-      );
+      return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据" />;
     }
-    if (entries.length === 0) {
-      return (
-        <div style={styles.empty}>
-          <span style={styles.emptyIcon}>🔍</span>
-          <span>无匹配结果</span>
-        </div>
-      );
+    if (filteredEntries.length === 0) {
+      return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="无匹配结果" />;
     }
+
+    const dataSource = filteredEntries.map(([key, value]) => ({ key, value }));
+
     return (
-      <div>
+      <>
         {totalSize !== undefined && (
-          <div style={styles.sizeBar}>
-            <span style={styles.sizeLabel}>总大小：{formatSize(totalSize)}</span>
-            <span style={styles.countLabel}>{entries.length} / {totalCount} 条记录</span>
-          </div>
+          <Flex justify="space-between" align="center" style={{ padding: '8px 16px' }}>
+            <Statistic
+              title="总大小"
+              value={totalSize}
+              formatter={(val) => formatSize(val as number)}
+              valueStyle={{ fontSize: 13 }}
+            />
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              {filteredEntries.length} / {totalCount} 条记录
+            </Typography.Text>
+          </Flex>
         )}
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={{ ...styles.th, width: '35%' }}>Key</th>
-              <th style={styles.th}>Value</th>
-              <th style={{ ...styles.th, width: '40px' }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map(([key, value]) => (
-              <EditableRow
-                key={key}
-                rowKey={key}
-                value={value}
-                onSave={(v) => handleEditKey(key, v)}
-                onDelete={() => handleDeleteKey(key)}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
+        <Table
+          dataSource={dataSource}
+          columns={getKVColumns()}
+          rowKey="key"
+          size="small"
+          pagination={false}
+          scroll={{ y: 'calc(100vh - 380px)' }}
+        />
+      </>
     );
   };
 
   const renderCookies = (raw: string, entries?: CookieEntry[]) => {
     const q = searchQuery.toLowerCase();
-    // Prefer rich cookieEntry list when available (cookieStore API)
+
+    // Prefer rich cookieEntry list
     if (entries && entries.length > 0) {
       const filtered = entries.filter(
         (c) => !q || c.name.toLowerCase().includes(q) || c.value.toLowerCase().includes(q),
       );
+
       return (
-        <div>
-          <div style={styles.sizeBar}>
-            <span style={styles.countLabel}>{filtered.length} / {entries.length} 条 Cookie</span>
-            <span style={{ ...styles.countLabel, fontSize: '11px', color: '#aaa' }}>
-              via cookieStore API · 双击 Value 可编辑
-            </span>
-          </div>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={{ ...styles.th, width: '18%' }}>Name</th>
-                <th style={{ ...styles.th, width: '22%' }}>Value</th>
-                <th style={{ ...styles.th, width: '10%' }}>Path</th>
-                <th style={{ ...styles.th, width: '14%' }}>Domain</th>
-                <th style={{ ...styles.th, width: '18%' }}>Expires</th>
-                <th style={{ ...styles.th, width: '8%' }}>Secure</th>
-                <th style={{ ...styles.th, width: '10%' }}>SameSite</th>
-                <th style={{ ...styles.th, width: '40px' }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c, i) => (
-                <CookieEditableRow
-                  key={i}
-                  cookie={c}
-                  onSave={(newVal) => handleEditCookieValue(c, newVal)}
-                  onDelete={() => handleDeleteCookie(c.name)}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <Flex justify="space-between" align="center" style={{ padding: '8px 16px' }}>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              {filtered.length} / {entries.length} 条 Cookie
+            </Typography.Text>
+            <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+              via cookieStore API · 点击 Value 可编辑
+            </Typography.Text>
+          </Flex>
+          <Table
+            dataSource={filtered}
+            columns={getCookieColumns()}
+            rowKey="name"
+            size="small"
+            pagination={false}
+            scroll={{ x: 900, y: 'calc(100vh - 380px)' }}
+          />
+        </>
       );
     }
 
-    // Fallback: parse raw document.cookie string (name/value only)
+    // Fallback: parse raw document.cookie string
     if (!raw || raw.trim() === '') {
-      return (
-        <div style={styles.empty}>
-          <span style={styles.emptyIcon}>📭</span>
-          <span>暂无 Cookie</span>
-        </div>
-      );
+      return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无 Cookie" />;
     }
+
     const allFallback = raw
       .split(';')
       .map((c) => c.trim())
@@ -419,53 +437,45 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
         if (idx === -1) return { key: c, value: '' };
         return { key: c.slice(0, idx).trim(), value: c.slice(idx + 1).trim() };
       });
+
     const fallbackEntries = allFallback.filter(
       ({ key, value }) => !q || key.toLowerCase().includes(q) || value.toLowerCase().includes(q),
     );
+
+    const dataSource = fallbackEntries.map((item) => ({ key: item.key, value: item.value }));
     return (
-      <div>
-        <div style={styles.sizeBar}>
-          <span style={styles.countLabel}>{fallbackEntries.length} / {allFallback.length} 条 Cookie</span>
-        </div>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={{ ...styles.th, width: '35%' }}>Name</th>
-              <th style={styles.th}>Value</th>
-              <th style={{ ...styles.th, width: '40px' }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {fallbackEntries.map(({ key, value }, i) => (
-              <EditableRow
-                key={i}
-                rowKey={key}
-                value={value}
-                onSave={(v) => handleEditCookieValue({ name: key, value } as CookieEntry, v)}
-                onDelete={() => handleDeleteCookie(key)}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <>
+        <Flex justify="space-between" align="center" style={{ padding: '8px 16px' }}>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            {fallbackEntries.length} / {allFallback.length} 条 Cookie
+          </Typography.Text>
+        </Flex>
+        <Table
+          dataSource={dataSource}
+          columns={getKVColumns()}
+          rowKey="key"
+          size="small"
+          pagination={false}
+          scroll={{ y: 'calc(100vh - 380px)' }}
+        />
+      </>
     );
   };
 
   const renderContent = () => {
     if (loading) {
       return (
-        <div style={styles.loadingWrap}>
-          <span style={styles.spinner}>⏳</span>
-          <span>加载中...</span>
-        </div>
+        <Flex justify="center" align="center" style={{ padding: '60px 20px' }}>
+          <Spin tip="加载中..." />
+        </Flex>
       );
     }
     if (!snapshot) {
       return (
-        <div style={styles.empty}>
-          <span style={styles.emptyIcon}>📡</span>
-          <span>等待设备上报存储数据，点击「刷新」获取</span>
-        </div>
+        <Empty
+          image={<InboxOutlined style={{ fontSize: 36, opacity: 0.5 }} />}
+          description="等待设备上报存储数据，点击「刷新」获取"
+        />
       );
     }
     if (activeTab === 'localStorage') {
@@ -477,342 +487,148 @@ export function StoragePanel({ deviceId }: StoragePanelProps) {
     return renderCookies(snapshot.cookies, snapshot.cookieEntries);
   };
 
-  return (
-    <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <h3 style={styles.title}>存储</h3>
-        <div style={styles.headerRight}>
+  // ── Tab items ──
+
+  const tabItems = [
+    {
+      key: 'localStorage',
+      label: (
+        <Space>
+          localStorage
           {snapshot && (
-            <span style={styles.updateTime}>更新于 {formatTime(snapshot.timestamp)}</span>
+            <Tag>{Object.keys(snapshot.localStorage).length}</Tag>
           )}
-          <button
-            style={{ ...styles.btn, ...(loading ? styles.btnDisabled : {}) }}
-            onClick={refresh}
-            disabled={loading}
-          >
-            🔄 刷新
-          </button>
-        </div>
-      </div>
+        </Space>
+      ),
+    },
+    {
+      key: 'sessionStorage',
+      label: (
+        <Space>
+          sessionStorage
+          {snapshot && (
+            <Tag>{Object.keys(snapshot.sessionStorage).length}</Tag>
+          )}
+        </Space>
+      ),
+    },
+    {
+      key: 'cookies',
+      label: (
+        <Space>
+          Cookies
+          {snapshot && (
+            <Tag>
+              {snapshot.cookieEntries?.length ??
+                snapshot.cookies?.split(';').filter(Boolean).length ??
+                0}
+            </Tag>
+          )}
+        </Space>
+      ),
+    },
+  ];
 
-      {/* Sub-tabs */}
-      <div style={styles.subTabs}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            style={{
-              ...styles.subTab,
-              ...(activeTab === tab.id ? styles.subTabActive : {}),
-            }}
-            onClick={() => { setActiveTab(tab.id); setSearchQuery(''); }}
-          >
-            {tab.label}
-            {tab.count !== undefined && (
-              <span
-                style={{
-                  ...styles.badge,
-                  ...(activeTab === tab.id ? styles.badgeActive : {}),
-                }}
-              >
-                {tab.count}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+  return (
+    <Flex vertical style={{ height: '100%' }}>
+      {/* Header */}
+      <Flex justify="space-between" align="center" style={{ padding: '12px 20px', flexShrink: 0 }}>
+        <Space>
+          <DatabaseOutlined />
+          <Typography.Text strong>存储</Typography.Text>
+        </Space>
+        <Space>
+          {snapshot && (
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              更新于 {formatTime(snapshot.timestamp)}
+            </Typography.Text>
+          )}
+          <Tooltip title="刷新">
+            <Button size="small" icon={<ReloadOutlined />} loading={loading} onClick={refresh}>
+              刷新
+            </Button>
+          </Tooltip>
+        </Space>
+      </Flex>
 
-      {/* 搜索栏 */}
-      <div style={styles.searchBar}>
-        <input
-          style={styles.searchInput}
+      {/* Tabs */}
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => {
+          setActiveTab(key as StorageTab);
+          setSearchQuery('');
+          setEditingKey(null);
+          setEditingCookie(null);
+        }}
+        items={tabItems}
+        size="small"
+        style={{ paddingLeft: 16, paddingRight: 16, flexShrink: 0 }}
+      />
+
+      {/* Toolbar: Search + Actions */}
+      <Flex gap={8} align="center" style={{ padding: '8px 16px', flexShrink: 0 }}>
+        <Input
           placeholder="搜索 key / value..."
+          prefix={<SearchOutlined />}
+          allowClear
+          size="small"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ width: 240 }}
         />
-        {searchQuery && (
-          <button style={styles.searchClear} onClick={() => setSearchQuery('')} title="清除搜索">✕</button>
-        )}
-      </div>
-
-      {/* 写入 / 清空操作栏 */}
-      <div style={styles.actionBar}>
-        <input
-          style={styles.actionInput}
-          placeholder={activeTab === 'cookies' ? 'Cookie Name' : 'Key'}
-          value={setKey}
-          onChange={(e) => setSetKey(e.target.value)}
-        />
-        <input
-          style={{ ...styles.actionInput, flex: 2 }}
-          placeholder="Value"
-          value={setValue}
-          onChange={(e) => setSetValue(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && (activeTab === 'cookies' ? handleSetCookie() : handleSetItem())}
-        />
-        <button
-          style={{
-            ...styles.btn,
-            borderColor: '#1890ff',
-            color: setLoading || !setKey.trim() ? '#999' : '#1890ff',
+        <div style={{ flex: 1 }} />
+        <Button
+          size="small"
+          type="primary"
+          ghost
+          icon={<PlusOutlined />}
+          onClick={() => {
+            addForm.resetFields();
+            setAddModalOpen(true);
           }}
-          disabled={setLoading || !setKey.trim() || !deviceId}
-          onClick={activeTab === 'cookies' ? handleSetCookie : handleSetItem}
         >
-          {activeTab === 'cookies' ? '设 Cookie' : '写入'}
-        </button>
-        <button
-          style={{ ...styles.btn, borderColor: '#ff4d4f', color: !deviceId ? '#999' : '#ff4d4f' }}
-          disabled={!deviceId}
-          onClick={handleClearStorage}
-          title={`清空 ${activeTab}`}
+          写入
+        </Button>
+        <Popconfirm
+          title={t.storagePanel.clearConfirm}
+          onConfirm={handleClearStorage}
+          okText="清空"
+          cancelText="取消"
+          okButtonProps={{ danger: true }}
         >
-          清空
-        </button>
-      </div>
+          <Button size="small" danger icon={<ClearOutlined />}>
+            清空
+          </Button>
+        </Popconfirm>
+      </Flex>
 
       {/* Content */}
-      <div style={styles.content}>{renderContent()}</div>
-    </div>
+      <div style={{ flex: 1, overflow: 'auto' }}>{renderContent()}</div>
+
+      {/* Add Modal */}
+      <Modal
+        title={activeTab === 'cookies' ? '设 Cookie' : '写入存储'}
+        open={addModalOpen}
+        onOk={handleAddItem}
+        onCancel={() => setAddModalOpen(false)}
+        confirmLoading={setLoading}
+        okText="保存"
+        cancelText="取消"
+        destroyOnClose
+      >
+        <Form form={addForm} layout="vertical" size="small">
+          <Form.Item
+            label={activeTab === 'cookies' ? 'Cookie Name' : 'Key'}
+            name="key"
+            rules={[{ required: true, message: '请输入 Key' }]}
+          >
+            <Input placeholder={activeTab === 'cookies' ? 'Cookie Name' : 'Key'} />
+          </Form.Item>
+          <Form.Item label="Value" name="value">
+            <Input.TextArea rows={3} placeholder="Value" style={{ fontFamily: 'monospace' }} />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </Flex>
   );
 }
-
-const styles: Record<string, CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    backgroundColor: '#fff',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 20px',
-    borderBottom: '1px solid #e8e8e8',
-    backgroundColor: '#fafafa',
-  },
-  title: {
-    margin: 0,
-    fontSize: '16px',
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  headerRight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  updateTime: {
-    fontSize: '12px',
-    color: '#999',
-  },
-  btn: {
-    padding: '5px 12px',
-    fontSize: '13px',
-    border: '1px solid #d9d9d9',
-    borderRadius: '4px',
-    backgroundColor: '#fff',
-    cursor: 'pointer',
-    color: '#555',
-  },
-  btnDisabled: {
-    opacity: 0.5,
-    cursor: 'not-allowed',
-  },
-  actionBar: {
-    display: 'flex',
-    gap: '8px',
-    padding: '8px 16px',
-    borderBottom: '1px solid #f0f0f0',
-    backgroundColor: '#fafafa',
-    alignItems: 'center',
-  },
-  actionInput: {
-    flex: 1,
-    padding: '4px 8px',
-    fontSize: '12px',
-    border: '1px solid #d9d9d9',
-    borderRadius: '4px',
-    fontFamily: 'monospace',
-    minWidth: 0,
-  },
-  searchBar: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '6px 16px',
-    borderBottom: '1px solid #f0f0f0',
-    backgroundColor: '#fff',
-  },
-  searchInput: {
-    flex: 1,
-    padding: '4px 8px',
-    fontSize: '12px',
-    border: '1px solid #d9d9d9',
-    borderRadius: '4px',
-    outline: 'none',
-  },
-  searchClear: {
-    border: 'none',
-    background: 'none',
-    cursor: 'pointer',
-    fontSize: '12px',
-    color: '#999',
-    padding: '0 4px',
-  },
-  subTabs: {
-    display: 'flex',
-    borderBottom: '1px solid #e8e8e8',
-    backgroundColor: '#fff',
-    padding: '0 20px',
-  },
-  subTab: {
-    padding: '8px 14px',
-    fontSize: '13px',
-    border: 'none',
-    borderBottom: '2px solid transparent',
-    backgroundColor: 'transparent',
-    cursor: 'pointer',
-    color: '#666',
-    marginRight: '4px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-  },
-  subTabActive: {
-    color: '#1890ff',
-    borderBottomColor: '#1890ff',
-    fontWeight: 500,
-  },
-  badge: {
-    backgroundColor: '#e8e8e8',
-    color: '#666',
-    borderRadius: '10px',
-    padding: '1px 6px',
-    fontSize: '11px',
-    fontWeight: 'normal',
-  },
-  badgeActive: {
-    backgroundColor: '#e6f7ff',
-    color: '#1890ff',
-  },
-  content: {
-    flex: 1,
-    overflow: 'auto',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    fontSize: '13px',
-  },
-  th: {
-    textAlign: 'left',
-    padding: '8px 16px',
-    backgroundColor: '#fafafa',
-    borderBottom: '1px solid #f0f0f0',
-    color: '#666',
-    fontWeight: 500,
-    fontSize: '12px',
-    position: 'sticky',
-    top: 0,
-  },
-  tr: {
-    borderBottom: '1px solid #f5f5f5',
-  },
-  td: {
-    padding: '7px 16px',
-    verticalAlign: 'top',
-  },
-  keyCell: {
-    fontFamily: 'monospace',
-    color: '#d56161',
-    wordBreak: 'break-all',
-    fontSize: '12px',
-  },
-  valueCell: {
-    maxWidth: 0,
-  },
-  metaCell: {
-    fontFamily: 'monospace',
-    fontSize: '11px',
-    color: '#666',
-    wordBreak: 'break-all' as const,
-  },
-  valueText: {
-    display: 'block',
-    fontFamily: 'monospace',
-    fontSize: '12px',
-    color: '#333',
-    wordBreak: 'break-all',
-    whiteSpace: 'pre-wrap',
-    maxHeight: '80px',
-    overflow: 'hidden',
-  },
-  sizeBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '6px 16px',
-    backgroundColor: '#f9f9f9',
-    borderBottom: '1px solid #f0f0f0',
-    fontSize: '12px',
-  },
-  sizeLabel: {
-    color: '#888',
-  },
-  countLabel: {
-    color: '#888',
-  },
-  empty: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '60px 20px',
-    color: '#bbb',
-    gap: '8px',
-    fontSize: '14px',
-  },
-  emptyIcon: {
-    fontSize: '36px',
-    opacity: 0.5,
-  },
-  placeholder: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: '#bbb',
-    gap: '12px',
-  },
-  placeholderIcon: {
-    fontSize: '48px',
-    opacity: 0.4,
-  },
-  placeholderText: {
-    fontSize: '14px',
-  },
-  loadingWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '60px 20px',
-    color: '#999',
-    gap: '8px',
-    fontSize: '14px',
-  },
-  spinner: {
-    fontSize: '20px',
-  },
-  deleteBtn: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '13px',
-    opacity: 0.5,
-    padding: '2px 4px',
-    borderRadius: '3px',
-  },
-};

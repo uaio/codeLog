@@ -1,7 +1,6 @@
 import detectBrowser from 'licia/detectBrowser'
 import detectOs from 'licia/detectOs'
 import escape from 'licia/escape'
-import map from 'licia/map'
 import i18n from '../lib/i18n'
 
 export default function getDefInfo() {
@@ -37,48 +36,6 @@ export default function getDefInfo() {
         }</td></tr>`,
         '</tbody></table>',
       ].join(''),
-    },
-    {
-      name: i18n.t('info.sponsor'),
-      val() {
-        return (
-          '<table><tbody>' +
-          map(
-            [
-              {
-                name: i18n.t('info.openCollective'),
-                link: 'https://opencollective.com/eruda',
-              },
-              {
-                name: i18n.t('info.koFi'),
-                link: 'https://ko-fi.com/surunzi',
-              },
-              {
-                name: i18n.t('info.wechatPay'),
-                link: 'https://surunzi.com/wechatpay.html',
-              },
-            ],
-            (item) => {
-              return `<tr><td>${
-                item.name
-              }</td><td><a rel="noreferrer noopener" href="${
-                item.link
-              }" target="_blank">${item.link.replace(
-                'https://',
-                ''
-              )}</a></td></tr>`
-            }
-          ).join(' ') +
-          '</tbody></table>'
-        )
-      },
-    },
-    {
-      name: i18n.t('info.about'),
-      val:
-        '<a href="https://eruda.liriliri.io" target="_blank">Eruda v' +
-        VERSION +
-        '</a>',
     },
   ]
 }

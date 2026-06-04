@@ -17,6 +17,7 @@ import type {
   ErrorPayload,
   LifecyclePayload,
   CustomPayload,
+  SystemPayload,
   FullAuditReport,
 } from '@codelog/types';
 
@@ -161,4 +162,5 @@ export type {
   ErrorPayload,
   LifecyclePayload,
   CustomPayload,
+  SystemPayload,
 };

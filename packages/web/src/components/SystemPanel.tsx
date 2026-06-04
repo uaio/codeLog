@@ -1,400 +1,128 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Tag, Button, Collapse, Typography, Descriptions, Flex } from 'antd';
+import { DesktopOutlined, ReloadOutlined, MobileOutlined, GlobalOutlined, InfoCircleOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { api } from '../api/client.js';
-import type { SystemInfo } from '../types/index.js';
+import { useI18n } from '../i18n/index.js';
 
-interface SystemPanelProps {
-  deviceId?: string;
-}
+interface SystemPanelProps { deviceId?: string; }
 
 export function SystemPanel({ deviceId }: SystemPanelProps) {
-  const [info, setInfo] = useState<SystemInfo | null>(null);
+  const [info, setInfo] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { t } = useI18n();
 
-  const load = async (id: string) => {
+  const fetchInfo = useCallback(async () => {
+    if (!deviceId) return;
     setLoading(true);
-    setError(null);
     try {
-      const data = await api.getSystemInfo(id);
+      const data = await api.getSystemInfo(deviceId);
       setInfo(data);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!deviceId) {
-      setInfo(null);
-      return;
-    }
-    void load(deviceId);
+    } catch { /* ignore */ }
+    setLoading(false);
   }, [deviceId]);
+
+  useEffect(() => { fetchInfo(); }, [fetchInfo]);
 
   if (!deviceId) {
     return (
-      <div style={styles.empty}>
-        <div style={styles.emptyIcon}>📱</div>
-        <div>请先选择设备</div>
-      </div>
+      <Flex vertical align="center" justify="center" style={{ height: '100%' }} gap={12}>
+        <MobileOutlined style={{ fontSize: 48, opacity: 0.3 }} />
+        <Typography.Text type="secondary">{t.common.selectDevice}</Typography.Text>
+      </Flex>
     );
   }
 
-  if (loading) return <div style={styles.empty}>加载中...</div>;
-  if (error) return <div style={styles.empty}>加载失败: {error}</div>;
-  if (!info)
+  if (!info) {
     return (
-      <div style={styles.empty}>
-        <div style={styles.emptyIcon}>ℹ️</div>
-        <div>等待设备上报系统信息...</div>
-        <div style={styles.emptyHint}>系统信息会在 SDK 初始化后自动上报</div>
-      </div>
+      <Flex vertical align="center" justify="center" style={{ height: '100%' }} gap={12}>
+        <Button icon={<ReloadOutlined />} loading={loading} onClick={fetchInfo}>
+          {t.common.refresh}
+        </Button>
+        <Typography.Text type="secondary">点击刷新获取系统信息</Typography.Text>
+      </Flex>
     );
+  }
 
-  return (
-    <div style={styles.container}>
-      <div style={styles.toolbar}>
-        <span style={styles.toolbarTitle}>系统信息</span>
-        <button
-          style={styles.refreshBtn}
-          onClick={() => void load(deviceId)}
-          disabled={loading}
-        >
-          {loading ? '刷新中...' : '🔄 刷新'}
-        </button>
-      </div>
-      <Section title="🖥️ 浏览器 / 平台">
-        <Row label="User Agent" value={info.userAgent} mono />
-        <Row label="Platform" value={info.platform} />
-        <Row label="语言" value={`${info.language}  (${info.languages.join(', ')})`} />
-        {info.vendor && <Row label="Vendor" value={info.vendor} />}
-        <Row label="Cookie" value={info.cookieEnabled ? '✅ 启用' : '❌ 禁用'} />
-      </Section>
-
-      <Section title="📐 屏幕">
-        <Row label="分辨率" value={`${info.screen.width} × ${info.screen.height}`} />
-        <Row
-          label="可用区域"
-          value={`${info.screen.availWidth} × ${info.screen.availHeight}`}
-        />
-        <Row label="像素比" value={`${info.screen.pixelRatio}x`} />
-        <Row label="颜色深度" value={`${info.screen.colorDepth} bit`} />
-        {info.screen.orientation && <Row label="屏幕方向" value={info.screen.orientation} />}
-      </Section>
-
-      <Section title="🔧 硬件">
-        {info.hardware.cpuCores !== undefined && (
-          <Row label="CPU 核心" value={`${info.hardware.cpuCores} 核`} />
-        )}
-        {info.hardware.memory !== undefined && (
-          <Row label="设备内存" value={`${info.hardware.memory} GB`} />
-        )}
-        {info.hardware.maxTouchPoints !== undefined && (
-          <Row label="触控点数" value={String(info.hardware.maxTouchPoints)} />
-        )}
-      </Section>
-
-      <Section title="🌐 网络">
-        {info.connection ? (
-          <>
-            {info.connection.type && <Row label="连接类型" value={info.connection.type} />}
-            {info.connection.effectiveType && (
-              <Row label="有效速度" value={info.connection.effectiveType} />
-            )}
-            {info.connection.downlink !== undefined && (
-              <Row label="下行带宽" value={`${info.connection.downlink} Mbps`} />
-            )}
-            {info.connection.rtt !== undefined && (
-              <Row label="RTT 延迟" value={`${info.connection.rtt} ms`} />
-            )}
-            {info.connection.saveData !== undefined && (
-              <Row label="省流模式" value={info.connection.saveData ? '✅ 开启' : '❌ 关闭'} />
-            )}
-          </>
-        ) : (
-          <Row label="Network Information API" value="不支持" muted />
-        )}
-      </Section>
-
-      {info.battery && (
-        <Section title="🔋 电池">
-          <Row label="充电状态" value={info.battery.charging ? '⚡ 充电中' : '🔋 放电中'} />
-          <Row label="电量" value={<BatteryBar level={info.battery.level} />} />
-          {info.battery.chargingTime !== undefined && (
-            <Row label="充满时间" value={formatSeconds(info.battery.chargingTime)} />
-          )}
-          {info.battery.dischargingTime !== undefined && (
-            <Row label="剩余时间" value={formatSeconds(info.battery.dischargingTime)} />
-          )}
-        </Section>
-      )}
-
-      <Section title="🕐 时区">
-        <Row label="时区" value={info.timezone} />
-        <Row label="UTC 偏移" value={`UTC${info.timezoneOffset <= 0 ? '+' : '-'}${Math.abs(info.timezoneOffset / 60)}h`} />
-      </Section>
-
-      <Section title="🔬 浏览器特性">
-        <FeatureGrid features={info.features} />
-      </Section>
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={styles.section}>
-      <div style={styles.sectionTitle}>{title}</div>
-      <div style={styles.sectionBody}>{children}</div>
-    </div>
-  );
-}
-
-function Row({
-  label,
-  value,
-  mono,
-  muted,
-}: {
-  label: string;
-  value: React.ReactNode;
-  mono?: boolean;
-  muted?: boolean;
-}) {
-  return (
-    <div style={styles.row}>
-      <span style={styles.rowLabel}>{label}</span>
-      <span
-        style={{
-          ...styles.rowValue,
-          fontFamily: mono ? 'monospace' : undefined,
-          color: muted ? '#bbb' : undefined,
-          fontSize: mono ? '11px' : undefined,
-          wordBreak: 'break-all',
-        }}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
-
-function BatteryBar({ level }: { level: number }) {
-  const color = level > 50 ? '#52c41a' : level > 20 ? '#faad14' : '#ff4d4f';
-  return (
-    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <span
-        style={{
-          display: 'inline-block',
-          width: '60px',
-          height: '12px',
-          background: '#f0f0f0',
-          borderRadius: '3px',
-          overflow: 'hidden',
-          border: '1px solid #d9d9d9',
-        }}
-      >
-        <span
-          style={{
-            display: 'block',
-            width: `${level}%`,
-            height: '100%',
-            background: color,
-            transition: 'width 0.3s',
-          }}
-        />
-      </span>
-      <span>{level}%</span>
-    </span>
-  );
-}
-
-function FeatureGrid({ features }: { features: SystemInfo['features'] }) {
-  const categories: Array<{ title: string; keys: (keyof SystemInfo['features'])[] }> = [
-    {
-      title: '图形 / 媒体',
-      keys: ['webGL', 'webGL2', 'webP'],
-    },
-    {
-      title: '网络 API',
-      keys: ['webSocket', 'webRTC', 'fetch', 'beacon', 'eventSource'],
-    },
-    {
-      title: '系统 API',
-      keys: ['serviceWorker', 'webWorker', 'geolocation', 'notifications', 'vibration',
-             'bluetooth', 'usb', 'paymentRequest', 'clipboard', 'share', 'pdfViewer',
-             'broadcastChannel'],
-    },
-    {
-      title: '存储',
-      keys: ['indexedDB', 'cacheStorage', 'localStorage', 'sessionStorage', 'cookieStore', 'webSQL'],
-    },
-    {
-      title: 'JavaScript (ES6+)',
-      keys: ['es6Class', 'es6Arrow', 'es6Template', 'es6Destructuring', 'es6Symbol',
-             'es6Promise', 'es6Proxy', 'es7Async', 'es8AsyncAwait'],
-    },
-    {
-      title: 'CSS 特性',
-      keys: ['cssGrid', 'cssFlexbox', 'cssVariables', 'cssAnimation', 'cssCssHas'],
-    },
-    {
-      title: '观察者 API',
-      keys: ['intersectionObserver', 'resizeObserver', 'mutationObserver', 'performanceObserver'],
-    },
+  const browserMeta = [
+    { label: 'Browser', value: info.browserName ?? info.ua?.split(' ')[0] },
+    { label: 'OS', value: info.platform },
+    { label: 'Language', value: info.language },
+    { label: 'Cookie', value: info.cookieEnabled ? 'Enabled' : 'Disabled', color: info.cookieEnabled ? 'success' : 'error' },
+    { label: 'Online', value: info.onLine ? 'Online' : 'Offline', color: info.onLine ? 'success' : 'warning' },
+    { label: 'Screen', value: `${info.screen?.width}x${info.screen?.height} @${info.pixelRatio}x` },
+    { label: 'Viewport', value: `${info.viewport?.width}x${info.viewport?.height}` },
+    { label: 'URL', value: info.url },
   ];
 
-  const labels: Record<string, string> = {
-    webGL: 'WebGL', webGL2: 'WebGL2', webP: 'WebP',
-    serviceWorker: 'Service Worker', webWorker: 'Web Worker',
-    indexedDB: 'IndexedDB', webSocket: 'WebSocket', webRTC: 'WebRTC',
-    geolocation: 'Geolocation', notifications: 'Notifications',
-    vibration: 'Vibration', bluetooth: 'Bluetooth', usb: 'USB',
-    paymentRequest: 'Payment', clipboard: 'Clipboard',
-    share: 'Web Share', pdfViewer: 'PDF Viewer',
-    fetch: 'Fetch', beacon: 'Beacon', eventSource: 'EventSource',
-    es6Class: 'Class', es6Arrow: 'Arrow Fn', es6Template: 'Template Literals',
-    es6Destructuring: 'Destructuring', es6Symbol: 'Symbol',
-    es6Promise: 'Promise', es6Proxy: 'Proxy',
-    es7Async: 'Async Fn', es8AsyncAwait: 'Async/Await',
-    cssGrid: 'Grid', cssFlexbox: 'Flexbox', cssVariables: 'Variables',
-    cssAnimation: 'Animation', cssCssHas: ':has()',
-    intersectionObserver: 'IntersectionObserver',
-    resizeObserver: 'ResizeObserver',
-    mutationObserver: 'MutationObserver',
-    performanceObserver: 'PerformanceObserver',
-    broadcastChannel: 'BroadcastChannel',
-    cacheStorage: 'Cache Storage', localStorage: 'localStorage',
-    sessionStorage: 'sessionStorage', cookieStore: 'CookieStore', webSQL: 'WebSQL',
-  };
+  const networkItems = info.connection ? [
+    { label: 'Type', value: info.connection.effectiveType },
+    { label: 'Downlink', value: `${info.connection.downlink} Mbps` },
+    { label: 'RTT', value: `${info.connection.rtt} ms` },
+    { label: 'Save Data', value: info.connection.saveData ? 'Yes' : 'No', color: info.connection.saveData ? 'warning' : undefined },
+  ] : [];
+
+  const features = info.features ? Object.entries(info.features).map(([k, v]) => ({ name: k, supported: v })) : [];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      {categories.map((cat) => (
-        <div key={cat.title}>
-          <div style={{ fontSize: '11px', color: '#888', marginBottom: '4px', fontWeight: 600 }}>
-            {cat.title}
-          </div>
-          <div style={styles.featureGrid}>
-            {cat.keys.map((key) => {
-              const supported = (features as Record<string, boolean>)[key] ?? false;
-              return (
-                <div key={key} style={styles.featureItem}>
-                  <span style={{ color: supported ? '#52c41a' : '#ff4d4f', marginRight: '4px' }}>
-                    {supported ? '✅' : '❌'}
-                  </span>
-                  <span style={{ fontSize: '11px', color: supported ? '#333' : '#999' }}>
-                    {labels[key] || key}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+    <Flex vertical style={{ height: '100%', overflow: 'auto', padding: 16, gap: 16 }}>
+      <Flex justify="space-between" align="center">
+        <Typography.Text strong style={{ fontSize: 14 }}>
+          <DesktopOutlined style={{ marginRight: 8 }} />System
+        </Typography.Text>
+        <Button size="small" icon={<ReloadOutlined />} loading={loading} onClick={fetchInfo}>
+          {t.common.refresh}
+        </Button>
+      </Flex>
+
+      {/* Browser / Platform - compact tags */}
+      <div>
+        <Typography.Text type="secondary" style={{ fontSize: 12, marginBottom: 8, display: 'block' }}>
+          <GlobalOutlined style={{ marginRight: 4 }} />Browser / Platform
+        </Typography.Text>
+        <Flex wrap="wrap" gap="small">
+          {browserMeta.filter(m => m.value != null).map(m => (
+            <Tag key={m.label} color={m.color} style={{ margin: 0 }}>
+              {m.label}: {String(m.value).length > 50 ? String(m.value).slice(0, 50) + '…' : String(m.value)}
+            </Tag>
+          ))}
+        </Flex>
+      </div>
+
+      {/* Network */}
+      {networkItems.length > 0 && (
+        <div>
+          <Typography.Text type="secondary" style={{ fontSize: 12, marginBottom: 8, display: 'block' }}>
+            <GlobalOutlined style={{ marginRight: 4 }} />Network
+          </Typography.Text>
+          <Flex wrap="wrap" gap="small">
+            {networkItems.map(m => (
+              <Tag key={m.label} color={m.color} style={{ margin: 0 }}>
+                {m.label}: {String(m.value)}
+              </Tag>
+            ))}
+          </Flex>
         </div>
-      ))}
-    </div>
+      )}
+
+      {/* Browser Features */}
+      {features.length > 0 && (
+        <Collapse
+          size="small"
+          items={[{
+            key: 'features',
+            label: <Typography.Text type="secondary" style={{ fontSize: 12 }}><InfoCircleOutlined style={{ marginRight: 4 }} />Browser Features ({features.length})</Typography.Text>,
+            children: (
+              <Descriptions size="small" column={2} bordered>
+                {features.map(f => (
+                  <Descriptions.Item key={f.name} label={f.name}>
+                    {f.supported ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> : <CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
+                  </Descriptions.Item>
+                ))}
+              </Descriptions>
+            ),
+          }]}
+        />
+      )}
+    </Flex>
   );
 }
-
-function formatSeconds(s: number): string {
-  if (!isFinite(s)) return '—';
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
-}
-
-const styles = {
-  container: {
-    padding: '16px',
-    overflowY: 'auto' as const,
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '12px',
-  },
-  empty: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: '#999',
-    gap: '8px',
-  },
-  emptyIcon: {
-    fontSize: '32px',
-  },
-  emptyHint: {
-    fontSize: '12px',
-    color: '#bbb',
-  },
-  section: {
-    background: '#fff',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-    overflow: 'hidden',
-  },
-  sectionTitle: {
-    padding: '10px 16px',
-    fontWeight: 600,
-    fontSize: '13px',
-    color: '#333',
-    borderBottom: '1px solid #f0f0f0',
-    background: '#fafafa',
-  },
-  sectionBody: {
-    padding: '4px 0',
-  },
-  row: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    padding: '7px 16px',
-    borderBottom: '1px solid #f9f9f9',
-    gap: '16px',
-  },
-  rowLabel: {
-    fontSize: '12px',
-    color: '#666',
-    flexShrink: 0,
-    minWidth: '100px',
-  },
-  rowValue: {
-    fontSize: '12px',
-    color: '#333',
-    textAlign: 'right' as const,
-    flex: 1,
-  },
-  featureGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '4px',
-    padding: '12px 16px',
-  },
-  featureItem: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '4px 0',
-  },
-  toolbar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: '4px',
-  },
-  toolbarTitle: {
-    fontSize: '14px',
-    fontWeight: 600,
-    color: '#333',
-  },
-  refreshBtn: {
-    padding: '4px 12px',
-    fontSize: '12px',
-    background: '#f0f0f0',
-    border: '1px solid #d9d9d9',
-    borderRadius: '4px',
-    cursor: 'pointer',
-  } as const,
-};

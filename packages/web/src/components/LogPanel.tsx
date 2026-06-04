@@ -1,5 +1,15 @@
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import {
+  ReloadOutlined,
+  ExportOutlined,
+  RobotOutlined,
+  EditOutlined,
+  SearchOutlined,
+  CheckOutlined,
+  DownOutlined,
+  PauseOutlined,
+} from '@ant-design/icons';
 import { useLogs } from '../hooks/useLogs.js';
 import { useI18n } from '../i18n/index.js';
 import { LogEntry } from './LogEntry.js';
@@ -22,14 +32,10 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
   const [jsInput, setJsInput] = useState('');
   const [jsHistory, setJsHistory] = useState<string[]>([]);
   const [jsHistoryIndex, setJsHistoryIndex] = useState(-1);
-  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
-  const [screenshotLoading, setScreenshotLoading] = useState(false);
   const [networkThrottle, setNetworkThrottleState] = useState<string>('none');
   const [aiModal, setAiModal] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
   const jsInputRef = useRef<HTMLInputElement>(null);
-
-  // 调试：监控 logs 变化 — removed (debug log removed)
 
   // 切换设备时重置筛选
   useEffect(() => {
@@ -57,22 +63,6 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
     setJsHistoryIndex(-1);
     setJsInput('');
   }, [jsInput, deviceId]);
-
-  const handleTakeScreenshot = useCallback(async () => {
-    if (!deviceId) return;
-    setScreenshotLoading(true);
-    try {
-      await api.post(`/api/devices/${deviceId}/screenshot`);
-      // wait a moment for the device to capture and send back
-      await new Promise((r) => setTimeout(r, 2500));
-      const result = await api.get(`/api/devices/${deviceId}/screenshot`);
-      setScreenshotUrl(result.dataUrl || null);
-    } catch {
-      // ignore
-    } finally {
-      setScreenshotLoading(false);
-    }
-  }, [deviceId]);
 
   const handleReloadPage = useCallback(() => {
     if (!deviceId) return;
@@ -191,19 +181,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
             }}
             title="刷新手机页面"
           >
-            🔄 重载
-          </button>
-          <button
-            onClick={handleTakeScreenshot}
-            disabled={screenshotLoading || !deviceId}
-            style={{
-              ...styles.clearCurrentButton,
-              borderColor: '#52c41a',
-              color: screenshotLoading || !deviceId ? '#999' : '#52c41a',
-            }}
-            title="截图手机屏幕"
-          >
-            {screenshotLoading ? '截图中...' : '📷 截图'}
+            <ReloadOutlined style={{ marginRight: 4 }} />重载
           </button>
           <button
             onClick={handleExportLogs}
@@ -215,7 +193,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
             }}
             title="导出日志为 JSON"
           >
-            📤 导出
+            <ExportOutlined style={{ marginRight: 4 }} />导出
           </button>
           <select
             value={networkThrottle}
@@ -224,10 +202,10 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
             style={{
               padding: '4px 8px',
               fontSize: 12,
-              border: '1px solid #d9d9d9',
+              border: '1px solid var(--ant-color-border, #424242)',
               borderRadius: 2,
-              backgroundColor: networkThrottle !== 'none' ? '#fff7e6' : '#fff',
-              color: networkThrottle !== 'none' ? '#fa8c16' : '#333',
+              backgroundColor: networkThrottle !== 'none' ? 'rgba(250,173,20,0.1)' : 'transparent',
+              color: networkThrottle !== 'none' ? '#fa8c16' : 'var(--ant-color-text)',
               cursor: 'pointer',
             }}
             title="网络节流"
@@ -247,7 +225,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
             }}
             title="智能分析日志"
           >
-            🧠 智能分析
+            <RobotOutlined style={{ marginRight: 4 }} />智能分析
           </button>
           <button
             onClick={handleClearCurrent}
@@ -257,7 +235,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
               e.currentTarget.style.color = '#fff';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.backgroundColor = 'transparent';
               e.currentTarget.style.color = '#1890ff';
             }}
           >
@@ -277,7 +255,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.backgroundColor = 'transparent';
               e.currentTarget.style.color = '#ff4d4f';
             }}
           >
@@ -315,7 +293,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
             flexShrink: 0,
           }}
         >
-          {autoScroll ? '⬇ 跟随' : '⏸ 暂停'}
+          {autoScroll ? <><DownOutlined /> 跟随</> : <><PauseOutlined /> 暂停</>}
         </button>
         <input
           type="text"
@@ -329,12 +307,16 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
       <div ref={containerRef} style={styles.logContainer}>
         {loading ? (
           <div style={styles.empty}>
-            <div style={styles.loadingIcon}>⏳</div>
+            <div style={styles.emptyIcon}>...</div>
             <div>{t.common.loading}</div>
           </div>
         ) : filteredLogs.length === 0 ? (
           <div style={styles.empty}>
-            <div style={styles.emptyIcon}>{logs.length === 0 ? '📝' : '🔍'}</div>
+            <div style={styles.emptyIconWrap}>
+              {logs.length === 0
+                ? <EditOutlined style={{ fontSize: 48, color: '#bbb' }} />
+                : <SearchOutlined style={{ fontSize: 48, color: '#bbb' }} />}
+            </div>
             <div style={styles.emptyText}>{t.common.noData}</div>
           </div>
         ) : (
@@ -361,7 +343,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
 
       {/* JS 控制台输入栏 — 类似 Chrome DevTools Console */}
       <div style={styles.jsConsole}>
-        <span style={styles.jsPrompt}>▶</span>
+        <span style={styles.jsPrompt}>&#9654;</span>
         <input
           ref={jsInputRef}
           type="text"
@@ -394,9 +376,9 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={styles.screenshotHeader}>
-              <span>🤖 {t.logPanel.aiLogAnalysis}</span>
+              <span><RobotOutlined style={{ marginRight: 6 }} />{t.logPanel.aiLogAnalysis}</span>
               <button style={styles.screenshotClose} onClick={() => setAiModal(false)}>
-                ✕
+                &#10005;
               </button>
             </div>
             <div style={{ padding: 16, color: '#e0e0e0', fontSize: 13 }}>
@@ -437,7 +419,7 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
                       </div>
                     )}
                     {errors.length === 0 && (
-                      <div style={{ color: '#4caf50' }}>✅ 未发现错误日志</div>
+                      <div style={{ color: '#4caf50' }}><CheckOutlined style={{ marginRight: 4 }} />未发现错误日志</div>
                     )}
                   </div>
                 );
@@ -447,20 +429,6 @@ export function LogPanel({ deviceId, tabId }: LogPanelProps) {
         </div>
       )}
 
-      {/* 截图预览模态框 */}
-      {screenshotUrl && (
-        <div style={styles.screenshotOverlay} onClick={() => setScreenshotUrl(null)}>
-          <div style={styles.screenshotModal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.screenshotHeader}>
-              <span>📷 手机截图</span>
-              <button style={styles.screenshotClose} onClick={() => setScreenshotUrl(null)}>
-                ✕
-              </button>
-            </div>
-            <img src={screenshotUrl} alt="screenshot" style={styles.screenshotImage} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -470,8 +438,8 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as const,
     height: '100%',
-    backgroundColor: '#fff',
-    border: '1px solid #e0e0e0',
+    backgroundColor: 'transparent',
+    border: '1px solid var(--ant-color-border, #424242)',
     borderRadius: '4px',
     overflow: 'hidden',
   },
@@ -480,16 +448,16 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '12px 16px',
-    borderBottom: '1px solid #e0e0e0',
-    backgroundColor: '#fafafa',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
+    backgroundColor: 'transparent',
   },
   toolbar: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
     padding: '8px 16px',
-    borderBottom: '1px solid #e0e0e0',
-    backgroundColor: '#fafafa',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
+    backgroundColor: 'transparent',
   },
   levelButtons: {
     display: 'flex',
@@ -498,10 +466,10 @@ const styles = {
   levelButton: {
     padding: '4px 10px',
     fontSize: '12px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     borderRadius: '3px',
-    backgroundColor: '#fff',
-    color: '#666',
+    backgroundColor: 'transparent',
+    color: 'var(--ant-color-text-secondary)',
     cursor: 'pointer',
     transition: 'all 0.2s',
   },
@@ -514,10 +482,11 @@ const styles = {
     flex: 1,
     padding: '4px 10px',
     fontSize: '12px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     borderRadius: '3px',
     outline: 'none',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
+    color: 'var(--ant-color-text)',
   },
   titleSection: {
     display: 'flex',
@@ -526,16 +495,16 @@ const styles = {
   title: {
     fontSize: '14px',
     fontWeight: 'bold',
-    color: '#333',
+    color: 'var(--ant-color-text)',
   },
   loadingText: {
     fontSize: '12px',
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     fontWeight: 'normal' as const,
   },
   hint: {
     fontSize: '11px',
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     marginTop: '2px',
   },
   buttonGroup: {
@@ -547,7 +516,7 @@ const styles = {
     fontSize: '12px',
     border: '1px solid #1890ff',
     borderRadius: '2px',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     color: '#1890ff',
     cursor: 'pointer',
     transition: 'all 0.2s',
@@ -557,7 +526,7 @@ const styles = {
     fontSize: '12px',
     border: '1px solid #ff4d4f',
     borderRadius: '2px',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     color: '#ff4d4f',
     cursor: 'pointer',
     transition: 'all 0.2s',
@@ -569,7 +538,7 @@ const styles = {
   logContainer: {
     flex: 1,
     overflowY: 'auto' as const,
-    backgroundColor: '#fafafa',
+    backgroundColor: 'transparent',
   },
   empty: {
     display: 'flex',
@@ -577,15 +546,14 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     fontSize: '14px',
   },
-  loadingIcon: {
+  emptyIcon: {
     fontSize: '32px',
     marginBottom: '12px',
   },
-  emptyIcon: {
-    fontSize: '48px',
+  emptyIconWrap: {
     marginBottom: '12px',
     opacity: 0.5,
   },
@@ -604,7 +572,7 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '8px 12px',
-    borderTop: '1px solid #e0e0e0',
+    borderTop: '1px solid var(--ant-color-border, #424242)',
     backgroundColor: '#1a1a2e',
   },
   jsPrompt: {
@@ -674,11 +642,5 @@ const styles = {
     cursor: 'pointer',
     fontSize: '16px',
     padding: '0 4px',
-  },
-  screenshotImage: {
-    maxWidth: '100%',
-    maxHeight: 'calc(90vh - 40px)',
-    objectFit: 'contain' as const,
-    display: 'block',
   },
 };

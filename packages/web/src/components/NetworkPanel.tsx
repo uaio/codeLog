@@ -1,4 +1,11 @@
 import { CSSProperties, useState, useMemo, useCallback } from 'react';
+import {
+  CheckOutlined,
+  CopyOutlined,
+  GlobalOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
+import { Empty } from 'antd';
 import { useNetworkRequests } from '../hooks/useNetworkRequests.js';
 import { useI18n } from '../i18n/index.js';
 import type { NetworkRequest } from '../types/index.js';
@@ -9,7 +16,7 @@ interface NetworkPanelProps {
 }
 
 function statusColor(status?: number): string {
-  if (!status) return '#999';
+  if (!status) return 'var(--ant-color-text-secondary, #999)';
   if (status < 300) return '#52c41a';
   if (status < 400) return '#faad14';
   return '#ff4d4f';
@@ -22,10 +29,10 @@ function methodColor(method: string): string {
     PUT: '#faad14',
     DELETE: '#ff4d4f',
     PATCH: '#722ed1',
-    OPTIONS: '#999',
-    HEAD: '#999',
+    OPTIONS: 'var(--ant-color-text-secondary, #999)',
+    HEAD: 'var(--ant-color-text-secondary, #999)',
   };
-  return colors[method.toUpperCase()] || '#666';
+  return colors[method.toUpperCase()] || 'var(--ant-color-text-secondary, #666)';
 }
 
 function formatDuration(ms?: number): string {
@@ -101,16 +108,18 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
         </span>
         {(request.type === 'fetch' || request.type === 'xhr') && (
           <button onClick={handleResend} style={detailStyles.resendBtn} title="Resend request">
-            ↩ 重发
+            &#8617; 重发
           </button>
         )}
         {(request.type === 'fetch' || request.type === 'xhr') && (
           <button onClick={handleCopyCurl} style={detailStyles.resendBtn} title="Copy as cURL">
-            {curlCopied ? '✅' : '📋'} cURL
+            {curlCopied
+              ? <><CheckOutlined style={{ marginRight: 2 }} />cURL</>
+              : <><CopyOutlined style={{ marginRight: 2 }} />cURL</>}
           </button>
         )}
         <button onClick={onClose} style={detailStyles.closeBtn}>
-          ✕
+          &#10005;
         </button>
       </div>
 
@@ -212,7 +221,7 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
               </div>
             )}
             {!request.requestHeaders && !request.responseHeaders && (
-              <div style={{ color: '#999', fontSize: 13 }}>{t.common.noData}</div>
+              <div style={{ color: 'var(--ant-color-text-secondary)', fontSize: 13 }}>{t.common.noData}</div>
             )}
           </div>
         )}
@@ -228,9 +237,9 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
               <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #e8e8e8' }}>阶段</th>
-                    <th style={{ textAlign: 'right', padding: '4px 8px', borderBottom: '1px solid #e8e8e8' }}>时间 (ms)</th>
-                    <th style={{ padding: '4px 8px', borderBottom: '1px solid #e8e8e8' }}>占比</th>
+                    <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid var(--ant-color-border, #424242)' }}>阶段</th>
+                    <th style={{ textAlign: 'right', padding: '4px 8px', borderBottom: '1px solid var(--ant-color-border, #424242)' }}>时间 (ms)</th>
+                    <th style={{ padding: '4px 8px', borderBottom: '1px solid var(--ant-color-border, #424242)' }}>占比</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -246,7 +255,7 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
                         <td style={{ padding: '4px 8px', color: colors[phase] }}>{labels[phase]}</td>
                         <td style={{ textAlign: 'right', padding: '4px 8px', fontFamily: 'monospace' }}>{ms.toFixed(2)}</td>
                         <td style={{ padding: '4px 8px' }}>
-                          <div style={{ height: 8, backgroundColor: '#f5f5f5', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ height: 8, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${pct}%`, backgroundColor: colors[phase], borderRadius: 4 }} />
                           </div>
                         </td>
@@ -254,7 +263,7 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
                     );
                   })}
                   {request.timingPhases.total !== undefined && (
-                    <tr style={{ borderTop: '1px solid #e8e8e8', fontWeight: 'bold' }}>
+                    <tr style={{ borderTop: '1px solid var(--ant-color-border, #424242)', fontWeight: 'bold' }}>
                       <td style={{ padding: '4px 8px' }}>Total</td>
                       <td style={{ textAlign: 'right', padding: '4px 8px', fontFamily: 'monospace' }}>{request.timingPhases.total.toFixed(2)}</td>
                       <td />
@@ -263,7 +272,7 @@ function RequestDetail({ request, onClose }: { request: NetworkRequest; onClose:
                 </tbody>
               </table>
             ) : (
-              <div style={{ color: '#999' }}>No timing data (PerformanceResourceTiming unavailable)</div>
+              <div style={{ color: 'var(--ant-color-text-secondary)' }}>No timing data (PerformanceResourceTiming unavailable)</div>
             )}
             {request.initiator && (
               <div style={{ marginTop: 16 }}>
@@ -296,7 +305,7 @@ function WsFrameList({ frames }: { frames: NetworkRequest[] }) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flex: 1, overflow: 'auto' }}>
         {frames.length === 0 && (
-          <div style={{ padding: 20, color: '#999', textAlign: 'center', fontSize: 12 }}>暂无消息帧</div>
+          <div style={{ padding: 20, color: 'var(--ant-color-text-secondary)', textAlign: 'center', fontSize: 12 }}>暂无消息帧</div>
         )}
         {frames.map((f) => {
           const isSend = f.wsDirection === 'send';
@@ -310,22 +319,22 @@ function WsFrameList({ frames }: { frames: NetworkRequest[] }) {
               onClick={() => setSelectedFrame(selectedFrame?.id === f.id ? null : f)}
               style={{
                 padding: '5px 10px',
-                borderBottom: '1px solid #f0f0f0',
+                borderBottom: '1px solid var(--ant-color-border-secondary, #303030)',
                 cursor: 'pointer',
                 fontSize: 12,
                 display: 'flex',
                 gap: 8,
                 alignItems: 'flex-start',
-                backgroundColor: selectedFrame?.id === f.id ? '#e6f7ff' : isEvent ? '#fffbe6' : '#fff',
+                backgroundColor: selectedFrame?.id === f.id ? 'rgba(24,144,255,0.08)' : isEvent ? 'rgba(250,173,20,0.06)' : 'transparent',
               }}
             >
               <span style={{ color: isSend ? '#1890ff' : '#52c41a', fontWeight: 'bold', flexShrink: 0, width: 14 }}>
                 {isEvent ? '●' : isSend ? '↑' : '↓'}
               </span>
-              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: selectedFrame?.id === f.id ? 'pre-wrap' : 'nowrap', wordBreak: 'break-all', color: isEvent ? '#d48806' : '#333' }}>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: selectedFrame?.id === f.id ? 'pre-wrap' : 'nowrap', wordBreak: 'break-all', color: isEvent ? '#d48806' : 'var(--ant-color-text)' }}>
                 {body || '(empty)'}
               </span>
-              <span style={{ flexShrink: 0, color: '#bbb', fontSize: 11 }}>
+              <span style={{ flexShrink: 0, color: 'var(--ant-color-text-secondary)', fontSize: 11 }}>
                 {f.timestamp ? new Date(f.timestamp).toLocaleTimeString() : ''}
               </span>
             </div>
@@ -375,9 +384,9 @@ function WsGroupView({ requests, searchText }: { requests: NetworkRequest[]; sea
   return (
     <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
       {/* Connection list */}
-      <div style={{ width: 260, flexShrink: 0, borderRight: '1px solid #e8e8e8', overflow: 'auto' }}>
+      <div style={{ width: 260, flexShrink: 0, borderRight: '1px solid var(--ant-color-border, #424242)', overflow: 'auto' }}>
         {connections.length === 0 && (
-          <div style={{ padding: 20, color: '#999', textAlign: 'center', fontSize: 12 }}>暂无 WebSocket 连接</div>
+          <div style={{ padding: 20, color: 'var(--ant-color-text-secondary)', textAlign: 'center', fontSize: 12 }}>暂无 WebSocket 连接</div>
         )}
         {connections.map((conn) => (
           <div
@@ -385,9 +394,9 @@ function WsGroupView({ requests, searchText }: { requests: NetworkRequest[]; sea
             onClick={() => setSelectedConnId(conn.id === selectedConnId ? null : conn.id)}
             style={{
               padding: '8px 12px',
-              borderBottom: '1px solid #f0f0f0',
+              borderBottom: '1px solid var(--ant-color-border-secondary, #303030)',
               cursor: 'pointer',
-              backgroundColor: selectedConnId === conn.id ? '#e6f7ff' : '#fff',
+              backgroundColor: selectedConnId === conn.id ? 'rgba(24,144,255,0.08)' : 'transparent',
               fontSize: 12,
             }}
           >
@@ -396,15 +405,15 @@ function WsGroupView({ requests, searchText }: { requests: NetworkRequest[]; sea
                 width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
                 backgroundColor: conn.status === 'open' ? '#52c41a' : conn.status === 'error' ? '#ff4d4f' : '#bbb',
               }} />
-              <span style={{ fontWeight: 'bold', color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ fontWeight: 'bold', color: 'var(--ant-color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {(() => { try { return new URL(conn.url).pathname || '/'; } catch { return conn.url; } })()}
               </span>
             </div>
-            <div style={{ color: '#999', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingLeft: 14 }}>
+            <div style={{ color: 'var(--ant-color-text-secondary)', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingLeft: 14 }}>
               {conn.url}
             </div>
-            <div style={{ color: '#aaa', fontSize: 11, paddingLeft: 14, marginTop: 2 }}>
-              {conn.messageCount} 条消息 · {conn.status}
+            <div style={{ color: 'var(--ant-color-text-secondary)', fontSize: 11, paddingLeft: 14, marginTop: 2 }}>
+              {conn.messageCount} 条消息 &middot; {conn.status}
               {conn.closeTime && conn.openTime ? ` · ${conn.closeTime - conn.openTime}ms` : ''}
             </div>
           </div>
@@ -415,7 +424,7 @@ function WsGroupView({ requests, searchText }: { requests: NetworkRequest[]; sea
         {selectedConn ? (
           <WsFrameList frames={selectedConn.frames} />
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999', fontSize: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ant-color-text-secondary)', fontSize: 12 }}>
             选择一个连接查看消息帧
           </div>
         )}
@@ -463,10 +472,11 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
 
   if (!deviceId) {
     return (
-      <div style={styles.placeholder}>
-        <div style={{ fontSize: 48, opacity: 0.3 }}>🌐</div>
-        <div style={{ fontSize: 14, color: '#999' }}>{t.common.selectDevice}</div>
-      </div>
+      <Empty
+        image={<GlobalOutlined style={{ fontSize: 48, color: '#bbb' }} />}
+        description={t.common.selectDevice}
+        style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+      />
     );
   }
 
@@ -517,7 +527,7 @@ export function NetworkPanel({ deviceId, tabId }: NetworkPanelProps) {
           <option value="error">{t.networkPanel.errorOnly}</option>
         </select>
         <button onClick={clearRequests} style={styles.clearBtn} title={t.common.clear}>
-          🗑
+          <DeleteOutlined />
         </button>
         <span style={styles.count}>{isWsGroupMode ? requests.filter(r => r.type === 'ws').length : filteredRequests.length}</span>
       </div>
@@ -600,51 +610,45 @@ const styles: Record<string, CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    backgroundColor: '#fff',
-  },
-  placeholder: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    gap: 12,
+    backgroundColor: 'var(--ant-color-bg-container, #1f1f1f)',
   },
   toolbar: {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
     padding: '8px 12px',
-    borderBottom: '1px solid #e8e8e8',
-    backgroundColor: '#fafafa',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     flexShrink: 0,
   },
   searchInput: {
     flex: 1,
     padding: '4px 8px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     borderRadius: 4,
     fontSize: 12,
     minWidth: 120,
   },
   select: {
     padding: '4px 6px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     borderRadius: 4,
     fontSize: 12,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--ant-color-bg-container, #1f1f1f)',
   },
   clearBtn: {
     padding: '4px 8px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     borderRadius: 4,
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--ant-color-bg-container, #1f1f1f)',
     cursor: 'pointer',
     fontSize: 14,
+    display: 'inline-flex',
+    alignItems: 'center',
   },
   count: {
     fontSize: 11,
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     whiteSpace: 'nowrap',
   },
   body: {
@@ -662,16 +666,16 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     gap: 8,
     padding: '6px 12px',
-    borderBottom: '1px solid #f0f0f0',
+    borderBottom: '1px solid var(--ant-color-border-secondary, #303030)',
     cursor: 'pointer',
     fontSize: 12,
     transition: 'background-color 0.15s',
   },
   rowSelected: {
-    backgroundColor: '#e6f7ff',
+    backgroundColor: 'rgba(24,144,255,0.08)',
   },
   rowError: {
-    backgroundColor: '#fff2f0',
+    backgroundColor: 'rgba(255,77,79,0.08)',
   },
   method: {
     fontWeight: 'bold',
@@ -690,27 +694,27 @@ const styles: Record<string, CSSProperties> = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    color: '#333',
+    color: 'var(--ant-color-text)',
   },
   duration: {
     width: 56,
     flexShrink: 0,
     textAlign: 'right',
-    color: '#666',
+    color: 'var(--ant-color-text-secondary)',
     fontSize: 11,
   },
   size: {
     width: 52,
     flexShrink: 0,
     textAlign: 'right',
-    color: '#888',
+    color: 'var(--ant-color-text-secondary)',
     fontSize: 11,
   },
   type: {
     width: 36,
     flexShrink: 0,
     textAlign: 'right',
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     fontSize: 10,
     textTransform: 'uppercase',
   },
@@ -718,20 +722,20 @@ const styles: Record<string, CSSProperties> = {
     position: 'relative',
     flex: '0 0 80px',
     height: '100%',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: '2px',
     overflow: 'hidden',
   },
   loadingHint: {
     padding: 20,
     textAlign: 'center',
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     fontSize: 13,
   },
   emptyHint: {
     padding: 40,
     textAlign: 'center',
-    color: '#bbb',
+    color: 'var(--ant-color-text-secondary)',
     fontSize: 13,
   },
 };
@@ -739,7 +743,7 @@ const styles: Record<string, CSSProperties> = {
 const detailStyles: Record<string, CSSProperties> = {
   container: {
     width: 380,
-    borderLeft: '1px solid #e8e8e8',
+    borderLeft: '1px solid var(--ant-color-border, #424242)',
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
@@ -750,8 +754,8 @@ const detailStyles: Record<string, CSSProperties> = {
     alignItems: 'center',
     gap: 8,
     padding: '8px 12px',
-    borderBottom: '1px solid #e8e8e8',
-    backgroundColor: '#fafafa',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
   },
   method: {
     fontWeight: 'bold',
@@ -764,38 +768,40 @@ const detailStyles: Record<string, CSSProperties> = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    color: '#333',
+    color: 'var(--ant-color-text)',
   },
   closeBtn: {
     border: 'none',
     background: 'none',
     cursor: 'pointer',
     fontSize: 14,
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     padding: '2px 6px',
   },
   resendBtn: {
     border: '1px solid #1890ff',
-    background: '#e6f7ff',
+    background: 'rgba(24,144,255,0.08)',
     color: '#1890ff',
     cursor: 'pointer',
     fontSize: 11,
     padding: '2px 8px',
     borderRadius: 4,
     whiteSpace: 'nowrap',
+    display: 'inline-flex',
+    alignItems: 'center',
   },
   meta: {
     display: 'flex',
     gap: 12,
     padding: '6px 12px',
     fontSize: 11,
-    color: '#666',
-    borderBottom: '1px solid #f0f0f0',
+    color: 'var(--ant-color-text-secondary)',
+    borderBottom: '1px solid var(--ant-color-border-secondary, #303030)',
     flexWrap: 'wrap',
   },
   tabs: {
     display: 'flex',
-    borderBottom: '1px solid #e8e8e8',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
   },
   tab: {
     flex: 1,
@@ -805,7 +811,7 @@ const detailStyles: Record<string, CSSProperties> = {
     borderBottom: '2px solid transparent',
     backgroundColor: 'transparent',
     cursor: 'pointer',
-    color: '#666',
+    color: 'var(--ant-color-text-secondary)',
   },
   activeTab: {
     color: '#1890ff',
@@ -820,7 +826,7 @@ const detailStyles: Record<string, CSSProperties> = {
   sectionTitle: {
     fontWeight: 'bold',
     fontSize: 11,
-    color: '#333',
+    color: 'var(--ant-color-text)',
     marginBottom: 4,
     textTransform: 'uppercase',
   },
@@ -839,7 +845,7 @@ const detailStyles: Record<string, CSSProperties> = {
     lineHeight: 1.6,
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-all',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     padding: 8,
     borderRadius: 4,
     maxHeight: 400,
@@ -847,12 +853,12 @@ const detailStyles: Record<string, CSSProperties> = {
   },
   timingBar: {
     padding: '6px 12px',
-    borderBottom: '1px solid #f0f0f0',
+    borderBottom: '1px solid var(--ant-color-border-secondary, #303030)',
   },
   timingLegend: {
     marginTop: 4,
     fontSize: 11,
-    color: '#666',
+    color: 'var(--ant-color-text-secondary)',
     display: 'flex',
     flexWrap: 'wrap',
   },

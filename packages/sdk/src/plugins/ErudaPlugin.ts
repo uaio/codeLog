@@ -26,28 +26,16 @@ type Lang = 'zh' | 'en';
 
 const LABELS: Record<Lang, {
   pageId: string;
-  perf: string;
-  perfStart: string;
-  perfStop: string;
-  perfRunning: string;
   copied: string;
   clickCopy: string;
 }> = {
   zh: {
     pageId: '页面 ID',
-    perf: '⚡ 跑分',
-    perfStart: '🏁 开始跑分',
-    perfStop: '⏹ 停止跑分',
-    perfRunning: '⏳ 跑分中...',
     copied: '✓ 已复制',
     clickCopy: '点击复制',
   },
   en: {
     pageId: 'Page ID',
-    perf: '⚡ Perf',
-    perfStart: '🏁 Start',
-    perfStop: '⏹ Stop',
-    perfRunning: '⏳ Running...',
     copied: '✓ Copied',
     clickCopy: 'Click to copy',
   },
@@ -66,8 +54,6 @@ export class ErudaPlugin {
   private unsubscribers: Array<() => void> = [];
   private lang: Lang = 'zh';
   private pageId: string | null = null;
-  private codelog: { startPerfRun(): void; stopPerfRun(): Promise<unknown> } | null = null;
-  private perfRunning = false;
   private onDevToolsShow: (() => void) | null = null;
   private settingsItemsAdded = false;
   private settingsItemCount = 0;
@@ -76,11 +62,9 @@ export class ErudaPlugin {
   attach(
     eruda: ErudaInstance,
     bus: DataBus,
-    codelog?: { startPerfRun(): void; stopPerfRun(): Promise<unknown> },
     pageId?: string,
   ): void {
     this.eruda = eruda;
-    this.codelog = codelog ?? null;
     this.pageId = pageId ?? null;
     this.settingsItemsAdded = false;
     this.settingsItemCount = 0;
@@ -94,14 +78,6 @@ export class ErudaPlugin {
     this.unsubscribers.push(
       bus.on('console', (entry: DataBusConsoleEntry) => {
         this.forwardToEruda(entry);
-      }),
-    );
-
-    // 跑分完成 → 重置按钮状态
-    this.unsubscribers.push(
-      bus.on('perf_run_done', () => {
-        this.perfRunning = false;
-        this.renderInfoPanel();
       }),
     );
 
@@ -175,6 +151,26 @@ export class ErudaPlugin {
     this.eruda?.i18n?.setLang(erudaLang);
   }
 
+  /**
+   * Force Eruda to re-render with new language by destroying and re-initializing.
+   * Called by the SDK's CodeLog class via the onLangChange callback.
+   */
+  private reinitCallback: (() => void) | null = null;
+
+  /** Set the callback that will re-initialize Eruda (provided by CodeLog main class) */
+  setReinitCallback(cb: () => void): void {
+    this.reinitCallback = cb;
+  }
+
+  /** Force Eruda to re-render with new language */
+  private refreshErudaUI(): void {
+    // The only reliable way to re-render all Eruda panels with new i18n strings
+    // is to destroy and re-initialize the entire Eruda instance.
+    if (this.reinitCallback) {
+      this.reinitCallback();
+    }
+  }
+
   /** Render (or re-render) all CodeLog-injected Info panel items with current language */
   private renderInfoPanel(): void {
     const infoPanel = this.eruda?.get('info') as ErudaInfoPanel | null;
@@ -183,7 +179,7 @@ export class ErudaPlugin {
     const L = LABELS[this.lang];
 
     // Remove stale entries (all possible label variants)
-    for (const key of [LABELS.zh.pageId, LABELS.en.pageId, LABELS.zh.perf, LABELS.en.perf]) {
+    for (const key of [LABELS.zh.pageId, LABELS.en.pageId]) {
       try { infoPanel.remove(key); } catch { /* ignore */ }
     }
 
@@ -195,19 +191,6 @@ export class ErudaPlugin {
       infoPanel.add(
         L.pageId,
         `<span id="codelog-pageid-info" title="${L.clickCopy}" style="cursor:pointer;font-family:monospace;font-size:11px;color:#3b5bdb;word-break:break-all;">${displayId}</span>`,
-      );
-    }
-
-    // Perf run button
-    if (this.codelog) {
-      const isRunning = this.perfRunning;
-      const btnLabel = isRunning ? L.perfRunning : L.perfStart;
-      const btnStyle = isRunning
-        ? 'cursor:not-allowed;padding:2px 8px;background:#bbb;color:#fff;border-radius:4px;font-size:12px;border:none;pointer-events:none;'
-        : 'cursor:pointer;padding:2px 8px;background:#111;color:#fff;border-radius:4px;font-size:12px;border:none;';
-      infoPanel.add(
-        L.perf,
-        `<button id="codelog-perf-btn" ${isRunning ? 'disabled' : ''} style="${btnStyle}">${btnLabel}</button>`,
       );
     }
 
@@ -225,14 +208,16 @@ export class ErudaPlugin {
     let count = 0;
 
     // --- Language select ---
-    // Uses display labels '中文'/'English' as option values so the dropdown renders correctly.
-    // On change: save to localStorage then reload so eruda re-inits with the new language.
+    // Switch Eruda UI language immediately without page reload.
     const langConfig = {
       get: (_key: string) => (this.lang === 'zh' ? '中文' : 'English'),
       set: (_key: string, val: string) => {
         const newLang: Lang = val === '中文' ? 'zh' : 'en';
         try { localStorage.setItem('codelog-lang', newLang); } catch { /* ignore */ }
-        location.reload();
+        this.lang = newLang;
+        this.syncErudaLang(newLang);
+        this.refreshErudaUI();
+        this.renderInfoPanel();
       },
     };
     settings.select(langConfig, 'lang', '语言 / Language', ['中文', 'English']);
@@ -296,31 +281,6 @@ export class ErudaPlugin {
       pageIdEl.onclick = () => this.copyToClipboard(this.pageId!, pageIdEl, displayId);
     }
 
-    // Perf run toggle
-    const perfBtn = shadowRoot.getElementById('codelog-perf-btn') as HTMLButtonElement | null;
-    if (perfBtn && this.codelog) {
-      const L = LABELS[this.lang];
-      // Use onclick to avoid duplicate handlers when bindInfoPanelHandlers is called multiple times
-      perfBtn.onclick = async () => {
-        if (this.perfRunning) return; // already running, button should be disabled
-        this.perfRunning = true;
-        perfBtn.textContent = L.perfRunning;
-        perfBtn.disabled = true;
-        perfBtn.style.cssText = 'cursor:not-allowed;padding:2px 8px;background:#bbb;color:#fff;border-radius:4px;font-size:12px;border:none;pointer-events:none;';
-        this.codelog!.startPerfRun();
-        // Auto-stop after 10s to collect data and send to server
-        setTimeout(() => {
-          this.codelog?.stopPerfRun();
-        }, 10000);
-        // Fallback: reset button after 30s even if perf_run_done never arrives
-        setTimeout(() => {
-          if (this.perfRunning) {
-            this.perfRunning = false;
-            this.renderInfoPanel();
-          }
-        }, 30000);
-      };
-    }
   }
 
   /** Attach open/close CSS class to entry button for styling hooks */

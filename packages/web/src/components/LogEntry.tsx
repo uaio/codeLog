@@ -1,5 +1,19 @@
 import { useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
+import {
+  CloseCircleOutlined,
+  WarningOutlined,
+  InfoCircleOutlined,
+  BarChartOutlined,
+  FormOutlined,
+  NumberOutlined,
+  FieldTimeOutlined,
+  ExclamationCircleOutlined,
+  CopyOutlined,
+  CheckOutlined,
+  DownOutlined,
+  RightOutlined,
+} from '@ant-design/icons';
 import type { ConsoleLog, SerializedValue } from '../types/index.js';
 import { JsonTreeView } from './JsonTreeView.js';
 
@@ -87,19 +101,19 @@ export function LogEntry({ log }: LogEntryProps) {
 
   const getLevelIcon = (level: ConsoleLog['level']) => {
     switch (level) {
-      case 'error': return '🔴';
-      case 'warn': return '⚠️';
-      case 'info': return 'ℹ️';
+      case 'error': return <CloseCircleOutlined style={{ color: getLevelColor(level) }} />;
+      case 'warn': return <WarningOutlined style={{ color: getLevelColor(level) }} />;
+      case 'info': return <InfoCircleOutlined style={{ color: getLevelColor(level) }} />;
       case 'repl-input': return '>';
       case 'repl-output': return '←';
-      case 'table': return '📊';
-      case 'group': return groupOpen ? '▼' : '▶';
-      case 'group-collapsed': return groupOpen ? '▼' : '▶';
+      case 'table': return <BarChartOutlined style={{ color: getLevelColor(level) }} />;
+      case 'group': return groupOpen ? <DownOutlined /> : <RightOutlined />;
+      case 'group-collapsed': return groupOpen ? <DownOutlined /> : <RightOutlined />;
       case 'group-end': return '└';
-      case 'count': return '🔢';
-      case 'time-log': return '⏱️';
-      case 'assert': return '❌';
-      default: return '📝';
+      case 'count': return <NumberOutlined style={{ color: getLevelColor(level) }} />;
+      case 'time-log': return <FieldTimeOutlined style={{ color: getLevelColor(level) }} />;
+      case 'assert': return <ExclamationCircleOutlined style={{ color: getLevelColor(level) }} />;
+      default: return <FormOutlined style={{ color: getLevelColor(level) }} />;
     }
   };
 
@@ -152,7 +166,7 @@ export function LogEntry({ log }: LogEntryProps) {
   if (isGroupEnd) {
     return (
       <div style={{ ...styles.entry, borderLeftColor: getLevelColor(log.level), paddingTop: 4, paddingBottom: 4, paddingLeft: 16 + indentPx }}>
-        <div style={{ color: '#bfbfbf', fontSize: 12 }}>▲ group end</div>
+        <div style={{ color: '#bfbfbf', fontSize: 12 }}>&#9650; group end</div>
       </div>
     );
   }
@@ -164,16 +178,16 @@ export function LogEntry({ log }: LogEntryProps) {
         borderLeftColor: getLevelColor(log.level),
         paddingLeft: 16 + indentPx,
         backgroundColor: isGlobalError
-          ? '#fff2f0'
+          ? 'rgba(255,77,79,0.08)'
           : log.level === 'assert'
-          ? '#fff2f0'
+          ? 'rgba(255,77,79,0.08)'
           : isReplInput
-            ? '#e6f4ff'
+            ? 'rgba(24,144,255,0.08)'
             : isReplOutput
-              ? '#f6ffed'
+              ? 'rgba(82,196,26,0.08)'
               : isGroup
-                ? '#f9f0ff'
-                : '#fff',
+                ? 'rgba(114,46,209,0.08)'
+                : 'transparent',
         borderTop: isReplInput ? '1px solid #d0e8ff' : undefined,
       }}
     >
@@ -186,10 +200,14 @@ export function LogEntry({ log }: LogEntryProps) {
             fontWeight: isReplInput || isReplOutput ? 'bold' : undefined,
             fontSize: isReplInput || isReplOutput ? 14 : undefined,
             cursor: isGroup ? 'pointer' : undefined,
+            display: 'inline-flex',
+            alignItems: 'center',
           }}
           onClick={isGroup ? () => setGroupOpen((o) => !o) : undefined}
         >
-          {isGlobalError ? '💥' : getLevelIcon(log.level)}
+          {isGlobalError
+            ? <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+            : getLevelIcon(log.level)}
         </span>
         {!isReplInput && !isReplOutput && (
           <span style={styles.timestamp}>{formatTime(log.timestamp)}</span>
@@ -205,7 +223,9 @@ export function LogEntry({ log }: LogEntryProps) {
           onClick={handleCopy}
           style={styles.copyBtn}
         >
-          {copied ? '✅' : '📋'}
+          {copied
+            ? <CheckOutlined style={{ color: '#52c41a', fontSize: 12 }} />
+            : <CopyOutlined style={{ fontSize: 12 }} />}
         </button>
       </div>
       {(!isGroup || groupOpen) && (
@@ -257,21 +277,21 @@ const tableStyles = {
     fontFamily: 'monospace',
   },
   th: {
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     padding: '4px 8px',
-    background: '#f5f5f5',
+    background: 'rgba(255,255,255,0.06)',
     fontWeight: 'bold' as const,
     textAlign: 'left' as const,
     whiteSpace: 'nowrap' as const,
   },
   td: {
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     padding: '3px 8px',
     whiteSpace: 'pre-wrap' as const,
     wordBreak: 'break-word' as const,
   },
-  rowEven: { backgroundColor: '#fff' },
-  rowOdd: { backgroundColor: '#fafafa' },
+  rowEven: { backgroundColor: 'transparent' },
+  rowOdd: { backgroundColor: 'rgba(255,255,255,0.03)' },
 };
 
 const styles = {
@@ -279,9 +299,9 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as const,
     padding: '12px 16px',
-    borderBottom: '1px solid #f0f0f0',
+    borderBottom: '1px solid var(--ant-color-border-secondary, #303030)',
     borderLeft: '4px solid #52c41a',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     fontFamily:
       '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace',
     fontSize: '13px',
@@ -298,7 +318,7 @@ const styles = {
     fontSize: '14px',
   },
   timestamp: {
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     fontSize: '12px',
     fontWeight: '500' as const,
   },
@@ -312,7 +332,7 @@ const styles = {
     textTransform: 'uppercase' as const,
   },
   message: {
-    color: '#262626',
+    color: 'var(--ant-color-text)',
     wordBreak: 'break-word' as const,
     whiteSpace: 'pre-wrap' as const,
     fontSize: '13px',
@@ -342,12 +362,12 @@ const styles = {
   stack: {
     margin: '8px 0 0 0',
     padding: '12px',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: '6px',
-    color: '#666',
+    color: 'var(--ant-color-text-secondary)',
     fontSize: '11px',
     overflowX: 'auto' as const,
-    border: '1px solid #e8e8e8',
+    border: '1px solid var(--ant-color-border-secondary, #303030)',
   },
   treeToggle: {
     marginTop: '4px',
@@ -371,6 +391,7 @@ const styles = {
     marginLeft: 'auto',
     opacity: 0.5,
     padding: '0 2px',
+    display: 'inline-flex',
+    alignItems: 'center',
   },
 };
-

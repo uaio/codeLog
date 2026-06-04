@@ -1,5 +1,8 @@
 import { CSSProperties, useState, useEffect, useRef } from 'react';
+import { CameraOutlined, DownloadOutlined } from '@ant-design/icons';
+import { Empty } from 'antd';
 import { websocketManager } from '../lib/websocketManager.js';
+import { api } from '../api/client.js';
 
 interface ScreenshotPanelProps {
   deviceId?: string;
@@ -19,6 +22,7 @@ export function ScreenshotPanel({ deviceId }: ScreenshotPanelProps) {
   const [taking, setTaking] = useState(false);
   const [error, setError] = useState('');
   const counterRef = useRef(0);
+  const takingRef = useRef(false);
 
   // Listen for screenshot events from SDK
   useEffect(() => {
@@ -44,6 +48,7 @@ export function ScreenshotPanel({ deviceId }: ScreenshotPanelProps) {
         });
         setSelected(entry);
         setTaking(false);
+        takingRef.current = false;
         setError('');
       }
     });
@@ -53,39 +58,38 @@ export function ScreenshotPanel({ deviceId }: ScreenshotPanelProps) {
   const handleTakeScreenshot = async () => {
     if (!deviceId) return;
     setTaking(true);
+    takingRef.current = true;
     setError('');
     try {
-      const res = await fetch(`/api/devices/${deviceId}/screenshot`, { method: 'POST' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.post(`/api/devices/${deviceId}/screenshot`);
       // Response arrives via WS, handled by the listener above
       // Fallback: if no WS event after 8s, poll REST
       setTimeout(async () => {
-        if (!taking) return;
+        if (!takingRef.current) return;
         try {
-          const get = await fetch(`/api/devices/${deviceId}/screenshot`);
-          if (get.ok) {
-            const data = await get.json();
-            if (data.dataUrl) {
-              const entry: Screenshot = {
-                id: `ss-${Date.now()}-${++counterRef.current}`,
-                dataUrl: data.dataUrl,
-                width: data.width ?? 0,
-                height: data.height ?? 0,
-                timestamp: data.timestamp ?? Date.now(),
-              };
-              setScreenshots((prev) => {
-                const next = [entry, ...prev];
-                return next.length > 20 ? next.slice(0, 20) : next;
-              });
-              setSelected(entry);
-            }
+          const data = await api.get(`/api/devices/${deviceId}/screenshot`);
+          if (data.dataUrl) {
+            const entry: Screenshot = {
+              id: `ss-${Date.now()}-${++counterRef.current}`,
+              dataUrl: data.dataUrl,
+              width: data.width ?? 0,
+              height: data.height ?? 0,
+              timestamp: data.timestamp ?? Date.now(),
+            };
+            setScreenshots((prev) => {
+              const next = [entry, ...prev];
+              return next.length > 20 ? next.slice(0, 20) : next;
+            });
+            setSelected(entry);
           }
         } catch {}
         setTaking(false);
+        takingRef.current = false;
       }, 8000);
     } catch (e) {
       setError(`截图失败: ${(e as Error).message}`);
       setTaking(false);
+      takingRef.current = false;
     }
   };
 
@@ -98,10 +102,11 @@ export function ScreenshotPanel({ deviceId }: ScreenshotPanelProps) {
 
   if (!deviceId) {
     return (
-      <div style={s.placeholder}>
-        <div style={{ fontSize: 48, opacity: 0.3 }}>📷</div>
-        <div style={{ fontSize: 14, color: '#999' }}>请先选择设备</div>
-      </div>
+      <Empty
+        image={<CameraOutlined style={{ fontSize: 48, color: '#bbb' }} />}
+        description="请先选择设备"
+        style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+      />
     );
   }
 
@@ -110,10 +115,10 @@ export function ScreenshotPanel({ deviceId }: ScreenshotPanelProps) {
       {/* Toolbar */}
       <div style={s.toolbar}>
         <button onClick={handleTakeScreenshot} disabled={taking} style={s.captureBtn}>
-          {taking ? '截图中...' : '📷 截取截图'}
+          <CameraOutlined style={{ marginRight: 6 }} />{taking ? '截图中...' : '截取截图'}
         </button>
         {screenshots.length > 0 && (
-          <span style={{ fontSize: 12, color: '#999' }}>{screenshots.length} 张</span>
+          <span style={{ fontSize: 12, color: 'var(--ant-color-text-secondary)' }}>{screenshots.length} 张</span>
         )}
         {error && <span style={{ fontSize: 12, color: '#ff4d4f' }}>{error}</span>}
         {taking && (
@@ -140,10 +145,10 @@ export function ScreenshotPanel({ deviceId }: ScreenshotPanelProps) {
                   style={{ width: '100%', height: 80, objectFit: 'contain', backgroundColor: '#000' }}
                 />
                 <div style={s.thumbInfo}>
-                  <div style={{ fontSize: 10, color: '#666' }}>
-                    {ss.width}×{ss.height}
+                  <div style={{ fontSize: 10, color: 'var(--ant-color-text-secondary)' }}>
+                    {ss.width}&times;{ss.height}
                   </div>
-                  <div style={{ fontSize: 10, color: '#999' }}>
+                  <div style={{ fontSize: 10, color: 'var(--ant-color-text-secondary)' }}>
                     {new Date(ss.timestamp).toLocaleTimeString()}
                   </div>
                 </div>
@@ -152,7 +157,7 @@ export function ScreenshotPanel({ deviceId }: ScreenshotPanelProps) {
                   onClick={(e) => { e.stopPropagation(); handleDownload(ss); }}
                   style={s.downloadBtn}
                 >
-                  ⬇
+                  <DownloadOutlined style={{ fontSize: 10 }} />
                 </button>
               </div>
             ))}
@@ -164,11 +169,11 @@ export function ScreenshotPanel({ deviceId }: ScreenshotPanelProps) {
           {selected ? (
             <div style={s.previewWrapper}>
               <div style={s.previewToolbar}>
-                <span style={{ fontSize: 12, color: '#666' }}>
-                  {selected.width}×{selected.height} · {new Date(selected.timestamp).toLocaleString()}
+                <span style={{ fontSize: 12, color: 'var(--ant-color-text-secondary)' }}>
+                  {selected.width}&times;{selected.height} &middot; {new Date(selected.timestamp).toLocaleString()}
                 </span>
                 <button onClick={() => handleDownload(selected)} style={s.dlBtn}>
-                  ⬇ 下载
+                  <DownloadOutlined style={{ marginRight: 4 }} />下载
                 </button>
               </div>
               <div style={s.previewArea}>
@@ -181,8 +186,8 @@ export function ScreenshotPanel({ deviceId }: ScreenshotPanelProps) {
             </div>
           ) : (
             <div style={s.emptyMain}>
-              <div style={{ fontSize: 48, opacity: 0.2 }}>📷</div>
-              <div style={{ fontSize: 14, color: '#bbb', marginTop: 12 }}>
+              <CameraOutlined style={{ fontSize: 48, color: '#ddd' }} />
+              <div style={{ fontSize: 14, color: 'var(--ant-color-text-secondary)', marginTop: 12 }}>
                 点击「截取截图」按钮捕获当前页面
               </div>
             </div>
@@ -198,23 +203,15 @@ const s: Record<string, CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    backgroundColor: '#fff',
-  },
-  placeholder: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    gap: 12,
+    backgroundColor: 'var(--ant-color-bg-container, #1f1f1f)',
   },
   toolbar: {
     display: 'flex',
     alignItems: 'center',
     gap: 12,
     padding: '8px 12px',
-    borderBottom: '1px solid #e8e8e8',
-    backgroundColor: '#fafafa',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     flexShrink: 0,
   },
   captureBtn: {
@@ -235,18 +232,18 @@ const s: Record<string, CSSProperties> = {
   sideList: {
     width: 140,
     flexShrink: 0,
-    borderRight: '1px solid #e8e8e8',
+    borderRight: '1px solid var(--ant-color-border, #424242)',
     overflowY: 'auto',
-    backgroundColor: '#fafafa',
+    backgroundColor: 'rgba(255,255,255,0.03)',
   },
   thumb: {
     padding: 6,
-    borderBottom: '1px solid #f0f0f0',
+    borderBottom: '1px solid var(--ant-color-border-secondary, #303030)',
     cursor: 'pointer',
     position: 'relative',
   },
   thumbSelected: {
-    backgroundColor: '#e6f7ff',
+    backgroundColor: 'rgba(24,144,255,0.08)',
   },
   thumbInfo: {
     display: 'flex',
@@ -260,11 +257,13 @@ const s: Record<string, CSSProperties> = {
     right: 6,
     padding: '1px 4px',
     fontSize: 10,
-    backgroundColor: '#fff',
-    border: '1px solid #d9d9d9',
+    backgroundColor: 'var(--ant-color-bg-elevated, #2a2a2a)',
+    border: '1px solid var(--ant-color-border, #424242)',
     borderRadius: 3,
     cursor: 'pointer',
-    color: '#666',
+    color: 'var(--ant-color-text-secondary)',
+    display: 'inline-flex',
+    alignItems: 'center',
   },
   main: {
     flex: 1,
@@ -282,7 +281,7 @@ const s: Record<string, CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '6px 12px',
-    borderBottom: '1px solid #f0f0f0',
+    borderBottom: '1px solid var(--ant-color-border-secondary, #303030)',
     flexShrink: 0,
   },
   previewArea: {
@@ -292,7 +291,7 @@ const s: Record<string, CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   emptyMain: {
     display: 'flex',
@@ -304,10 +303,10 @@ const s: Record<string, CSSProperties> = {
   dlBtn: {
     padding: '4px 10px',
     fontSize: 12,
-    backgroundColor: '#fff',
-    border: '1px solid #d9d9d9',
+    backgroundColor: 'var(--ant-color-bg-elevated, #2a2a2a)',
+    border: '1px solid var(--ant-color-border, #424242)',
     borderRadius: 4,
     cursor: 'pointer',
-    color: '#333',
+    color: 'var(--ant-color-text)',
   },
 };

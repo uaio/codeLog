@@ -2,6 +2,7 @@ import { ConsolePayload } from '@codelog/types';
 import { CustomPayload } from '@codelog/types';
 import { DOMPayload } from '@codelog/types';
 import { ErrorPayload } from '@codelog/types';
+import { FullAuditReport } from '@codelog/types';
 import { LifecyclePayload } from '@codelog/types';
 import { MockRule } from '@codelog/types';
 import { NetworkPayload } from '@codelog/types';
@@ -9,6 +10,7 @@ import { PerformancePayload } from '@codelog/types';
 import { PerfScoreItem } from '@codelog/types';
 import { ScreenshotPayload } from '@codelog/types';
 import { StoragePayload } from '@codelog/types';
+import { SystemPayload } from '@codelog/types';
 
 declare interface AuditItem {
     id: string;
@@ -69,6 +71,8 @@ declare class CodeLog {
     private perfRunCollector;
     private perfRunStartTime;
     private lastPerfRunSession;
+    /** 页面加载阶段主 performanceCollector 已采集的 vitals，跑分时合并使用 */
+    private prePerfRunVitals;
     private networkThrottle;
     private mockApi;
     private visibilityHandler;
@@ -313,6 +317,7 @@ declare type DataBusEventMap = {
     perf_run_raw: PerfRunRawPayload;
     perf_run_done: PerfRunScore;
     error: ErrorPayload;
+    system: SystemPayload;
     lifecycle: LifecyclePayload;
     custom: CustomPayload;
 };
@@ -501,7 +506,7 @@ declare interface PerfRunRawPayload {
     endTime: number;
     duration: number;
     snapshot: PerformancePayload;
-    audit?: PageAuditReport;
+    audit?: FullAuditReport;
 }
 
 declare interface PerfRunScore {

@@ -1,9 +1,32 @@
-import { CSSProperties, useState, useCallback, useEffect } from 'react';
+import { CSSProperties, useState, useCallback, useEffect, useRef } from 'react';
+import {
+  Space,
+  Button,
+  Typography,
+  Segmented,
+  Spin,
+  Empty,
+  Descriptions,
+  Input,
+  Tooltip,
+} from 'antd';
+import {
+  ReloadOutlined,
+  AimOutlined,
+  EyeOutlined,
+  ApiOutlined,
+  CodeOutlined,
+  GlobalOutlined,
+  CameraOutlined,
+  ExpandOutlined,
+} from '@ant-design/icons';
 import { useDOM } from '../hooks/useDOM.js';
 import { useI18n } from '../i18n/index.js';
 import { api } from '../api/client.js';
 import { websocketManager } from '../lib/websocketManager.js';
 import type { DOMNode } from '../types/index.js';
+
+const { Text } = Typography;
 
 interface DOMPanelProps {
   deviceId?: string;
@@ -13,12 +36,26 @@ function formatTime(ts: number) {
   return new Date(ts).toLocaleTimeString();
 }
 
+// ─── Recursive search to check if a subtree contains a selector ───
+function treeContainsSelector(node: DOMNode, target: string): boolean {
+  if (buildSelector(node) === target) return true;
+  if (node.children) {
+    for (const child of node.children) {
+      if (treeContainsSelector(child, target)) return true;
+    }
+  }
+  return false;
+}
+
 interface DOMNodeViewProps {
   node: DOMNode;
   depth?: number;
   deviceId?: string;
   selectedSelector?: string;
+  expandedPaths?: Set<string>;
   onSelect?: (selector: string) => void;
+  onToggle?: (path: string) => void;
+  parentPath?: string;
 }
 
 function buildSelector(node: DOMNode): string {
@@ -30,14 +67,30 @@ function buildSelector(node: DOMNode): string {
   return node.tag.toLowerCase();
 }
 
-function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: DOMNodeViewProps) {
+function buildPath(node: DOMNode, parentPath?: string, index?: number): string {
+  const sel = buildSelector(node);
+  return parentPath ? `${parentPath}/${sel}[${index ?? 0}]` : `/${sel}`;
+}
+
+function DOMNodeView({
+  node,
+  depth = 0,
+  deviceId,
+  selectedSelector,
+  expandedPaths,
+  onSelect,
+  onToggle,
+  parentPath,
+}: DOMNodeViewProps) {
   const hasChildren = (node.children && node.children.length > 0) || (node.childCount ?? 0) > 0;
-  const [expanded, setExpanded] = useState(depth < 3);
   const [hovered, setHovered] = useState(false);
   const [editingAttr, setEditingAttr] = useState<string | null>(null);
   const [editingVal, setEditingVal] = useState('');
   const selector = buildSelector(node);
   const isSelected = selectedSelector === selector;
+  const childIndex = parentPath ? parseInt(parentPath.match(/\[(\d+)\]$/)?.[1] ?? '0', 10) : 0;
+  const path = buildPath(node, parentPath, childIndex);
+  const isExpanded = expandedPaths?.has(path) ?? depth < 3;
 
   const indent = depth * 14;
 
@@ -58,9 +111,17 @@ function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: 
     (e: React.MouseEvent) => {
       e.stopPropagation();
       onSelect?.(selector);
-      if (hasChildren) setExpanded((v) => !v);
+      if (hasChildren) onToggle?.(path);
     },
-    [selector, hasChildren, onSelect],
+    [selector, hasChildren, onSelect, onToggle, path],
+  );
+
+  const handleToggle = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onToggle?.(path);
+    },
+    [onToggle, path],
   );
 
   const startEditAttr = useCallback((e: React.MouseEvent, attrName: string, currentVal: string) => {
@@ -89,7 +150,8 @@ function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: 
       return (
         <span key={attrName} style={{ color }} onClick={(e) => e.stopPropagation()}>
           {' '}{attrName}=&quot;
-          <input
+          <Input
+            size="small"
             autoFocus
             value={editingVal}
             onChange={(e) => setEditingVal(e.target.value)}
@@ -98,7 +160,7 @@ function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: 
               if (e.key === 'Enter') commitAttrEdit();
               if (e.key === 'Escape') cancelAttrEdit();
             }}
-            style={nodeStyles.attrInput}
+            style={{ width: 120, fontFamily: 'inherit', fontSize: 12, padding: '0 2px' }}
           />
           &quot;
         </span>
@@ -132,7 +194,11 @@ function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: 
         }}
         onClick={handleSelect}
       >
-        {hasChildren && <span style={nodeStyles.arrow}>{expanded ? '▾' : '▸'}</span>}
+        {hasChildren && (
+          <span style={nodeStyles.arrow} onClick={handleToggle}>
+            {isExpanded ? '▾' : '▸'}
+          </span>
+        )}
         {!hasChildren && <span style={nodeStyles.arrowPlaceholder} />}
 
         <span style={nodeStyles.tag}>&lt;{node.tag}</span>
@@ -149,17 +215,19 @@ function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: 
 
         {/* Action buttons (shown on hover) */}
         {hovered && deviceId && (
-          <button
-            title="在设备上高亮此元素"
-            onClick={handleHighlight}
-            style={nodeStyles.highlightBtn}
-          >
-            🔍
-          </button>
+          <Tooltip title="在设备上高亮此元素">
+            <Button
+              type="text"
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={handleHighlight}
+              style={nodeStyles.highlightBtn}
+            />
+          </Tooltip>
         )}
 
         {/* Collapsed hint */}
-        {hasChildren && !expanded && (
+        {hasChildren && !isExpanded && (
           <span style={nodeStyles.collapsedHint}>
             …{node.childCount ?? node.children?.length ?? 0} children
           </span>
@@ -167,7 +235,7 @@ function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: 
       </div>
 
       {/* Children */}
-      {expanded &&
+      {isExpanded &&
         node.children &&
         node.children.map((child, i) => (
           <DOMNodeView
@@ -176,19 +244,22 @@ function DOMNodeView({ node, depth = 0, deviceId, selectedSelector, onSelect }: 
             depth={depth + 1}
             deviceId={deviceId}
             selectedSelector={selectedSelector}
+            expandedPaths={expandedPaths}
             onSelect={onSelect}
+            onToggle={onToggle}
+            parentPath={path}
           />
         ))}
 
       {/* Truncation notice */}
-      {expanded && node.childCount && node.children && node.childCount > node.children.length && (
+      {isExpanded && node.childCount && node.children && node.childCount > node.children.length && (
         <div style={{ marginLeft: 18, ...nodeStyles.truncated }}>
           … {node.childCount - node.children.length} more children not shown
         </div>
       )}
 
       {/* Closing tag for expanded parents */}
-      {hasChildren && expanded && <div style={nodeStyles.closeTag}>&lt;/{node.tag}&gt;</div>}
+      {hasChildren && isExpanded && <div style={nodeStyles.closeTag}>&lt;/{node.tag}&gt;</div>}
     </div>
   );
 }
@@ -201,13 +272,13 @@ function ComputedStylesPanel({
   deviceId: string;
   selector: string;
 }) {
-  const [styles, setStyles] = useState<Record<string, string> | null>(null);
+  const [styleEntries, setStyleEntries] = useState<[string, string][] | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!selector) return;
     setLoading(true);
-    setStyles(null);
+    setStyleEntries(null);
 
     let cancelled = false;
     let pollTimer: ReturnType<typeof setTimeout>;
@@ -216,7 +287,7 @@ function ComputedStylesPanel({
       const result = await api.getComputedStyles(deviceId);
       if (cancelled) return;
       if (result && result.selector === selector) {
-        setStyles(result.styles);
+        setStyleEntries(Object.entries(result.styles));
         setLoading(false);
         return;
       }
@@ -244,34 +315,57 @@ function ComputedStylesPanel({
   if (!selector) return null;
 
   return (
-    <div style={computedStyles.panel}>
-      <div style={computedStyles.header}>
-        <span style={computedStyles.title}>Computed Styles</span>
-        <span style={computedStyles.selectorLabel} title={selector}>
+    <div style={css.panel}>
+      <div style={css.header}>
+        <Text strong style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Computed Styles
+        </Text>
+        <Text code style={{ fontSize: 11, color: '#4ec9b0' }} ellipsis title={selector}>
           {selector}
-        </span>
+        </Text>
       </div>
-      <div style={computedStyles.body}>
-        {loading && <div style={computedStyles.loading}>⏳ Loading…</div>}
-        {!loading && !styles && (
-          <div style={computedStyles.empty}>No styles available</div>
+      <div style={css.body}>
+        {loading && (
+          <div style={{ padding: '20px 10px', textAlign: 'center' }}>
+            <Spin size="small" />
+          </div>
         )}
-        {styles && (
-          <table style={computedStyles.table}>
-            <tbody>
-              {Object.entries(styles).map(([prop, val]) => (
-                <tr key={prop} style={computedStyles.row}>
-                  <td style={computedStyles.propCell}>{prop}</td>
-                  <td style={computedStyles.valCell}>{val || '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {!loading && !styleEntries && (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="No styles available"
+            style={{ padding: '20px 0' }}
+          />
+        )}
+        {styleEntries && (
+          <Descriptions
+            size="small"
+            bordered
+            column={1}
+            style={css.table}
+          >
+            {styleEntries.map(([prop, val]) => (
+              <Descriptions.Item
+                key={prop}
+                label={
+                  <Text style={{ fontFamily: 'monospace', fontSize: 11, color: '#9cdcfe' }}>
+                    {prop}
+                  </Text>
+                }
+              >
+                <Text style={{ fontFamily: 'monospace', fontSize: 11, color: '#ce9178', wordBreak: 'break-all' }}>
+                  {val || '—'}
+                </Text>
+              </Descriptions.Item>
+            ))}
+          </Descriptions>
         )}
       </div>
     </div>
   );
 }
+
+// ─── Main Panel ───
 
 export function DOMPanel({ deviceId }: DOMPanelProps) {
   const { snapshot, loading, refresh } = useDOM(deviceId);
@@ -279,6 +373,62 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
   const [viewMode, setViewMode] = useState<'tree' | 'source'>('tree');
   const [selectedSelector, setSelectedSelector] = useState<string | undefined>(undefined);
   const [pickerActive, setPickerActive] = useState(false);
+
+  // Expand/collapse state: set of node paths
+  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() => {
+    // Default: expand first 3 levels
+    const s = new Set<string>();
+    return s;
+  });
+
+  // Resizable panel widths (preview / styles)
+  const [previewWidth, setPreviewWidth] = useState(280);
+  const [stylesWidth, setStylesWidth] = useState(280);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef<'preview' | 'styles' | null>(null);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+
+  // Screenshot for page preview
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  // Auto-capture preview when device connects or DOM refreshes
+  const capturePreview = useCallback(async () => {
+    if (!deviceId) return;
+    setPreviewLoading(true);
+    try {
+      // Send correct message format that server handles
+      websocketManager.send({
+        type: 'take_screenshot',
+        deviceId,
+      });
+    } catch {
+      /* ignore */
+    }
+  }, [deviceId]);
+
+  // Listen for screenshot response to use as preview
+  useEffect(() => {
+    if (!deviceId) return;
+    const unsub = websocketManager.subscribe((msg: any) => {
+      if (
+        msg.type === 'event' &&
+        msg.deviceId === deviceId &&
+        msg.envelope?.type === 'screenshot' &&
+        msg.envelope?.data?.dataUrl
+      ) {
+        setPreviewSrc(msg.envelope.data.dataUrl);
+        setPreviewLoading(false);
+      }
+    });
+    return unsub;
+  }, [deviceId]);
+
+  // Capture preview on first connect
+  useEffect(() => {
+    if (deviceId) capturePreview();
+  }, [deviceId, capturePreview]);
 
   // Listen for element_picked events from device
   useEffect(() => {
@@ -297,90 +447,260 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
     return unsub;
   }, [deviceId]);
 
+  // Auto-expand ancestor nodes when selectedSelector changes
+  useEffect(() => {
+    if (!selectedSelector || !snapshot?.dom) return;
+    const target = selectedSelector;
+    const newExpanded = new Set(expandedPaths);
+
+    // Recursively find and expand ancestors of the target selector
+    function expandToTarget(node: DOMNode, parentPath: string | undefined, idx: number): boolean {
+      const path = buildPath(node, parentPath, idx);
+      const sel = buildSelector(node);
+
+      if (sel === target) return true;
+
+      if (node.children) {
+        for (let i = 0; i < node.children.length; i++) {
+          if (treeContainsSelector(node.children[i], target)) {
+            newExpanded.add(path);
+            expandToTarget(node.children[i], path, i);
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    expandToTarget(snapshot.dom, undefined, 0);
+    setExpandedPaths(newExpanded);
+    // Only run when selectedSelector changes, not when expandedPaths changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSelector, snapshot?.dom]);
+
   const startPicker = useCallback(() => {
     if (!deviceId) return;
     setPickerActive(true);
     websocketManager.send({ type: 'start_element_picker', deviceId });
   }, [deviceId]);
 
+  const handleToggle = useCallback((path: string) => {
+    setExpandedPaths((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  }, []);
+
+  // ─── Drag resize handlers ───
+  const onDividerMouseDown = useCallback(
+    (which: 'preview' | 'styles') => (e: React.MouseEvent) => {
+      e.preventDefault();
+      draggingRef.current = which;
+      startXRef.current = e.clientX;
+      startWidthRef.current = which === 'preview' ? previewWidth : stylesWidth;
+
+      const onMouseMove = (ev: MouseEvent) => {
+        if (draggingRef.current === 'preview') {
+          const delta = ev.clientX - startXRef.current;
+          setPreviewWidth(Math.max(120, Math.min(600, startWidthRef.current + delta)));
+        } else if (draggingRef.current === 'styles') {
+          const delta = startXRef.current - ev.clientX;
+          setStylesWidth(Math.max(180, Math.min(500, startWidthRef.current + delta)));
+        }
+      };
+
+      const onMouseUp = () => {
+        draggingRef.current = null;
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      };
+
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    },
+    [previewWidth, stylesWidth],
+  );
+
+  // Initialize default expanded paths (first 3 levels) when snapshot changes
+  useEffect(() => {
+    if (!snapshot?.dom) return;
+    const defaultExpanded = new Set<string>();
+
+    function expandLevels(node: DOMNode, parentPath: string | undefined, idx: number, depth: number) {
+      if (depth >= 3) return;
+      const path = buildPath(node, parentPath, idx);
+      if ((node.children && node.children.length > 0) || (node.childCount ?? 0) > 0) {
+        defaultExpanded.add(path);
+      }
+      if (node.children) {
+        for (let i = 0; i < node.children.length; i++) {
+          expandLevels(node.children[i], path, i, depth + 1);
+        }
+      }
+    }
+
+    expandLevels(snapshot.dom, undefined, 0, 0);
+    setExpandedPaths(defaultExpanded);
+  }, [snapshot?.dom]);
+
   if (!deviceId) {
     return (
       <div style={styles.container}>
-        <div style={styles.placeholder}>
-          <div style={styles.placeholderIcon}>🌲</div>
-          <div style={styles.placeholderText}>{t.common.selectDevice}</div>
-        </div>
+        <Empty
+          image={<ApiOutlined style={{ fontSize: 48, opacity: 0.3 }} />}
+          description={t.common.selectDevice}
+          style={{ margin: 'auto' }}
+        />
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} ref={containerRef}>
       {/* Header */}
       <div style={styles.header}>
-        <h3 style={styles.title}>Element</h3>
-        <div style={styles.headerRight}>
+        <Text strong style={{ fontSize: 14 }}>
+          Element
+        </Text>
+        <Space size="small">
           {snapshot && (
             <span style={styles.meta}>
-              {snapshot.title && <span style={styles.pageTitle}>{snapshot.title}</span>}
-              <span style={styles.updateTime}>· {formatTime(snapshot.timestamp)}</span>
+              {snapshot.title && (
+                <Text
+                  type="secondary"
+                  ellipsis
+                  style={{ maxWidth: 200, fontSize: 12 }}
+                >
+                  {snapshot.title}
+                </Text>
+              )}
+              <Text type="secondary" style={{ fontSize: 11, color: '#666' }}>
+                · {formatTime(snapshot.timestamp)}
+              </Text>
             </span>
           )}
-          <button
-            style={{ ...styles.btn, ...(loading ? styles.btnDisabled : {}) }}
+          <Button
+            size="small"
+            icon={<ReloadOutlined />}
             onClick={refresh}
-            disabled={loading}
+            loading={loading}
           >
-            🔄 {t.common.refresh}
-          </button>
+            {t.common.refresh}
+          </Button>
           {deviceId && (
-            <button
-              style={{
-                ...styles.btn,
-                ...(pickerActive ? { background: 'rgba(0,122,204,0.3)', borderColor: '#007acc' } : {}),
-              }}
-              onClick={startPicker}
-              title="在设备上点击元素以选中"
-            >
-              {pickerActive ? '⏳ 等待选择…' : '🔍 选取元素'}
-            </button>
+            <Tooltip title="在设备上点击元素以选中">
+              <Button
+                size="small"
+                type={pickerActive ? 'primary' : 'default'}
+                icon={<AimOutlined />}
+                onClick={startPicker}
+              >
+                {pickerActive ? '等待选择…' : '选取元素'}
+              </Button>
+            </Tooltip>
           )}
-        </div>
+          <Tooltip title="截取页面预览">
+            <Button
+              size="small"
+              icon={<CameraOutlined />}
+              loading={previewLoading}
+              onClick={capturePreview}
+            >
+              预览
+            </Button>
+          </Tooltip>
+        </Space>
       </div>
 
       {/* URL bar */}
       {snapshot?.url && (
         <div style={styles.urlBar}>
-          <span style={styles.urlLabel}>URL</span>
-          <span style={styles.urlValue}>{snapshot.url}</span>
+          <Text style={{ fontSize: 11, color: '#666', fontFamily: 'monospace' }}>URL</Text>
+          <Text style={{ fontSize: 11, color: '#9cdcfe', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+            {snapshot.url}
+          </Text>
         </div>
       )}
 
       {/* View mode tabs */}
-      <div style={styles.viewTabs}>
-        <button
-          style={{ ...styles.viewTab, ...(viewMode === 'tree' ? styles.viewTabActive : {}) }}
-          onClick={() => setViewMode('tree')}
-        >
-          🌲 Elements
-        </button>
-        <button
-          style={{ ...styles.viewTab, ...(viewMode === 'source' ? styles.viewTabActive : {}) }}
-          onClick={() => setViewMode('source')}
-        >
-          {'</>'}  HTML Source
-        </button>
+      <div style={styles.viewTabsWrap}>
+        <Segmented
+          size="small"
+          value={viewMode}
+          onChange={(val) => setViewMode(val as 'tree' | 'source')}
+          options={[
+            {
+              label: (
+                <Space size={4}>
+                  <CodeOutlined />
+                  Elements
+                </Space>
+              ),
+              value: 'tree',
+            },
+            {
+              label: (
+                <Space size={4}>
+                  <GlobalOutlined />
+                  HTML Source
+                </Space>
+              ),
+              value: 'source',
+            },
+          ]}
+        />
       </div>
 
-      {/* DOM Tree + Computed Styles side by side */}
+      {/* ─── Three-panel layout: Preview | Tree | Styles ─── */}
       <div style={styles.mainArea}>
+        {/* LEFT: Page Preview panel */}
+        <div style={{ ...css.panel, width: previewWidth, flexShrink: 0, borderRight: '1px solid #333' }}>
+          <div style={css.header}>
+            <Space size={4}>
+              <ExpandOutlined style={{ fontSize: 12 }} />
+              <Text strong style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Page Preview
+              </Text>
+            </Space>
+          </div>
+          <div style={{ flex: 1, overflow: 'auto', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8 }}>
+            {previewSrc ? (
+              <img
+                src={previewSrc}
+                alt="Page preview"
+                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', border: '1px solid #333', borderRadius: 4 }}
+              />
+            ) : (
+              <Empty
+                image={<CameraOutlined style={{ fontSize: 32, opacity: 0.3 }} />}
+                description="点击「预览」截取页面"
+                style={{ margin: 'auto' }}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Draggable divider: preview ↔ tree */}
+        <div
+          style={css.divider}
+          onMouseDown={onDividerMouseDown('preview')}
+        />
+
+        {/* CENTER: DOM Tree */}
         <div style={styles.tree}>
-          {loading && <div style={styles.loadingWrap}>⏳ {t.common.loading}</div>}
-          {!loading && !snapshot && (
-            <div style={styles.emptyWrap}>
-              <span style={styles.emptyIcon}>📡</span>
-              <span>{t.domPanel.waitingHint}</span>
+          {loading && (
+            <div style={styles.loadingWrap}>
+              <Spin tip={t.common.loading} />
             </div>
+          )}
+          {!loading && !snapshot && (
+            <Empty
+              image={<ApiOutlined style={{ fontSize: 32, opacity: 0.5 }} />}
+              description={t.domPanel.waitingHint}
+              style={{ padding: '60px 20px' }}
+            />
           )}
           {!loading && snapshot && viewMode === 'tree' && (
             <DOMNodeView
@@ -388,7 +708,9 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
               depth={0}
               deviceId={deviceId}
               selectedSelector={selectedSelector}
+              expandedPaths={expandedPaths}
               onSelect={setSelectedSelector}
+              onToggle={handleToggle}
             />
           )}
           {!loading && snapshot && viewMode === 'source' && (
@@ -398,14 +720,26 @@ export function DOMPanel({ deviceId }: DOMPanelProps) {
           )}
         </div>
 
-        {/* Computed Styles panel — visible when a node is selected */}
+        {/* Draggable divider: tree ↔ styles */}
         {viewMode === 'tree' && selectedSelector && deviceId && (
-          <ComputedStylesPanel deviceId={deviceId} selector={selectedSelector} />
+          <div
+            style={css.divider}
+            onMouseDown={onDividerMouseDown('styles')}
+          />
+        )}
+
+        {/* RIGHT: Computed Styles panel */}
+        {viewMode === 'tree' && selectedSelector && deviceId && (
+          <div style={{ ...css.panel, width: stylesWidth }}>
+            <ComputedStylesPanel deviceId={deviceId} selector={selectedSelector} />
+          </div>
         )}
       </div>
     </div>
   );
 }
+
+// ─── Styles ───
 
 const styles: Record<string, CSSProperties> = {
   container: {
@@ -423,28 +757,11 @@ const styles: Record<string, CSSProperties> = {
     backgroundColor: '#252526',
     flexShrink: 0,
   },
-  title: { margin: 0, fontSize: '14px', fontWeight: 600, color: '#ccc' },
-  headerRight: { display: 'flex', alignItems: 'center', gap: '10px' },
-  meta: { display: 'flex', alignItems: 'center', gap: '6px' },
-  pageTitle: {
-    fontSize: '12px',
-    color: '#888',
-    maxWidth: '200px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
+  meta: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
   },
-  updateTime: { fontSize: '11px', color: '#666' },
-  btn: {
-    padding: '4px 10px',
-    fontSize: '12px',
-    border: '1px solid #555',
-    borderRadius: '4px',
-    backgroundColor: '#333',
-    cursor: 'pointer',
-    color: '#ccc',
-  },
-  btnDisabled: { opacity: 0.4, cursor: 'not-allowed' },
   urlBar: {
     display: 'flex',
     alignItems: 'center',
@@ -454,26 +771,11 @@ const styles: Record<string, CSSProperties> = {
     borderBottom: '1px solid #333',
     flexShrink: 0,
   },
-  urlLabel: { fontSize: '11px', color: '#666', fontFamily: 'monospace' },
-  urlValue: { fontSize: '11px', color: '#9cdcfe', fontFamily: 'monospace', wordBreak: 'break-all' },
-  viewTabs: {
-    display: 'flex',
+  viewTabsWrap: {
+    padding: '6px 16px',
     borderBottom: '1px solid #333',
     backgroundColor: '#252526',
     flexShrink: 0,
-  },
-  viewTab: {
-    padding: '6px 14px',
-    fontSize: '12px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    color: '#888',
-    cursor: 'pointer',
-    borderBottom: '2px solid transparent',
-  },
-  viewTabActive: {
-    color: '#ccc',
-    borderBottom: '2px solid #007acc',
   },
   mainArea: {
     flex: 1,
@@ -497,30 +799,12 @@ const styles: Record<string, CSSProperties> = {
     padding: '8px 8px',
     fontFamily: '"SF Mono", Monaco, "Cascadia Code", Consolas, monospace',
     fontSize: '12px',
+    minWidth: 0,
   },
-  loadingWrap: { padding: '40px', color: '#666', textAlign: 'center' },
-  emptyWrap: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '60px 20px',
-    color: '#555',
-    gap: '10px',
-    fontSize: '13px',
+  loadingWrap: {
+    padding: '40px',
+    textAlign: 'center',
   },
-  emptyIcon: { fontSize: '32px', opacity: 0.5 },
-  placeholder: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: '#555',
-    gap: '12px',
-  },
-  placeholderIcon: { fontSize: '48px', opacity: 0.3 },
-  placeholderText: { fontSize: '14px' },
 };
 
 const nodeStyles: Record<string, CSSProperties> = {
@@ -532,22 +816,11 @@ const nodeStyles: Record<string, CSSProperties> = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
   },
-  arrow: { color: '#888', width: '14px', flexShrink: 0, fontSize: '10px', userSelect: 'none' },
+  arrow: { color: '#888', width: '14px', flexShrink: 0, fontSize: '10px', userSelect: 'none', cursor: 'pointer' },
   arrowPlaceholder: { width: '14px', flexShrink: 0, display: 'inline-block' },
   tag: { color: '#4ec9b0' },
   attr: { color: '#9cdcfe' },
   attrVal: { color: '#ce9178' },
-  attrInput: {
-    background: '#2d2d2d',
-    border: '1px solid #007acc',
-    borderRadius: '2px',
-    color: '#ce9178',
-    fontSize: '12px',
-    padding: '0 2px',
-    outline: 'none',
-    width: '120px',
-    fontFamily: 'inherit',
-  },
   text: {
     color: '#d4d4d4',
     fontSize: '11px',
@@ -559,87 +832,48 @@ const nodeStyles: Record<string, CSSProperties> = {
   truncated: { color: '#666', fontSize: '11px', fontStyle: 'italic', padding: '2px 0' },
   closeTag: { color: '#4ec9b0', paddingLeft: 0 },
   highlightBtn: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '11px',
     marginLeft: '6px',
-    padding: '0 3px',
+    padding: 0,
+    minHeight: 'auto',
+    lineHeight: 1,
+    fontSize: 11,
     opacity: 0.7,
     flexShrink: 0,
   },
 };
 
-const computedStyles: Record<string, CSSProperties> = {
+const css: Record<string, CSSProperties> = {
   panel: {
-    width: '280px',
     flexShrink: 0,
-    borderLeft: '1px solid #333',
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: '#1e1e1e',
+    overflow: 'hidden',
   },
   header: {
     padding: '6px 10px',
     borderBottom: '1px solid #2d2d2d',
     backgroundColor: '#252526',
     display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     flexShrink: 0,
-  },
-  title: {
-    fontSize: '11px',
-    fontWeight: 600,
-    color: '#ccc',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  selectorLabel: {
-    fontSize: '11px',
-    color: '#4ec9b0',
-    fontFamily: 'monospace',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
   },
   body: {
     flex: 1,
     overflow: 'auto',
     padding: '4px 0',
   },
-  loading: {
-    padding: '20px 10px',
-    color: '#666',
-    fontSize: '12px',
-    textAlign: 'center',
-  },
-  empty: {
-    padding: '20px 10px',
-    color: '#555',
-    fontSize: '12px',
-    textAlign: 'center',
-  },
   table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    fontSize: '11px',
+    fontSize: 11,
     fontFamily: 'monospace',
   },
-  row: {
-    borderBottom: '1px solid #2a2a2a',
-  },
-  propCell: {
-    padding: '3px 10px',
-    color: '#9cdcfe',
-    verticalAlign: 'top',
-    width: '45%',
-    whiteSpace: 'nowrap',
-  },
-  valCell: {
-    padding: '3px 10px',
-    color: '#ce9178',
-    verticalAlign: 'top',
-    wordBreak: 'break-all',
+  divider: {
+    width: 5,
+    cursor: 'col-resize',
+    backgroundColor: '#333',
+    flexShrink: 0,
+    transition: 'background-color 0.15s',
+    zIndex: 10,
   },
 };

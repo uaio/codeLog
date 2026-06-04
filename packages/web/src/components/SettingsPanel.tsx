@@ -135,27 +135,27 @@ const styles: Record<string, CSSProperties> = {
     display: 'flex',
     flexDirection: 'column' as const,
     height: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '16px 20px',
-    borderBottom: '1px solid #e8e8e8',
-    backgroundColor: '#fafafa',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
+    backgroundColor: 'transparent',
   },
   title: {
     margin: 0,
     fontSize: '16px',
     fontWeight: 'bold',
-    color: '#333',
+    color: 'var(--ant-color-text)',
   },
   deviceId: {
     fontSize: '12px',
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     padding: '4px 8px',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'var(--ant-color-border-secondary, #303030)',
     borderRadius: '4px',
   },
   content: {
@@ -166,15 +166,15 @@ const styles: Record<string, CSSProperties> = {
   section: {
     marginBottom: '24px',
     padding: '16px',
-    backgroundColor: '#fafafa',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     borderRadius: '8px',
-    border: '1px solid #e8e8e8',
+    border: '1px solid var(--ant-color-border, #424242)',
   },
   sectionTitle: {
     margin: '0 0 12px 0',
     fontSize: '14px',
     fontWeight: 'bold',
-    color: '#333',
+    color: 'var(--ant-color-text)',
   },
   info: {
     display: 'flex',
@@ -185,16 +185,16 @@ const styles: Record<string, CSSProperties> = {
     display: 'flex',
     justifyContent: 'space-between',
     padding: '8px 0',
-    borderBottom: '1px solid #e8e8e8',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
   },
   infoLabel: {
     fontSize: '13px',
-    color: '#666',
+    color: 'var(--ant-color-text-secondary)',
     fontWeight: '500',
   },
   infoValue: {
     fontSize: '13px',
-    color: '#333',
+    color: 'var(--ant-color-text)',
     fontFamily: 'monospace',
   },
   link: {
@@ -204,7 +204,7 @@ const styles: Record<string, CSSProperties> = {
   },
   empty: {
     fontSize: '13px',
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     fontStyle: 'italic',
   },
   setting: {
@@ -215,7 +215,7 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     gap: '8px',
     fontSize: '13px',
-    color: '#333',
+    color: 'var(--ant-color-text)',
     cursor: 'pointer',
   },
   checkbox: {
@@ -226,8 +226,8 @@ const styles: Record<string, CSSProperties> = {
     padding: '6px 12px',
     fontSize: '13px',
     borderRadius: '4px',
-    border: '1px solid #d9d9d9',
-    backgroundColor: '#fff',
+    border: '1px solid var(--ant-color-border, #424242)',
+    backgroundColor: 'var(--ant-color-bg-container, #1f1f1f)',
     cursor: 'pointer',
   },
 };

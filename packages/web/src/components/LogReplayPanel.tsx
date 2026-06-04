@@ -1,4 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  LeftOutlined,
+  PauseOutlined,
+  CaretRightOutlined,
+  StepBackwardOutlined,
+} from '@ant-design/icons';
 import type { SavedLogSession } from '../types/index.js';
 
 interface LogReplayProps {
@@ -108,7 +114,7 @@ export function LogReplayPanel({ session, onClose }: LogReplayProps) {
     <div style={styles.container}>
       {/* Toolbar */}
       <div style={styles.toolbar}>
-        <button style={styles.backBtn} onClick={onClose}>← Back</button>
+        <button style={styles.backBtn} onClick={onClose}><LeftOutlined /> Back</button>
         <span style={styles.title}>
           Replay · {entries.length} entries · {formatMs(duration)}
         </span>
@@ -117,9 +123,9 @@ export function LogReplayPanel({ session, onClose }: LogReplayProps) {
       {/* Controls */}
       <div style={styles.controls}>
         {playing ? (
-          <button style={styles.ctrlBtn} onClick={() => setPlaying(false)}>⏸ Pause</button>
+          <button style={styles.ctrlBtn} onClick={() => setPlaying(false)}><PauseOutlined /> Pause</button>
         ) : (
-          <button style={styles.ctrlBtn} onClick={handlePlay}>▶ Play</button>
+          <button style={styles.ctrlBtn} onClick={handlePlay}><CaretRightOutlined /> Play</button>
         )}
         <button
           style={styles.ctrlBtn}
@@ -130,13 +136,13 @@ export function LogReplayPanel({ session, onClose }: LogReplayProps) {
             setVisibleUntil(-1);
           }}
         >
-          ⏮ Reset
+          <StepBackwardOutlined /> Reset
         </button>
         <div style={styles.speedGroup}>
           {[0.5, 1, 2, 5, 10].map((s) => (
             <button
               key={s}
-              style={{ ...styles.speedBtn, fontWeight: speed === s ? 'bold' : 'normal', borderColor: speed === s ? '#1890ff' : '#d9d9d9', color: speed === s ? '#1890ff' : '#666' }}
+              style={{ ...styles.speedBtn, fontWeight: speed === s ? 'bold' : 'normal', borderColor: speed === s ? '#1890ff' : 'var(--ant-color-border, #424242)', color: speed === s ? '#1890ff' : 'var(--ant-color-text-secondary)' }}
               onClick={() => setSpeed(s)}
             >
               {s}x
@@ -175,7 +181,7 @@ export function LogReplayPanel({ session, onClose }: LogReplayProps) {
           </div>
         ))}
         {visibleEntries.length === 0 && (
-          <div style={styles.empty}>Press ▶ Play to start replay</div>
+          <div style={styles.empty}>Press <CaretRightOutlined /> Play to start replay</div>
         )}
       </div>
     </div>
@@ -199,27 +205,28 @@ const styles = {
     overflow: 'hidden',
     fontFamily: 'system-ui, sans-serif',
     fontSize: '13px',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
   },
   toolbar: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
     padding: '10px 16px',
-    borderBottom: '1px solid #f0f0f0',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
     flexShrink: 0,
   },
   title: {
     flex: 1,
-    color: '#666',
+    color: 'var(--ant-color-text-secondary)',
     fontSize: '12px',
   },
   backBtn: {
     padding: '4px 12px',
     borderRadius: '4px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     cursor: 'pointer',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
+    color: 'var(--ant-color-text)',
     fontSize: '12px',
   },
   controls: {
@@ -227,16 +234,17 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '8px 16px',
-    borderBottom: '1px solid #f0f0f0',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
     flexShrink: 0,
     flexWrap: 'wrap' as const,
   },
   ctrlBtn: {
     padding: '5px 14px',
     borderRadius: '4px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     cursor: 'pointer',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
+    color: 'var(--ant-color-text)',
     fontSize: '13px',
   },
   speedGroup: {
@@ -247,9 +255,10 @@ const styles = {
   speedBtn: {
     padding: '3px 8px',
     borderRadius: '4px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     cursor: 'pointer',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
+    color: 'var(--ant-color-text)',
     fontSize: '12px',
   },
   seekBar: {
@@ -257,11 +266,11 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     padding: '6px 16px',
-    borderBottom: '1px solid #f0f0f0',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
     flexShrink: 0,
   },
   seekTime: {
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     fontSize: '11px',
     fontFamily: 'monospace',
     minWidth: '48px',
@@ -279,13 +288,13 @@ const styles = {
     alignItems: 'flex-start',
     gap: '8px',
     padding: '7px 16px',
-    borderBottom: '1px solid #f5f5f5',
+    borderBottom: '1px solid var(--ant-color-border-secondary, #303030)',
     borderLeft: '3px solid #52c41a',
     fontSize: '12px',
     animation: 'fadeIn 0.15s ease-out',
   },
   logTime: {
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
     flexShrink: 0,
     fontSize: '11px',
     fontFamily: 'monospace',
@@ -299,12 +308,12 @@ const styles = {
   logMsg: {
     flex: 1,
     wordBreak: 'break-word' as const,
-    color: '#333',
+    color: 'var(--ant-color-text)',
     fontFamily: 'monospace',
   },
   empty: {
     padding: '32px 16px',
     textAlign: 'center' as const,
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
   },
 };

@@ -19,13 +19,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-size: 14px;
   line-height: 1.5;
-  color: #333;
-  background-color: #f5f5f5;
+  color: var(--ant-color-text, rgba(255,255,255,0.85));
+  background-color: var(--ant-color-bg-layout, #141414);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 button {
@@ -51,28 +50,29 @@ select {
   font-size: inherit;
   line-height: inherit;
   color: inherit;
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--ant-color-border, #424242);
   border-radius: 2px;
   padding: 4px 11px;
   outline: none;
   transition: all 0.3s;
+  background-color: transparent;
 }
 
 input:hover,
 textarea:hover,
 select:hover {
-  border-color: #40a9ff;
+  border-color: var(--ant-color-primary, #1890ff);
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: #40a9ff;
+  border-color: var(--ant-color-primary, #1890ff);
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
 }
 
 a {
-  color: #1890ff;
+  color: var(--ant-color-primary, #1890ff);
   text-decoration: none;
   transition: color 0.3s;
 }
@@ -81,55 +81,60 @@ a:hover {
   color: #40a9ff;
 }
 
-/* 滚动条样式 */
+/* 滚动条样式 - dark */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+  background: transparent;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: rgba(255,255,255,0.25);
 }
 
-/* 工具类 */
-.text-center {
-  text-align: center;
+/* Ant Design Tabs 内容区撑满高度 */
+.ant-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.text-right {
-  text-align: right;
+.ant-tabs-content-holder {
+  flex: 1;
+  overflow: hidden;
 }
 
-.mt-1 {
-  margin-top: 8px;
+.ant-tabs-content {
+  height: 100%;
 }
 
-.mt-2 {
-  margin-top: 16px;
+.ant-tabs-tabpane {
+  height: 100%;
 }
 
-.mb-1 {
-  margin-bottom: 8px;
+/* Ant Design dark overrides for inline components */
+.ant-table {
+  background: transparent !important;
 }
 
-.mb-2 {
-  margin-bottom: 16px;
+.ant-card {
+  background: var(--ant-color-bg-container, #1f1f1f) !important;
 }
 
-.p-1 {
-  padding: 8px;
+.ant-empty-description {
+  color: var(--ant-color-text-secondary, rgba(255,255,255,0.45));
 }
 
-.p-2 {
-  padding: 16px;
+/* Select dropdown in dark */
+.ant-select-dropdown {
+  background: var(--ant-color-bg-elevated, #1f1f1f);
 }

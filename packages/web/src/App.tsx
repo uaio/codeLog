@@ -1,4 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { ConfigProvider, theme, Layout, Button, Badge, Space, Typography, Tooltip, Tabs as AntTabs } from 'antd';
+import type { TabsProps } from 'antd';
+import {
+  CodeOutlined,
+  GlobalOutlined,
+  BugOutlined,
+  DatabaseOutlined,
+  ApartmentOutlined,
+  BarChartOutlined,
+  SwapOutlined,
+  RobotOutlined,
+  TableOutlined,
+  InboxOutlined,
+  DesktopOutlined,
+  CameraOutlined,
+  AppstoreOutlined,
+  SettingOutlined,
+  WifiOutlined,
+  LoadingOutlined,
+  DisconnectOutlined,
+  TranslationOutlined,
+  MobileOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons';
 import { DeviceList } from './components/DeviceList.js';
 import { LogPanel } from './components/LogPanel.js';
 import { NetworkPanel } from './components/NetworkPanel.js';
@@ -6,9 +30,7 @@ import { StoragePanel } from './components/StoragePanel.js';
 import { DOMPanel } from './components/DOMPanel.js';
 import { PerformancePanel } from './components/PerformancePanel.js';
 import { SettingsPanel } from './components/SettingsPanel.js';
-import { PerfRunPanel } from './components/PerfRunPanel.js';
 import { MockPanel } from './components/MockPanel.js';
-import { HealthPanel } from './components/HealthPanel.js';
 import { AIAnalysisPanel } from './components/AIAnalysisPanel.js';
 import { SystemPanel } from './components/SystemPanel.js';
 import { IndexedDBPanel } from './components/IndexedDBPanel.js';
@@ -17,11 +39,13 @@ import { ErrorPanel } from './components/ErrorPanel.js';
 import { PluginsPanel } from './components/PluginsPanel.js';
 import { ScreenshotPanel } from './components/ScreenshotPanel.js';
 import { TabFilter } from './components/TabFilter.js';
-import { Tabs, type Tab } from './components/Tabs.js';
 import { useI18n } from './i18n/index.js';
 import { websocketManager } from './lib/websocketManager.js';
 import type { Device } from './types/index.js';
 import './styles/global.css';
+
+const { Header, Sider, Content } = Layout;
+const { Text } = Typography;
 
 function App() {
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
@@ -35,7 +59,6 @@ function App() {
     return websocketManager.onStateChange(setWsState);
   }, []);
 
-  // Subscribe to WebSocket messages to track unread counts per tab
   useEffect(() => {
     const tabForMessageType: Record<string, string> = {
       log: 'console',
@@ -48,17 +71,12 @@ function App() {
     const errorPrefixes = ['[Uncaught Error]', '[Unhandled Promise Rejection]', '[Resource Error]'];
     const unsubscribe = websocketManager.subscribe((msg: any) => {
       const msgType: string = msg?.type ?? '';
-      // Handle event envelope format
       const effectiveType =
         msgType === 'event' && msg?.data?.type ? String(msg.data.type) : msgType;
       const tab = tabForMessageType[effectiveType];
       if (tab) {
-        setBadges((prev) => ({
-          ...prev,
-          [tab]: (prev[tab] ?? 0) + 1,
-        }));
+        setBadges((prev) => ({ ...prev, [tab]: (prev[tab] ?? 0) + 1 }));
       }
-      // Track error-level console logs for the error tab badge
       if (effectiveType === 'log' && msg?.data) {
         const logData = msg.data;
         const isError =
@@ -81,340 +99,171 @@ function App() {
     setBadges((prev) => ({ ...prev, [tabId]: 0 }));
   };
 
-  const tabs: Tab[] = [
-    {
-      id: 'console',
-      label: t.tabs.console,
-      icon: '📝',
-      badge: badges['console'],
-      content: selectedDevice ? (
-        <LogPanel deviceId={selectedDevice.deviceId} tabId={selectedTabId} />
-      ) : (
-        <div style={styles.placeholder}>
-          <div style={styles.placeholderIcon}>📱</div>
-          <div style={styles.placeholderText}>{t.common.selectDevice}</div>
-          <div style={styles.placeholderHint}>{t.common.selectDeviceHint}</div>
-        </div>
-      ),
-    },
-    {
-      id: 'network',
-      label: t.tabs.network,
-      icon: '🌐',
-      badge: badges['network'],
-      content: <NetworkPanel deviceId={selectedDevice?.deviceId} tabId={selectedTabId} />,
-    },
-    {
-      id: 'errors',
-      label: t.tabs.errors,
-      icon: '🐛',
-      badge: badges['errors'],
-      content: <ErrorPanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'storage',
-      label: t.tabs.storage,
-      icon: '💾',
-      badge: badges['storage'],
-      content: <StoragePanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'element',
-      label: t.tabs.dom,
-      icon: '🌲',
-      badge: badges['dom'],
-      content: <DOMPanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'performance',
-      label: t.tabs.perf,
-      icon: '📊',
-      content: <PerformancePanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'perf_run',
-      label: t.tabs.perfRun,
-      icon: '🏁',
-      content: <PerfRunPanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'mock',
-      label: t.tabs.mock,
-      icon: '🎭',
-      content: <MockPanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'health',
-      label: t.tabs.health,
-      icon: '🩺',
-      content: <HealthPanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'ai',
-      label: t.tabs.analysis,
-      icon: '🧠',
-      content: <AIAnalysisPanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'indexeddb',
-      label: t.tabs.indexeddb,
-      icon: '🗄️',
-      badge: badges['indexeddb'],
-      content: <IndexedDBPanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'offline-logs',
-      label: t.tabs.offlineLogs,
-      icon: '📦',
-      content: <OfflineLogsPanel />,
-    },
-    {
-      id: 'system',
-      label: t.tabs.system,
-      icon: '🖥️',
-      content: <SystemPanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'screenshot',
-      label: t.tabs.screenshot,
-      icon: '📷',
-      content: <ScreenshotPanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'plugins',
-      label: t.tabs.plugins,
-      icon: '🔌',
-      content: <PluginsPanel deviceId={selectedDevice?.deviceId} />,
-    },
-    {
-      id: 'settings',
-      label: t.tabs.settings,
-      icon: '⚙️',
-      content: <SettingsPanel deviceId={selectedDevice?.deviceId} />,
-    },
-  ];
+  const tabItems: TabsProps['items'] = useMemo(
+    () => [
+      {
+        key: 'console',
+        label: <Badge count={badges['console'] || 0} size="small" offset={[6, -2]}><Space size={4}><CodeOutlined />{t.tabs.console}</Space></Badge>,
+        children: selectedDevice ? (
+          <LogPanel deviceId={selectedDevice.deviceId} tabId={selectedTabId} />
+        ) : (
+          <EmptyPlaceholder text={t.common.selectDevice} hint={t.common.selectDeviceHint} />
+        ),
+      },
+      {
+        key: 'network',
+        label: <Badge count={badges['network'] || 0} size="small" offset={[6, -2]}><Space size={4}><GlobalOutlined />{t.tabs.network}</Space></Badge>,
+        children: <NetworkPanel deviceId={selectedDevice?.deviceId} tabId={selectedTabId} />,
+      },
+      {
+        key: 'errors',
+        label: <Badge count={badges['errors'] || 0} size="small" offset={[6, -2]}><Space size={4}><BugOutlined />{t.tabs.errors}</Space></Badge>,
+        children: <ErrorPanel deviceId={selectedDevice?.deviceId} />,
+      },
+      {
+        key: 'storage',
+        label: <Badge count={badges['storage'] || 0} size="small" offset={[6, -2]}><Space size={4}><DatabaseOutlined />{t.tabs.storage}</Space></Badge>,
+        children: <StoragePanel deviceId={selectedDevice?.deviceId} />,
+      },
+      {
+        key: 'element',
+        label: <Space size={4}><ApartmentOutlined />{t.tabs.dom}</Space>,
+        children: <DOMPanel deviceId={selectedDevice?.deviceId} />,
+      },
+      {
+        key: 'performance',
+        label: <Space size={4}><BarChartOutlined />{t.tabs.perf}</Space>,
+        children: <PerformancePanel deviceId={selectedDevice?.deviceId} />,
+      },
+      {
+        key: 'mock',
+        label: <Space size={4}><SwapOutlined />{t.tabs.mock}</Space>,
+        children: <MockPanel deviceId={selectedDevice?.deviceId} />,
+      },
+      {
+        key: 'ai',
+        label: <Space size={4}><RobotOutlined />{t.tabs.analysis}</Space>,
+        children: <AIAnalysisPanel deviceId={selectedDevice?.deviceId} />,
+      },
+      {
+        key: 'indexeddb',
+        label: <Badge count={badges['indexeddb'] || 0} size="small" offset={[6, -2]}><Space size={4}><TableOutlined />{t.tabs.indexeddb}</Space></Badge>,
+        children: <IndexedDBPanel deviceId={selectedDevice?.deviceId} />,
+      },
+      {
+        key: 'offline-logs',
+        label: <Space size={4}><InboxOutlined />{t.tabs.offlineLogs}</Space>,
+        children: <OfflineLogsPanel />,
+      },
+      {
+        key: 'system',
+        label: <Space size={4}><DesktopOutlined />{t.tabs.system}</Space>,
+        children: <SystemPanel deviceId={selectedDevice?.deviceId} />,
+      },
+      {
+        key: 'screenshot',
+        label: <Space size={4}><CameraOutlined />{t.tabs.screenshot}</Space>,
+        children: <ScreenshotPanel deviceId={selectedDevice?.deviceId} />,
+      },
+      {
+        key: 'plugins',
+        label: <Space size={4}><AppstoreOutlined />{t.tabs.plugins}</Space>,
+        children: <PluginsPanel deviceId={selectedDevice?.deviceId} />,
+      },
+      {
+        key: 'settings',
+        label: <Space size={4}><SettingOutlined />{t.tabs.settings}</Space>,
+        children: <SettingsPanel deviceId={selectedDevice?.deviceId} />,
+      },
+    ],
+    [t, selectedDevice, selectedTabId, badges],
+  );
 
-  const wsColors = {
-    connected: { dot: '#10b981', bg: 'rgba(16,185,129,0.12)', text: '#10b981' },
-    connecting: { dot: '#f59e0b', bg: 'rgba(245,158,11,0.12)', text: '#f59e0b' },
-    disconnected: { dot: '#ef4444', bg: 'rgba(239,68,68,0.12)', text: '#ef4444' },
-  };
-  const wsColor = wsColors[wsState] ?? wsColors.disconnected;
+  const wsIcon = wsState === 'connected' ? <WifiOutlined /> : wsState === 'connecting' ? <LoadingOutlined /> : <DisconnectOutlined />;
+  const wsText = wsState === 'connected' ? t.common.connected : wsState === 'connecting' ? t.common.connecting : t.common.disconnected;
+  const wsColor = wsState === 'connected' ? '#10b981' : wsState === 'connecting' ? '#f59e0b' : '#ef4444';
 
   return (
-    <div style={styles.container}>
-      {/* ── Header ── */}
-      <header style={styles.header}>
-        <div style={styles.headerBrand}>
-          <span style={styles.brandIcon}>📡</span>
-          <span style={styles.brandName}>codeLog</span>
-          <span style={styles.brandDivider} />
-          <span style={styles.brandSub}>{t.common.brandSub}</span>
-        </div>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: { colorPrimary: '#1890ff', borderRadius: 6 },
+      }}
+    >
+      <Layout style={{ height: '100vh' }}>
+        <Header style={{
+          display: 'flex', alignItems: 'center', gap: 16,
+          padding: '0 20px', height: 48, lineHeight: '48px',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          zIndex: 10,
+        }}>
+          <Space size={8}>
+            <ReloadOutlined style={{ fontSize: 16, color: '#f8fafc' }} />
+            <Text strong style={{ color: '#f8fafc', fontSize: 15, margin: 0 }}>codeLog</Text>
+            <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.2)' }} />
+            <Text style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>{t.common.brandSub}</Text>
+          </Space>
 
-        <div style={styles.headerCenter}>
-          {selectedDevice && (
-            <div style={styles.deviceChip}>
-              <span style={styles.deviceChipDot} />
-              <span style={styles.deviceChipText}>
-                {selectedDevice.ua.slice(0, 60)}{selectedDevice.ua.length > 60 ? '…' : ''}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+            {selectedDevice && (
+              <Space size={6} style={{
+                padding: '4px 12px', borderRadius: 20,
+                background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)',
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                <Text ellipsis style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, maxWidth: 400 }}>
+                  {selectedDevice.ua}
+                </Text>
+              </Space>
+            )}
+          </div>
+
+          <Space size={8}>
+            <Tooltip title={wsText}>
+              <span style={{ color: wsColor }}>
+                {wsIcon} <Text style={{ color: 'inherit', fontSize: 12 }}>{wsText}</Text>
               </span>
-            </div>
-          )}
-        </div>
+            </Tooltip>
+            <Button
+              type="text" size="small" icon={<TranslationOutlined />}
+              onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}
+              style={{ color: 'rgba(255,255,255,0.8)' }}
+            >
+              {t.common.langToggle}
+            </Button>
+          </Space>
+        </Header>
 
-        <div style={{ ...styles.statusPill, backgroundColor: wsColor.bg }}>
-          <span style={{ ...styles.statusPulse, backgroundColor: wsColor.dot }} />
-          <span style={{ ...styles.statusLabel, color: wsColor.text }}>
-            {wsState === 'connected'
-              ? t.common.connected
-              : wsState === 'connecting'
-                ? t.common.connecting
-                : t.common.disconnected}
-          </span>
-        </div>
-        <button
-          style={styles.langToggle}
-          onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}
-          title={lang === 'zh' ? 'Switch to English' : '切换为中文'}
-        >
-          {t.common.langToggle}
-        </button>
-      </header>
+        <Layout>
+          <Sider width={260} style={{ background: '#1e293b', borderRight: '1px solid #0f172a', overflow: 'auto' }}>
+            <DeviceList onSelectDevice={handleSelectDevice} selectedDeviceId={selectedDevice?.deviceId} />
+          </Sider>
 
-      {/* ── Body ── */}
-      <div style={styles.body}>
-        {/* Sidebar */}
-        <aside style={styles.sidebar}>
-          <DeviceList
-            onSelectDevice={handleSelectDevice}
-            selectedDeviceId={selectedDevice?.deviceId}
-          />
-        </aside>
-
-        {/* Main panel */}
-        <main style={styles.main}>
-          <TabFilter
-            deviceId={selectedDevice?.deviceId}
-            value={selectedTabId}
-            onChange={setSelectedTabId}
-          />
-          <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
-        </main>
-      </div>
-    </div>
+          <Content style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <TabFilter deviceId={selectedDevice?.deviceId} value={selectedTabId} onChange={setSelectedTabId} />
+            <AntTabs
+              activeKey={activeTab}
+              onChange={(k) => handleTabChange(k)}
+              items={tabItems}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+              tabBarStyle={{ margin: 0, padding: '0 16px', background: '#141414', flexShrink: 0 }}
+              tabBarGutter={20}
+            />
+          </Content>
+        </Layout>
+      </Layout>
+    </ConfigProvider>
   );
 }
 
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    height: '100vh',
-    backgroundColor: '#f1f5f9',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  },
-  // ── Header ──────────────────────────────────────
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    height: '52px',
-    padding: '0 20px',
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-    boxShadow: '0 1px 0 rgba(255,255,255,0.06), 0 2px 12px rgba(0,0,0,0.2)',
-    flexShrink: 0,
-    zIndex: 10,
-  },
-  headerBrand: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    flexShrink: 0,
-  },
-  brandIcon: {
-    fontSize: '18px',
-  },
-  brandName: {
-    fontSize: '15px',
-    fontWeight: 700,
-    color: '#f8fafc',
-    letterSpacing: '-0.3px',
-  },
-  brandDivider: {
-    width: '1px',
-    height: '14px',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-  },
-  brandSub: {
-    fontSize: '12px',
-    color: 'rgba(255,255,255,0.45)',
-    fontWeight: 400,
-  },
-  headerCenter: {
-    flex: 1,
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  deviceChip: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '4px 12px',
-    borderRadius: '20px',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    maxWidth: '500px',
-  },
-  deviceChipDot: {
-    width: '6px',
-    height: '6px',
-    borderRadius: '50%',
-    backgroundColor: '#10b981',
-    flexShrink: 0,
-  },
-  deviceChipText: {
-    fontSize: '12px',
-    color: 'rgba(255,255,255,0.7)',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap' as const,
-  },
-  statusPill: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '5px 12px',
-    borderRadius: '20px',
-    flexShrink: 0,
-  },
-  statusPulse: {
-    width: '7px',
-    height: '7px',
-    borderRadius: '50%',
-  },
-  statusLabel: {
-    fontSize: '12px',
-    fontWeight: 600,
-  },
-  langToggle: {
-    padding: '4px 10px',
-    borderRadius: '12px',
-    border: '1px solid rgba(255,255,255,0.2)',
-    background: 'rgba(255,255,255,0.08)',
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: '12px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    flexShrink: 0,
-    letterSpacing: '0.5px',
-  },
-  // ── Body ────────────────────────────────────────
-  body: {
-    display: 'flex',
-    flex: 1,
-    overflow: 'hidden',
-  },
-  sidebar: {
-    width: '260px',
-    flexShrink: 0,
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    background: '#1e293b',
-    borderRight: '1px solid #0f172a',
-  },
-  main: {
-    flex: 1,
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    background: '#f8fafc',
-  },
-  // ── Placeholder ──────────────────────────────────
-  placeholder: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    gap: '8px',
-    color: '#94a3b8',
-  },
-  placeholderIcon: {
-    fontSize: '56px',
-    opacity: 0.4,
-    marginBottom: '8px',
-  },
-  placeholderText: {
-    fontSize: '15px',
-    fontWeight: 600,
-    color: '#64748b',
-  },
-  placeholderHint: {
-    fontSize: '13px',
-    color: '#94a3b8',
-  },
-};
+function EmptyPlaceholder({ text, hint }: { text: string; hint: string }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 8, color: '#888' }}>
+      <MobileOutlined style={{ fontSize: 48, opacity: 0.4 }} />
+      <Text type="secondary" strong>{text}</Text>
+      <Text type="secondary" style={{ fontSize: 13 }}>{hint}</Text>
+    </div>
+  );
+}
 
 export default App;

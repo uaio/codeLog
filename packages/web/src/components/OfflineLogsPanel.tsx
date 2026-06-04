@@ -1,7 +1,39 @@
 import { useState, useEffect, useCallback } from 'react';
+import {
+  Button,
+  List,
+  Empty,
+  Popconfirm,
+  Tag,
+  Typography,
+  Space,
+  Flex,
+  Alert,
+  Spin,
+  Tooltip,
+} from 'antd';
+import {
+  InboxOutlined,
+  ReloadOutlined,
+  ArrowLeftOutlined,
+  CaretRightOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+} from '@ant-design/icons';
 import { api } from '../api/client.js';
 import type { SavedLogSessionMeta, SavedLogSession } from '../types/index.js';
 import { LogReplayPanel } from './LogReplayPanel.js';
+
+const { Text } = Typography;
+
+function levelColor(level: string): string {
+  switch (level) {
+    case 'error': return '#ff4d4f';
+    case 'warn': return '#faad14';
+    case 'info': return '#597ef7';
+    default: return '#52c41a';
+  }
+}
 
 export function OfflineLogsPanel() {
   const [sessions, setSessions] = useState<SavedLogSessionMeta[]>([]);
@@ -41,7 +73,6 @@ export function OfflineLogsPanel() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this saved session?')) return;
     await api.deleteSavedLog(id);
     setSessions((prev) => prev.filter((s) => s.id !== id));
     if (selectedSession?.id === id) setSelectedSession(null);
@@ -62,253 +93,135 @@ export function OfflineLogsPanel() {
 
   if (selectedSession) {
     return (
-      <div style={styles.container}>
-        <div style={styles.toolbar}>
-          <button style={styles.backBtn} onClick={() => setSelectedSession(null)}>
-            ← Back
-          </button>
-          <span style={styles.sessionTitle}>
+      <Flex vertical style={{ height: '100%', overflow: 'hidden' }}>
+        <Flex align="center" gap={8} style={{ padding: '10px 16px', borderBottom: '1px solid var(--ant-color-border, #424242)', flexShrink: 0 }}>
+          <Button icon={<ArrowLeftOutlined />} size="small" onClick={() => setSelectedSession(null)}>
+            Back
+          </Button>
+          <Text type="secondary" style={{ flex: 1, fontSize: 12 }}>
             {selectedSession.deviceId.slice(0, 8)}… · {formatDate(selectedSession.startTime)}
-          </span>
-          <button style={styles.replayBtn} onClick={() => setReplaySession(selectedSession)}>
-            ▶ Replay
-          </button>
+          </Text>
+          <Button icon={<CaretRightOutlined />} size="small" onClick={() => setReplaySession(selectedSession)}>
+            Replay
+          </Button>
+        </Flex>
+        <div style={{ flex: 1, overflow: 'auto' }}>
+          <List
+            size="small"
+            dataSource={selectedSession.logs}
+            locale={{ emptyText: <Empty description="No log entries in this session" /> }}
+            renderItem={(entry) => {
+              const level = (entry as any).level ?? 'log';
+              return (
+                <List.Item
+                  style={{
+                    borderLeft: `3px solid ${levelColor(level)}`,
+                    paddingLeft: 12,
+                  }}
+                >
+                  <Space size={8}>
+                    <Text type="secondary" style={{ fontSize: 11, fontFamily: 'monospace', flexShrink: 0 }}>
+                      {formatDate((entry as any).timestamp ?? 0)}
+                    </Text>
+                    <Tag
+                      color={level === 'error' ? 'error' : level === 'warn' ? 'warning' : level === 'info' ? 'processing' : 'success'}
+                      style={{ fontSize: 10, fontWeight: 600, minWidth: 36, textAlign: 'center' }}
+                    >
+                      {level.toUpperCase()}
+                    </Tag>
+                    <Text code style={{ fontSize: 12, wordBreak: 'break-word' }}>
+                      {(entry as any).message}
+                    </Text>
+                  </Space>
+                </List.Item>
+              );
+            }}
+          />
         </div>
-        <div style={styles.logList}>
-          {selectedSession.logs.map((entry, i) => {
-            const level = (entry as any).level ?? 'log';
-            return (
-              <div key={i} style={{ ...styles.logRow, borderLeftColor: levelColor(level) }}>
-                <span style={styles.logTime}>{formatDate((entry as any).timestamp ?? 0)}</span>
-                <span style={{ ...styles.logLevel, color: levelColor(level) }}>
-                  {level.toUpperCase()}
-                </span>
-                <span style={styles.logMsg}>{(entry as any).message}</span>
-              </div>
-            );
-          })}
-          {selectedSession.logs.length === 0 && (
-            <div style={styles.empty}>No log entries in this session</div>
-          )}
-        </div>
-      </div>
+      </Flex>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.toolbar}>
-        <span style={styles.toolbarTitle}>Saved Log Sessions</span>
-        <button style={styles.refreshBtn} onClick={loadList} disabled={loading}>
-          {loading ? '⟳ Loading…' : '⟳ Refresh'}
-        </button>
-      </div>
+    <Flex vertical style={{ height: '100%', overflow: 'hidden' }}>
+      {/* Toolbar */}
+      <Flex align="center" gap={8} style={{ padding: '10px 16px', borderBottom: '1px solid var(--ant-color-border, #424242)', flexShrink: 0 }}>
+        <Space>
+          <InboxOutlined />
+          <Text strong>Saved Log Sessions</Text>
+        </Space>
+        <div style={{ flex: 1 }} />
+        <Button icon={<ReloadOutlined />} size="small" onClick={loadList} loading={loading}>
+          Refresh
+        </Button>
+      </Flex>
 
-      {error && <div style={styles.error}>{error}</div>}
-
-      {loadingSession && <div style={styles.loading}>Loading session…</div>}
-
-      {!loading && sessions.length === 0 && !error && (
-        <div style={styles.empty}>
-          No saved sessions yet. Use <code>codeLog.uploadLogs()</code> or{' '}
-          <code>codeLog.flushOfflineBuffer()</code> to save.
-        </div>
+      {error && (
+        <Alert type="error" message={error} closable style={{ margin: '0 0' }} />
       )}
 
-      <div style={styles.sessionList}>
-        {sessions.map((s) => (
-          <div key={s.id} style={styles.sessionRow}>
-            <div style={styles.sessionInfo}>
-              <div style={styles.sessionDevice}>{s.deviceId.slice(0, 12)}…</div>
-              <div style={styles.sessionMeta}>
-                <span style={styles.sessionDate}>{formatDate(s.startTime)}</span>
-                <span style={styles.sessionCount}>{s.entryCount} entries</span>
-              </div>
-              {s.projectId && <div style={styles.sessionProject}>{s.projectId}</div>}
-            </div>
-            <div style={styles.sessionActions}>
-              <button style={styles.openBtn} onClick={() => handleOpen(s.id)}>
-                View
-              </button>
-              <button style={styles.deleteBtn} onClick={() => handleDelete(s.id)}>
-                🗑
-              </button>
-            </div>
-          </div>
-        ))}
+      {loadingSession && (
+        <Flex align="center" justify="center" style={{ padding: '8px 16px' }}>
+          <Spin size="small" />
+          <Text type="secondary" style={{ marginLeft: 8 }}>Loading session…</Text>
+        </Flex>
+      )}
+
+      {!loading && sessions.length === 0 && !error && (
+        <Flex flex={1} align="center" justify="center" style={{ padding: '32px 16px' }}>
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <Text type="secondary">
+                No saved sessions yet. Use <Text code>codeLog.uploadLogs()</Text> or{' '}
+                <Text code>codeLog.flushOfflineBuffer()</Text> to save.
+              </Text>
+            }
+          />
+        </Flex>
+      )}
+
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        <List
+          dataSource={sessions}
+          renderItem={(s) => (
+            <List.Item
+              actions={[
+                <Tooltip title="View" key="view">
+                  <Button type="link" icon={<EyeOutlined />} size="small" onClick={() => handleOpen(s.id)}>
+                    View
+                  </Button>
+                </Tooltip>,
+                <Popconfirm
+                  key="delete"
+                  title="Delete this saved session?"
+                  onConfirm={() => handleDelete(s.id)}
+                  okText="Delete"
+                  cancelText="Cancel"
+                  okButtonProps={{ danger: true }}
+                >
+                  <Button type="link" danger icon={<DeleteOutlined />} size="small">
+                    Delete
+                  </Button>
+                </Popconfirm>,
+              ]}
+            >
+              <List.Item.Meta
+                title={
+                  <Text code style={{ fontSize: 12 }}>{s.deviceId.slice(0, 12)}…</Text>
+                }
+                description={
+                  <Space size={12} wrap>
+                    <Text type="secondary" style={{ fontSize: 11 }}>{formatDate(s.startTime)}</Text>
+                    <Text style={{ fontSize: 11, color: '#1890ff' }}>{s.entryCount} entries</Text>
+                    {s.projectId && <Tag color="purple" style={{ fontSize: 10 }}>{s.projectId}</Tag>}
+                  </Space>
+                }
+              />
+            </List.Item>
+          )}
+        />
       </div>
-    </div>
+    </Flex>
   );
 }
-
-function levelColor(level: string): string {
-  switch (level) {
-    case 'error': return '#ff4d4f';
-    case 'warn': return '#faad14';
-    case 'info': return '#597ef7';
-    default: return '#52c41a';
-  }
-}
-
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    height: '100%',
-    overflow: 'hidden',
-    fontFamily: 'system-ui, sans-serif',
-    fontSize: '13px',
-    backgroundColor: '#fff',
-  },
-  toolbar: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 16px',
-    borderBottom: '1px solid #f0f0f0',
-    flexShrink: 0,
-  },
-  toolbarTitle: {
-    flex: 1,
-    fontWeight: 600 as const,
-    color: '#333',
-  },
-  sessionTitle: {
-    flex: 1,
-    color: '#666',
-    fontSize: '12px',
-  },
-  refreshBtn: {
-    padding: '4px 12px',
-    borderRadius: '4px',
-    border: '1px solid #d9d9d9',
-    cursor: 'pointer',
-    backgroundColor: '#fff',
-    fontSize: '12px',
-  },
-  backBtn: {
-    padding: '4px 12px',
-    borderRadius: '4px',
-    border: '1px solid #d9d9d9',
-    cursor: 'pointer',
-    backgroundColor: '#fff',
-    fontSize: '12px',
-  },
-  error: {
-    padding: '8px 16px',
-    color: '#ff4d4f',
-    backgroundColor: '#fff2f0',
-    borderBottom: '1px solid #ffccc7',
-  },
-  loading: {
-    padding: '8px 16px',
-    color: '#1890ff',
-  },
-  empty: {
-    padding: '32px 16px',
-    textAlign: 'center' as const,
-    color: '#999',
-    lineHeight: 1.8,
-  },
-  sessionList: {
-    flex: 1,
-    overflow: 'auto',
-  },
-  sessionRow: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '12px 16px',
-    borderBottom: '1px solid #f5f5f5',
-    gap: '8px',
-  },
-  sessionInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  sessionDevice: {
-    fontFamily: 'monospace',
-    fontSize: '12px',
-    color: '#333',
-  },
-  sessionMeta: {
-    display: 'flex',
-    gap: '12px',
-    marginTop: '2px',
-  },
-  sessionDate: {
-    color: '#999',
-    fontSize: '11px',
-  },
-  sessionCount: {
-    color: '#1890ff',
-    fontSize: '11px',
-  },
-  sessionProject: {
-    color: '#722ed1',
-    fontSize: '11px',
-    marginTop: '2px',
-  },
-  sessionActions: {
-    display: 'flex',
-    gap: '6px',
-    flexShrink: 0,
-  },
-  openBtn: {
-    padding: '4px 10px',
-    borderRadius: '4px',
-    border: '1px solid #1890ff',
-    color: '#1890ff',
-    backgroundColor: '#fff',
-    cursor: 'pointer',
-    fontSize: '12px',
-  },
-  deleteBtn: {
-    padding: '4px 8px',
-    borderRadius: '4px',
-    border: '1px solid #ff4d4f',
-    color: '#ff4d4f',
-    backgroundColor: '#fff',
-    cursor: 'pointer',
-    fontSize: '12px',
-  },
-  replayBtn: {
-    padding: '4px 12px',
-    borderRadius: '4px',
-    border: '1px solid #52c41a',
-    color: '#52c41a',
-    backgroundColor: '#fff',
-    cursor: 'pointer',
-    fontSize: '12px',
-  },
-  logList: {
-    flex: 1,
-    overflow: 'auto',
-  },
-  logRow: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '8px',
-    padding: '8px 16px',
-    borderBottom: '1px solid #f5f5f5',
-    borderLeft: '3px solid #52c41a',
-    fontSize: '12px',
-  },
-  logTime: {
-    color: '#999',
-    flexShrink: 0,
-    fontSize: '11px',
-    fontFamily: 'monospace',
-  },
-  logLevel: {
-    flexShrink: 0,
-    fontWeight: 600 as const,
-    fontSize: '11px',
-    minWidth: '36px',
-  },
-  logMsg: {
-    flex: 1,
-    wordBreak: 'break-word' as const,
-    color: '#333',
-    fontFamily: 'monospace',
-  },
-};

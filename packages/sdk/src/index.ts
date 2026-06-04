@@ -579,7 +579,40 @@ export class CodeLog {
 
         // 绑定 ErudaPlugin：订阅 DataBus → 将日志推入 Eruda console 面板
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.erudaPlugin.attach(this.eruda as any, this.dataBus, this, this.deviceInfo.deviceId);
+        this.erudaPlugin.attach(this.eruda as any, this.dataBus, this.deviceInfo.deviceId);
+
+        // Provide reinit callback so ErudaPlugin can trigger full Eruda re-init on language change
+        // (Eruda only renders i18n strings during init, not on show)
+        this.erudaPlugin.setReinitCallback(() => {
+          if (!this.erudaInitialized || !this.eruda) return;
+          const wasOpen = this.eruda.get?._isShow;
+          const curTool = this.eruda.get?._curTool;
+          this.eruda.destroy();
+          this.eruda.init({
+            tool: config?.tool,
+            autoScale: config?.autoScale ?? true,
+            useShadowDom: true,
+            defaults: config?.defaults,
+            lang: (() => {
+              try {
+                const stored =
+                  typeof localStorage !== 'undefined' && localStorage.getItem('codelog-lang');
+                if (stored === 'en') return 'en';
+                if (stored === 'zh') return 'zh-CN';
+              } catch { /* ignore */ }
+              return lang === 'en' ? 'en' : 'zh-CN';
+            })(),
+          });
+          const cp = this.eruda.get?.('console') as { restoreConsole?: () => void } | null | undefined;
+          cp?.restoreConsole?.();
+          const eb = (this.eruda as any).get?.('entryBtn');
+          eb?.config?.set?.('rememberPos', false);
+          this.erudaPlugin.attach(this.eruda as any, this.dataBus, this.deviceInfo.deviceId);
+          if (wasOpen) {
+            this.eruda.get?.().show();
+            if (curTool) this.eruda.get?.().showTool(curTool);
+          }
+        });
         this.erudaInitialized = true;
       } else {
         console.warn('codeLog: Eruda 初始化失败 - 无效的 eruda 模块');

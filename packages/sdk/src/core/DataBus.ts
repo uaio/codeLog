@@ -11,6 +11,7 @@ import type {
   ErrorPayload,
   LifecyclePayload,
   CustomPayload,
+  SystemPayload,
 } from '../types/index.js';
 
 /** DataBus 上的 console 事件包含 args，供本地展示层（Eruda）使用 */
@@ -30,6 +31,7 @@ export type DataBusEventMap = {
   perf_run_raw: PerfRunRawPayload;
   perf_run_done: PerfRunScore;
   error: ErrorPayload;
+  system: SystemPayload;
   lifecycle: LifecyclePayload;
   custom: CustomPayload;
 };

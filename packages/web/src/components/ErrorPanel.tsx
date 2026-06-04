@@ -1,5 +1,14 @@
 import { useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
+import {
+  BugOutlined,
+  CloseCircleOutlined,
+  WarningOutlined,
+  CheckCircleOutlined,
+  CopyOutlined,
+  CheckOutlined,
+} from '@ant-design/icons';
+import { Empty } from 'antd';
 import { useLogs } from '../hooks/useLogs.js';
 import type { ConsoleLog } from '../types/index.js';
 
@@ -52,8 +61,8 @@ function ErrorEntry({ log }: { log: ConsoleLog }) {
   return (
     <div style={{ ...styles.entry, borderLeftColor: severityColor(log) }}>
       <div style={styles.entryHeader}>
-        <span style={{ color: severityColor(log), fontSize: '16px' }}>
-          {isGlobal ? '💥' : '🔴'}
+        <span style={{ color: severityColor(log), fontSize: '16px', display: 'inline-flex', alignItems: 'center' }}>
+          {isGlobal ? <CloseCircleOutlined /> : <CloseCircleOutlined />}
         </span>
         <span style={styles.time}>{formatTime(log.timestamp)}</span>
         {isGlobal && <span style={styles.globalTag}>GLOBAL</span>}
@@ -62,7 +71,9 @@ function ErrorEntry({ log }: { log: ConsoleLog }) {
         </span>
         <div style={styles.spacer} />
         <button style={styles.iconBtn} title="复制" onClick={handleCopy}>
-          {copied ? '✅' : '📋'}
+          {copied
+            ? <CheckOutlined style={{ color: '#52c41a', fontSize: 12 }} />
+            : <CopyOutlined style={{ fontSize: 12 }} />}
         </button>
         {log.stack && (
           <button style={styles.iconBtn} onClick={() => setExpanded((v) => !v)}>
@@ -94,10 +105,11 @@ export function ErrorPanel({ deviceId }: ErrorPanelProps) {
   if (!deviceId) {
     return (
       <div style={styles.container}>
-        <div style={styles.placeholder}>
-          <div style={{ fontSize: '32px' }}>🐛</div>
-          <div style={{ fontSize: '14px', color: '#999', marginTop: '8px' }}>从左侧选择设备查看错误</div>
-        </div>
+        <Empty
+          image={<BugOutlined style={{ fontSize: 48, color: '#bbb' }} />}
+          description="从左侧选择设备查看错误"
+          style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+        />
       </div>
     );
   }
@@ -113,17 +125,22 @@ export function ErrorPanel({ deviceId }: ErrorPanelProps) {
               style={{ ...styles.filterBtn, ...(filter === f ? styles.filterBtnActive : {}) }}
               onClick={() => setFilter(f)}
             >
-              {f === 'all' ? `全部 (${errorCount + warnCount})` : f === 'error' ? `🔴 错误 (${errorCount})` : `⚠️ 警告 (${warnCount})`}
+              {f === 'all'
+                ? `全部 (${errorCount + warnCount})`
+                : f === 'error'
+                  ? <><CloseCircleOutlined style={{ marginRight: 4, color: '#ff4d4f' }} />错误 ({errorCount})</>
+                  : <><WarningOutlined style={{ marginRight: 4, color: '#faad14' }} />警告 ({warnCount})</>}
             </button>
           ))}
         </div>
       </div>
       <div style={styles.body}>
         {errors.length === 0 ? (
-          <div style={styles.empty}>
-            <div style={{ fontSize: '40px' }}>✅</div>
-            <div style={{ fontSize: '14px', color: '#999', marginTop: '8px' }}>暂无错误</div>
-          </div>
+          <Empty
+            image={<CheckCircleOutlined style={{ fontSize: 48, color: '#52c41a' }} />}
+            description="暂无错误"
+            style={{ padding: '60px 20px' }}
+          />
         ) : (
           errors.map((log, i) => <ErrorEntry key={i} log={log} />)
         )}
@@ -137,12 +154,12 @@ const styles: Record<string, CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--ant-color-bg-container, #1f1f1f)',
   },
   header: {
     padding: '12px 16px',
-    borderBottom: '1px solid #e8e8e8',
-    backgroundColor: '#fafafa',
+    borderBottom: '1px solid var(--ant-color-border, #424242)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
@@ -151,7 +168,7 @@ const styles: Record<string, CSSProperties> = {
     margin: 0,
     fontSize: '16px',
     fontWeight: 'bold',
-    color: '#333',
+    color: 'var(--ant-color-text)',
   },
   filterRow: {
     display: 'flex',
@@ -160,11 +177,13 @@ const styles: Record<string, CSSProperties> = {
   filterBtn: {
     padding: '3px 12px',
     fontSize: '12px',
-    border: '1px solid #d9d9d9',
+    border: '1px solid var(--ant-color-border, #424242)',
     borderRadius: '4px',
-    backgroundColor: '#fff',
+    backgroundColor: 'var(--ant-color-bg-container, #1f1f1f)',
     cursor: 'pointer',
-    color: '#555',
+    color: 'var(--ant-color-text-secondary)',
+    display: 'inline-flex',
+    alignItems: 'center',
   },
   filterBtnActive: {
     backgroundColor: '#1890ff',
@@ -177,7 +196,7 @@ const styles: Record<string, CSSProperties> = {
   },
   entry: {
     padding: '12px 16px',
-    borderBottom: '1px solid #f0f0f0',
+    borderBottom: '1px solid var(--ant-color-border-secondary, #303030)',
     borderLeft: '4px solid #ff4d4f',
     fontFamily: '"SF Mono", Monaco, Consolas, "Courier New", monospace',
     fontSize: '13px',
@@ -190,7 +209,7 @@ const styles: Record<string, CSSProperties> = {
   },
   time: {
     fontSize: '11px',
-    color: '#999',
+    color: 'var(--ant-color-text-secondary)',
   },
   globalTag: {
     fontSize: '10px',
@@ -203,7 +222,7 @@ const styles: Record<string, CSSProperties> = {
   },
   levelBadge: {
     fontSize: '10px',
-    color: '#aaa',
+    color: 'var(--ant-color-text-secondary)',
   },
   spacer: {
     flex: 1,
@@ -214,36 +233,24 @@ const styles: Record<string, CSSProperties> = {
     cursor: 'pointer',
     fontSize: '12px',
     padding: '0 4px',
-    color: '#666',
+    color: 'var(--ant-color-text-secondary)',
+    display: 'inline-flex',
+    alignItems: 'center',
   },
   message: {
-    color: '#333',
+    color: 'var(--ant-color-text)',
     lineHeight: '1.6',
     wordBreak: 'break-word',
   },
   stack: {
     marginTop: '8px',
     padding: '10px',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: '4px',
     fontSize: '11px',
-    color: '#666',
+    color: 'var(--ant-color-text-secondary)',
     overflowX: 'auto',
-    border: '1px solid #e8e8e8',
+    border: '1px solid var(--ant-color-border, #424242)',
     whiteSpace: 'pre-wrap',
-  },
-  placeholder: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
-  empty: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '60px 20px',
   },
 };

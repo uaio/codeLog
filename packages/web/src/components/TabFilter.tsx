@@ -1,6 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
+import { Select, Space, Typography } from 'antd';
+import { FolderOutlined } from '@ant-design/icons';
 import { useWebSocket } from '../hooks/useWebSocket.js';
 import { useI18n } from '../i18n/index.js';
+
+const { Text } = Typography;
 
 interface TabFilterProps {
   deviceId?: string;
@@ -45,43 +49,22 @@ export function TabFilter({ deviceId, value, onChange }: TabFilterProps) {
   if (knownTabs.size <= 1) return null;
 
   return (
-    <div style={styles.container}>
-      <span style={styles.label}>🗂️ Tab:</span>
-      <select
-        style={styles.select}
+    <Space size={6} style={{ padding: '4px 8px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <FolderOutlined style={{ color: '#666' }} />
+      <Text type="secondary" strong style={{ fontSize: 12 }}>Tab:</Text>
+      <Select
+        size="small"
         value={value ?? '__all__'}
-        onChange={(e) => onChange(e.target.value === '__all__' ? null : e.target.value)}
-      >
-        <option value="__all__">{t.common.all ?? 'All'}</option>
-        {Array.from(knownTabs).map((tabId) => (
-          <option key={tabId} value={tabId}>
-            {tabId.replace('tab-', '#')}
-          </option>
-        ))}
-      </select>
-    </div>
+        onChange={(val) => onChange(val === '__all__' ? null : val)}
+        options={[
+          { value: '__all__', label: t.common.all ?? 'All' },
+          ...Array.from(knownTabs).map((tabId) => ({
+            value: tabId,
+            label: tabId.replace('tab-', '#'),
+          })),
+        ]}
+        style={{ minWidth: 120, fontSize: 12 }}
+      />
+    </Space>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '4px 8px',
-    fontSize: 12,
-    borderBottom: '1px solid #e0e0e0',
-    backgroundColor: '#fafafa',
-  },
-  label: {
-    color: '#666',
-    fontWeight: 500,
-  },
-  select: {
-    fontSize: 12,
-    padding: '2px 6px',
-    border: '1px solid #ddd',
-    borderRadius: 4,
-    backgroundColor: '#fff',
-  },
-};

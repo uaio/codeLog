@@ -1,5 +1,31 @@
 import { useState, useCallback } from 'react';
+import {
+  Button,
+  Select,
+  Space,
+  Card,
+  Statistic,
+  Typography,
+  Tag,
+  Flex,
+  Empty,
+  Alert,
+  List,
+} from 'antd';
+import {
+  RobotOutlined,
+  ThunderboltOutlined,
+  ExportOutlined,
+  CheckCircleOutlined,
+  WarningOutlined,
+  BugOutlined,
+  DashboardOutlined,
+  BulbOutlined,
+  DatabaseOutlined,
+} from '@ant-design/icons';
 import { api } from '../api/client.js';
+
+const { Text } = Typography;
 
 interface AIAnalysisPanelProps {
   deviceId?: string;
@@ -18,6 +44,23 @@ interface AIAnalysisResult {
     longTaskCount: number;
     health: any;
   };
+}
+
+const RATING_COLOR: Record<string, string> = {
+  good: '#52c41a',
+  'needs-improvement': '#faad14',
+  poor: '#ff4d4f',
+};
+
+const RATING_LABEL: Record<string, string> = {
+  good: '良好',
+  'needs-improvement': '需改善',
+  poor: '较差',
+};
+
+function formatVitalValue(name: string, value: number): string {
+  if (name === 'CLS') return value.toFixed(3);
+  return `${Math.round(value)}ms`;
 }
 
 export function AIAnalysisPanel({ deviceId }: AIAnalysisPanelProps) {
@@ -100,13 +143,13 @@ export function AIAnalysisPanel({ deviceId }: AIAnalysisPanelProps) {
         }
       }
 
-      if (recommendations.length === 0) recommendations.push('当前状态良好，继续保持 👍');
+      if (recommendations.length === 0) recommendations.push('当前状态良好，继续保持');
 
       const overallScore = health?.score ?? 100;
       const summary =
         issues.length === 0
-          ? '✅ 设备状态良好，未发现明显问题'
-          : `⚠️ 发现 ${issues.length} 个问题，健康分 ${overallScore}/100`;
+          ? '设备状态良好，未发现明显问题'
+          : `发现 ${issues.length} 个问题，健康分 ${overallScore}/100`;
 
       setResult({
         deviceId,
@@ -135,302 +178,151 @@ export function AIAnalysisPanel({ deviceId }: AIAnalysisPanelProps) {
     URL.revokeObjectURL(url);
   }, [result]);
 
-  const scoreColor = result
-    ? result.overallScore >= 80
-      ? '#4caf50'
-      : result.overallScore >= 50
-        ? '#ff9800'
-        : '#f44336'
-    : '#9e9e9e';
-
   return (
-    <div style={styles.container}>
-      <div style={styles.toolbar}>
-        <span style={styles.title}>🧠 智能分析</span>
-        <div style={styles.controls}>
-          <label style={styles.label}>分析错误日志条数：</label>
-          <select
-            value={logLimit}
-            onChange={(e) => setLogLimit(Number(e.target.value))}
-            style={styles.select}
-          >
-            <option value={20}>20 条</option>
-            <option value={50}>50 条</option>
-            <option value={100}>100 条</option>
-          </select>
-          <button onClick={runAnalysis} disabled={loading || !deviceId} style={styles.runBtn}>
-            {loading ? '分析中...' : '🚀 开始分析'}
-          </button>
-          {result && (
-            <button onClick={handleExport} style={styles.exportBtn}>
-              📤 导出
-            </button>
-          )}
-        </div>
-      </div>
+    <Flex vertical style={{ height: '100%', overflow: 'hidden' }}>
+      {/* Toolbar */}
+      <Card size="small" style={{ borderRadius: 0, borderLeft: 0, borderRight: 0, borderTop: 0 }}>
+        <Flex align="center" justify="space-between" wrap="wrap" gap={8}>
+          <Space>
+            <RobotOutlined />
+            <Text strong>智能分析</Text>
+          </Space>
+          <Space wrap>
+            <Text type="secondary" style={{ fontSize: 12 }}>分析错误日志条数：</Text>
+            <Select
+              size="small"
+              value={logLimit}
+              onChange={(val) => setLogLimit(val)}
+              options={[
+                { value: 20, label: '20 条' },
+                { value: 50, label: '50 条' },
+                { value: 100, label: '100 条' },
+              ]}
+              style={{ width: 90 }}
+            />
+            <Button
+              type="primary"
+              icon={<ThunderboltOutlined />}
+              onClick={runAnalysis}
+              loading={loading}
+              disabled={!deviceId}
+            >
+              开始分析
+            </Button>
+            {result && (
+              <Button icon={<ExportOutlined />} onClick={handleExport}>
+                导出
+              </Button>
+            )}
+          </Space>
+        </Flex>
+      </Card>
 
-      {!deviceId && <div style={styles.empty}>请先从左侧选择设备</div>}
+      {!deviceId && (
+        <Flex flex={1} align="center" justify="center">
+          <Empty description="请先从左侧选择设备" />
+        </Flex>
+      )}
 
-      {error && <div style={styles.errorBox}>{error}</div>}
+      {error && (
+        <Alert type="error" message={error} style={{ margin: '12px 16px 0' }} showIcon closable />
+      )}
 
       {result && (
-        <div style={styles.content}>
+        <Flex vertical flex={1} gap={14} style={{ overflow: 'auto', padding: 16 }}>
           {/* 总评 */}
-          <div style={styles.summaryCard}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div style={{ ...styles.scoreCircle, borderColor: scoreColor }}>
-                <span style={{ fontSize: 28, fontWeight: 'bold', color: scoreColor }}>
-                  {result.overallScore}
-                </span>
-                <span style={{ fontSize: 11, color: '#888' }}>健康分</span>
-              </div>
-              <div>
-                <div style={styles.summaryText}>{result.summary}</div>
-                <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
+          <Card>
+            <Flex align="center" gap={16}>
+              <Statistic
+                title="健康分"
+                value={result.overallScore}
+                suffix="/ 100"
+                valueStyle={{
+                  color: result.overallScore >= 80 ? '#52c41a' : result.overallScore >= 50 ? '#faad14' : '#ff4d4f',
+                }}
+              />
+              <Flex vertical>
+                <Text strong style={{ fontSize: 15 }}>
+                  {result.issues.length === 0 ? <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 6 }} /> : <WarningOutlined style={{ color: '#faad14', marginRight: 6 }} />}
+                  {result.summary}
+                </Text>
+                <Text type="secondary" style={{ fontSize: 12, marginTop: 4 }}>
                   分析时间：{new Date(result.timestamp).toLocaleTimeString()}
-                </div>
-              </div>
-            </div>
-          </div>
+                </Text>
+              </Flex>
+            </Flex>
+          </Card>
 
           {/* Web Vitals 快览 */}
           {result.raw.perfVitals.length > 0 && (
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>📊 Web Vitals</div>
-              <div style={styles.vitalsGrid}>
+            <Card title={<><DashboardOutlined /> Web Vitals</>} size="small">
+              <Space wrap>
                 {result.raw.perfVitals.map((v) => (
-                  <div
+                  <Card
                     key={v.name}
-                    style={{
-                      ...styles.vitalChip,
-                      borderColor: RATING_COLOR[v.rating] ?? '#9e9e9e',
-                    }}
+                    size="small"
+                    style={{ minWidth: 70, borderColor: RATING_COLOR[v.rating] ?? '#d9d9d9' }}
                   >
-                    <span
-                      style={{ fontWeight: 'bold', color: RATING_COLOR[v.rating] ?? '#9e9e9e' }}
-                    >
-                      {v.name}
-                    </span>
-                    <span style={{ fontSize: 11, color: '#555' }}>
-                      {formatVitalValue(v.name, v.value)}
-                    </span>
-                    <span style={{ fontSize: 10, color: RATING_COLOR[v.rating] ?? '#9e9e9e' }}>
-                      {RATING_LABEL[v.rating] ?? v.rating}
-                    </span>
-                  </div>
+                    <Flex vertical align="center" gap={2}>
+                      <Text strong style={{ color: RATING_COLOR[v.rating] ?? '#999' }}>{v.name}</Text>
+                      <Text type="secondary" style={{ fontSize: 11 }}>{formatVitalValue(v.name, v.value)}</Text>
+                      <Tag color={v.rating === 'good' ? 'success' : v.rating === 'poor' ? 'error' : 'warning'} style={{ fontSize: 10 }}>
+                        {RATING_LABEL[v.rating] ?? v.rating}
+                      </Tag>
+                    </Flex>
+                  </Card>
                 ))}
-              </div>
-            </div>
+              </Space>
+            </Card>
           )}
 
           {/* 问题列表 */}
           {result.issues.length > 0 && (
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>⚠️ 发现的问题</div>
-              <div style={styles.issueList}>
-                {result.issues.map((issue, i) => (
-                  <div
-                    key={i}
-                    style={{ ...styles.issueItem, paddingLeft: issue.startsWith('  ·') ? 28 : 12 }}
-                  >
-                    {issue.startsWith('  ·') ? issue : `• ${issue}`}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Card title={<><WarningOutlined style={{ color: '#faad14' }} /> 发现的问题</>} size="small">
+              <List
+                size="small"
+                dataSource={result.issues}
+                renderItem={(issue) => (
+                  <List.Item style={{ borderLeft: `3px solid ${issue.startsWith('  ·') ? '#faad14' : '#ff4d4f'}`, paddingLeft: issue.startsWith('  ·') ? 28 : 12 }}>
+                    <Text>{issue.startsWith('  ·') ? issue : issue}</Text>
+                  </List.Item>
+                )}
+              />
+            </Card>
           )}
 
           {/* 优化建议 */}
-          <div style={styles.section}>
-            <div style={styles.sectionTitle}>💡 优化建议</div>
-            <div style={styles.recList}>
-              {result.recommendations.map((rec, i) => (
-                <div key={i} style={styles.recItem}>
-                  <span style={styles.recNum}>{i + 1}</span>
-                  {rec}
-                </div>
-              ))}
-            </div>
-          </div>
+          <Card title={<><BulbOutlined style={{ color: '#7c4dff' }} /> 优化建议</>} size="small">
+            <List
+              size="small"
+              dataSource={result.recommendations}
+              renderItem={(rec, i) => (
+                <List.Item>
+                  <Space>
+                    <Tag color="purple">{i + 1}</Tag>
+                    <Text>{rec}</Text>
+                  </Space>
+                </List.Item>
+              )}
+            />
+          </Card>
 
           {/* 数据概览 */}
-          <div style={styles.section}>
-            <div style={styles.sectionTitle}>📋 数据概览</div>
-            <div style={styles.statsRow}>
-              <div style={styles.statChip}>
-                JS错误 <b>{result.raw.errorCount}</b>
-              </div>
-              <div style={styles.statChip}>
-                长任务 <b>{result.raw.longTaskCount}</b>
-              </div>
-              <div style={styles.statChip}>
-                内存{' '}
-                <b>
-                  {result.raw.health?.memoryMB != null
-                    ? `${Number(result.raw.health.memoryMB).toFixed(1)}MB`
-                    : 'N/A'}
-                </b>
-              </div>
-              <div style={styles.statChip}>
-                大资源 <b>{result.raw.health?.uncompressedResources ?? 0}</b>
-              </div>
-            </div>
-          </div>
-        </div>
+          <Card title={<><DatabaseOutlined /> 数据概览</>} size="small">
+            <Space wrap size="middle">
+              <Statistic title="JS 错误" value={result.raw.errorCount} prefix={<BugOutlined />} valueStyle={{ fontSize: 16 }} />
+              <Statistic title="长任务" value={result.raw.longTaskCount} prefix={<ThunderboltOutlined />} valueStyle={{ fontSize: 16 }} />
+              <Statistic
+                title="内存"
+                value={result.raw.health?.memoryMB != null ? `${Number(result.raw.health.memoryMB).toFixed(1)}MB` : 'N/A'}
+                prefix={<DashboardOutlined />}
+                valueStyle={{ fontSize: 16 }}
+              />
+              <Statistic title="大资源" value={result.raw.health?.uncompressedResources ?? 0} prefix={<DatabaseOutlined />} valueStyle={{ fontSize: 16 }} />
+            </Space>
+          </Card>
+        </Flex>
       )}
-    </div>
+    </Flex>
   );
 }
-
-const RATING_COLOR: Record<string, string> = {
-  good: '#4caf50',
-  'needs-improvement': '#ff9800',
-  poor: '#f44336',
-};
-
-const RATING_LABEL: Record<string, string> = {
-  good: '良好',
-  'needs-improvement': '需改善',
-  poor: '较差',
-};
-
-function formatVitalValue(name: string, value: number): string {
-  if (name === 'CLS') return value.toFixed(3);
-  return `${Math.round(value)}ms`;
-}
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  toolbar: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '10px 16px',
-    backgroundColor: '#fff',
-    borderBottom: '1px solid #e0e0e0',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  title: { fontSize: 15, fontWeight: 'bold', color: '#333' },
-  controls: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  label: { fontSize: 12, color: '#666' },
-  select: { fontSize: 12, padding: '3px 6px', borderRadius: 4, border: '1px solid #ccc' },
-  runBtn: {
-    padding: '6px 16px',
-    backgroundColor: '#7c4dff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: 13,
-  },
-  exportBtn: {
-    padding: '5px 12px',
-    backgroundColor: '#fff',
-    color: '#555',
-    border: '1px solid #ccc',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 12,
-  },
-  empty: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#aaa',
-    fontSize: 14,
-  },
-  errorBox: {
-    margin: 12,
-    padding: '8px 12px',
-    backgroundColor: '#fff2f0',
-    border: '1px solid #ffccc7',
-    borderRadius: 4,
-    fontSize: 13,
-    color: '#f44336',
-  },
-  content: {
-    flex: 1,
-    overflow: 'auto',
-    padding: 16,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 14,
-  },
-  summaryCard: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: '14px 18px',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-  },
-  scoreCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: '50%',
-    border: '3px solid',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  summaryText: { fontSize: 15, fontWeight: 600, color: '#333' },
-  section: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: '12px 16px',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-  },
-  sectionTitle: { fontSize: 13, fontWeight: 'bold', color: '#555', marginBottom: 10 },
-  vitalsGrid: { display: 'flex', flexWrap: 'wrap', gap: 8 },
-  vitalChip: {
-    border: '1px solid',
-    borderRadius: 6,
-    padding: '6px 10px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    minWidth: 70,
-  },
-  issueList: { display: 'flex', flexDirection: 'column', gap: 4 },
-  issueItem: {
-    fontSize: 13,
-    color: '#444',
-    padding: '4px 12px',
-    backgroundColor: '#fff8e1',
-    borderRadius: 4,
-    borderLeft: '3px solid #ff9800',
-  },
-  recList: { display: 'flex', flexDirection: 'column', gap: 8 },
-  recItem: { display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#333' },
-  recNum: {
-    width: 20,
-    height: 20,
-    borderRadius: '50%',
-    backgroundColor: '#7c4dff',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 11,
-    fontWeight: 'bold',
-    flexShrink: 0,
-  },
-  statsRow: { display: 'flex', gap: 10, flexWrap: 'wrap' },
-  statChip: {
-    padding: '6px 12px',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 6,
-    fontSize: 13,
-    color: '#555',
-  },
-};

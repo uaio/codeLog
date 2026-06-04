@@ -1,4 +1,4 @@
-import { CSSProperties, useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -10,8 +10,33 @@ import {
   ReferenceLine,
   Legend,
 } from 'recharts';
+import {
+  Card,
+  Statistic,
+  Tag,
+  Table,
+  Space,
+  Typography,
+  Flex,
+  Segmented,
+  Spin,
+  Empty,
+} from 'antd';
+import {
+  BarChartOutlined,
+  TrophyOutlined,
+  AimOutlined,
+  CodeOutlined,
+  WarningOutlined,
+  InboxOutlined,
+  InteractionOutlined,
+  TagOutlined,
+  DashboardOutlined,
+  HeartOutlined,
+} from '@ant-design/icons';
 import { usePerformance } from '../hooks/usePerformance.js';
 import { useI18n } from '../i18n/index.js';
+import { api } from '../api/client.js';
 import type {
   WebVital,
   PerformanceSample,
@@ -20,6 +45,8 @@ import type {
   InteractionTiming,
   UserMark,
 } from '../types/index.js';
+
+const { Text } = Typography;
 
 interface PerformancePanelProps {
   deviceId?: string;
@@ -36,15 +63,14 @@ const VITAL_THRESHOLDS: Record<string, { good: number; poor: number; unit: strin
     TTFB: { good: 800, poor: 1800, unit: 'ms', desc: 'Time to First Byte' },
   };
 
-const RATING_COLOR: Record<string, string> = {
-  good: '#4caf50',
-  'needs-improvement': '#ff9800',
-  poor: '#f44336',
+const RATING_TAG_COLOR: Record<string, string> = {
+  good: 'success',
+  'needs-improvement': 'warning',
+  poor: 'error',
 };
 
 function VitalCard({ vital }: { vital: WebVital }) {
   const meta = VITAL_THRESHOLDS[vital.name];
-  const color = RATING_COLOR[vital.rating];
   const formatted = meta?.unit === 'ms' ? `${vital.value.toFixed(0)}ms` : vital.value.toFixed(3);
   const { t } = useI18n();
   const ratingLabel: Record<string, string> = {
@@ -54,12 +80,17 @@ function VitalCard({ vital }: { vital: WebVital }) {
   };
 
   return (
-    <div style={{ ...styles.vitalCard, borderTop: `3px solid ${color}` }}>
-      <div style={styles.vitalName}>{vital.name}</div>
-      <div style={{ ...styles.vitalValue, color }}>{formatted}</div>
-      <div style={{ ...styles.vitalRating, color }}>{ratingLabel[vital.rating]}</div>
-      {meta && <div style={styles.vitalDesc}>{meta.desc}</div>}
-    </div>
+    <Card size="small" style={{ borderTop: `3px solid var(--ant-color-${RATING_TAG_COLOR[vital.rating]})` }}>
+      <Statistic
+        title={<Text strong style={{ letterSpacing: 0.5 }}>{vital.name}</Text>}
+        value={formatted}
+        valueStyle={{ fontSize: 20 }}
+      />
+      <div style={{ marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Tag color={RATING_TAG_COLOR[vital.rating]}>{ratingLabel[vital.rating]}</Tag>
+        {meta && <Text type="secondary" style={{ fontSize: 10 }}>{meta.desc}</Text>}
+      </div>
+    </Card>
   );
 }
 
@@ -75,10 +106,10 @@ function formatTime(ts: number): string {
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={styles.tooltip}>
-      <div style={styles.tooltipTime}>{label}</div>
+    <div style={{ backgroundColor: 'var(--ant-color-bg-elevated)', border: '1px solid var(--ant-color-border)', borderRadius: 4, padding: '8px 10px' }}>
+      <div style={{ fontSize: 11, color: 'var(--ant-color-text-secondary)', marginBottom: 4 }}>{label}</div>
       {payload.map((p: any) => (
-        <div key={p.dataKey} style={{ color: p.color, fontSize: '12px' }}>
+        <div key={p.dataKey} style={{ color: p.color, fontSize: 12 }}>
           {p.name}:{' '}
           <strong>
             {p.value}
@@ -93,15 +124,31 @@ function CustomTooltip({ active, payload, label }: any) {
 export function PerformancePanel({ deviceId }: PerformancePanelProps) {
   const { report, loading } = usePerformance(deviceId);
   const [resourceFilter, setResourceFilter] = useState<string>('all');
+  const [healthData, setHealthData] = useState<any>(null);
+  const [healthLoading, setHealthLoading] = useState(false);
+
+  useEffect(() => {
+    if (!deviceId) return;
+    let timer: ReturnType<typeof setInterval>;
+    const fetchHealth = async () => {
+      setHealthLoading(true);
+      try {
+        const data = await api.get(`/api/devices/${deviceId}/health`);
+        setHealthData(data);
+      } catch { /* ignore */ }
+      setHealthLoading(false);
+    };
+    fetchHealth();
+    timer = setInterval(fetchHealth, 10000);
+    return () => clearInterval(timer);
+  }, [deviceId]);
 
   if (!deviceId) {
     return (
-      <div style={styles.container}>
-        <div style={styles.placeholder}>
-          <div style={styles.placeholderIcon}>📊</div>
-          <div style={styles.placeholderText}>从左侧选择设备查看性能数据</div>
-        </div>
-      </div>
+      <Flex vertical align="center" justify="center" style={{ height: '100%' }} gap={12}>
+        <BarChartOutlined style={{ fontSize: 48, opacity: 0.3 }} />
+        <Text type="secondary">从左侧选择设备查看性能数据</Text>
+      </Flex>
     );
   }
 
@@ -140,42 +187,225 @@ export function PerformancePanel({ deviceId }: PerformancePanelProps) {
     return `${(b / 1024).toFixed(1)}KB`;
   }
 
+  // Long Tasks table columns
+  const longTaskColumns = [
+    {
+      title: '开始时间',
+      dataIndex: 'startTime',
+      key: 'startTime',
+      render: (v: number) => `${v.toFixed(0)}ms`,
+    },
+    {
+      title: '耗时',
+      dataIndex: 'duration',
+      key: 'duration',
+      render: (v: number) => (
+        <Text style={{ color: v > 200 ? '#ff4d4f' : '#faad14', fontWeight: 600 }}>{v}ms</Text>
+      ),
+    },
+    {
+      title: '来源',
+      dataIndex: 'name',
+      key: 'name',
+      render: (v: string) => <Text type="secondary" style={{ fontSize: 11 }}>{v}</Text>,
+    },
+  ];
+
+  // Resource Timing table columns
+  const resourceColumns = [
+    {
+      title: 'URL',
+      dataIndex: 'name',
+      key: 'name',
+      width: '50%',
+      render: (v: string) => (
+        <Text code style={{ fontSize: 11 }} ellipsis title={v}>
+          {v.replace(/^https?:\/\/[^/]+/, '').slice(0, 60) || v.slice(0, 60)}
+        </Text>
+      ),
+    },
+    {
+      title: '类型',
+      dataIndex: 'initiatorType',
+      key: 'initiatorType',
+      render: (v: string) => <Text style={{ fontSize: 11, color: '#9cdcfe' }}>{v}</Text>,
+    },
+    {
+      title: '耗时',
+      dataIndex: 'duration',
+      key: 'duration',
+      render: (v: number) => (
+        <Text style={{ color: v > 1000 ? '#ff4d4f' : v > 300 ? '#faad14' : '#52c41a', fontWeight: 600 }}>
+          {v}ms
+        </Text>
+      ),
+    },
+    {
+      title: '大小',
+      dataIndex: 'transferSize',
+      key: 'transferSize',
+      render: (v: number) => <Text type="secondary" style={{ fontSize: 11 }}>{formatBytes(v)}</Text>,
+    },
+  ];
+
+  // Interaction table columns
+  const interactionColumns = [
+    {
+      title: '交互类型',
+      dataIndex: 'type',
+      key: 'type',
+      render: (v: string) => <Text style={{ color: '#9cdcfe' }}>{v}</Text>,
+    },
+    {
+      title: '延迟',
+      dataIndex: 'duration',
+      key: 'duration',
+      render: (v: number) => (
+        <Text style={{ color: v > 200 ? '#ff4d4f' : v > 100 ? '#faad14' : '#52c41a', fontWeight: 600 }}>
+          {v}ms
+        </Text>
+      ),
+    },
+    {
+      title: '目标元素',
+      dataIndex: 'target',
+      key: 'target',
+      render: (v: string) => <Text type="secondary" style={{ fontSize: 11 }}>{v || '—'}</Text>,
+    },
+    {
+      title: '触发时间',
+      dataIndex: 'startTime',
+      key: 'startTime',
+      render: (v: number) => <Text type="secondary" style={{ fontSize: 11 }}>{v.toFixed(0)}ms</Text>,
+    },
+  ];
+
+  // User Marks table columns
+  const userMarkColumns = [
+    {
+      title: '类型',
+      dataIndex: 'type',
+      key: 'type',
+      render: (v: string) => (
+        <Text style={{ color: v === 'measure' ? '#9cdcfe' : '#ce9178', fontSize: 11 }}>{v}</Text>
+      ),
+    },
+    {
+      title: '名称',
+      dataIndex: 'name',
+      key: 'name',
+      width: '45%',
+      render: (v: string) => <Text code style={{ fontSize: 12 }}>{v}</Text>,
+    },
+    {
+      title: '起始 (ms)',
+      dataIndex: 'startTime',
+      key: 'startTime',
+      render: (v: number) => <Text type="secondary" style={{ fontSize: 11 }}>{v.toFixed(1)}</Text>,
+    },
+    {
+      title: '耗时 (ms)',
+      dataIndex: 'duration',
+      key: 'duration',
+      render: (v: number | null) => (
+        <Text style={{ color: v != null ? '#52c41a' : undefined, fontSize: 11 }}>
+          {v != null ? `${v.toFixed(1)}ms` : '—'}
+        </Text>
+      ),
+    },
+  ];
+
   return (
-    <div style={styles.container}>
+    <Flex vertical style={{ height: '100%', overflow: 'hidden' }}>
       {/* Header */}
-      <div style={styles.header}>
-        <h3 style={styles.title}>Performance</h3>
-        {loading && <span style={styles.loadingBadge}>⏳ 加载中</span>}
-        {latestSample && (
-          <span style={styles.liveBadge}>
-            <span style={styles.liveDot} /> LIVE · {latestSample.fps} fps
-            {latestSample.heapUsed !== undefined && ` · 内存 ${latestSample.heapUsed} MB`}
-          </span>
-        )}
+      <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--ant-color-border-secondary)', flexShrink: 0 }}>
+        <Flex align="center" gap={12}>
+          <Text strong style={{ fontSize: 14 }}>Performance</Text>
+          {loading && (
+            <Space>
+              <Spin size="small" />
+              <Text type="secondary" style={{ fontSize: 12 }}>加载中</Text>
+            </Space>
+          )}
+          {latestSample && (
+            <Tag color="success" style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#52c41a', display: 'inline-block' }} />
+              LIVE · {latestSample.fps} fps
+              {latestSample.heapUsed !== undefined && ` · 内存 ${latestSample.heapUsed} MB`}
+            </Tag>
+          )}
+        </Flex>
       </div>
 
-      <div style={styles.body}>
-        {/* Web Vitals 卡片 */}
-        <section style={styles.section}>
-          <div style={styles.sectionTitle}>🏅 Core Web Vitals</div>
-          {!report || report.vitals.length === 0 ? (
-            <div style={styles.emptyHint}>
-              等待设备上报 Web Vitals（需页面交互才能触发部分指标）
-            </div>
+      <div style={{ flex: 1, overflow: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Health Summary */}
+        <Card
+          size="small"
+          title={<Space><HeartOutlined />Health</Space>}
+          style={{ marginBottom: 0 }}
+        >
+          {healthLoading ? (
+            <Spin size="small" />
+          ) : healthData ? (
+            <Flex gap={16} wrap="wrap">
+              <Statistic
+                title="Status"
+                value={healthData.status === 'healthy' ? 'Healthy' : healthData.status === 'warning' ? 'Warning' : 'Critical'}
+                valueStyle={{ color: healthData.status === 'healthy' ? '#52c41a' : healthData.status === 'warning' ? '#faad14' : '#ff4d4f', fontSize: 14 }}
+              />
+              {healthData.metrics && Object.entries(healthData.metrics).map(([key, val]: [string, any]) => (
+                <Statistic
+                  key={key}
+                  title={key}
+                  value={typeof val === 'number' ? (key.toLowerCase().includes('duration') || key.toLowerCase().includes('time') ? `${val}ms` : key.toLowerCase().includes('memory') ? `${val}MB` : val) : String(val)}
+                  valueStyle={{ fontSize: 14 }}
+                />
+              ))}
+            </Flex>
           ) : (
-            <div style={styles.vitalsGrid}>
+            <Typography.Text type="secondary">No health data available</Typography.Text>
+          )}
+        </Card>
+
+        {/* Web Vitals 卡片 */}
+        <Card
+          size="small"
+          title={
+            <Space>
+              <TrophyOutlined />
+              Core Web Vitals
+            </Space>
+          }
+        >
+          {!report || report.vitals.length === 0 ? (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={<Text type="secondary">等待设备上报 Web Vitals（需页面交互才能触发部分指标）</Text>}
+            />
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
               {report.vitals.map((v) => (
                 <VitalCard key={v.name} vital={v} />
               ))}
             </div>
           )}
-        </section>
+        </Card>
 
         {/* FPS 折线图 */}
-        <section style={styles.section}>
-          <div style={styles.sectionTitle}>🎯 FPS（帧率）</div>
+        <Card
+          size="small"
+          title={
+            <Space>
+              <AimOutlined />
+              FPS（帧率）
+            </Space>
+          }
+        >
           {chartData.length === 0 ? (
-            <div style={styles.emptyHint}>等待采样数据（每 3 秒采集一次）...</div>
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={<Text type="secondary">等待采样数据（每 3 秒采集一次）...</Text>}
+            />
           ) : (
             <ResponsiveContainer width="100%" height={180}>
               <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -189,15 +419,15 @@ export function PerformancePanel({ deviceId }: PerformancePanelProps) {
                 <Tooltip content={<CustomTooltip />} />
                 <ReferenceLine
                   y={60}
-                  stroke="#4caf5066"
+                  stroke="#52c41a66"
                   strokeDasharray="4 2"
-                  label={{ value: '60fps', fill: '#4caf50', fontSize: 10 }}
+                  label={{ value: '60fps', fill: '#52c41a', fontSize: 10 }}
                 />
                 <ReferenceLine
                   y={30}
-                  stroke="#ff980066"
+                  stroke="#faad1466"
                   strokeDasharray="4 2"
-                  label={{ value: '30fps', fill: '#ff9800', fontSize: 10 }}
+                  label={{ value: '30fps', fill: '#faad14', fontSize: 10 }}
                 />
                 <Line
                   type="monotone"
@@ -211,12 +441,19 @@ export function PerformancePanel({ deviceId }: PerformancePanelProps) {
               </LineChart>
             </ResponsiveContainer>
           )}
-        </section>
+        </Card>
 
         {/* 内存折线图（仅 Chrome 支持） */}
         {hasMemory && (
-          <section style={styles.section}>
-            <div style={styles.sectionTitle}>🧠 JS 堆内存（MB，仅 Chrome）</div>
+          <Card
+            size="small"
+            title={
+              <Space>
+                <CodeOutlined />
+                JS 堆内存（MB，仅 Chrome）
+              </Space>
+            }
+          >
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -247,367 +484,125 @@ export function PerformancePanel({ deviceId }: PerformancePanelProps) {
                 />
               </LineChart>
             </ResponsiveContainer>
-          </section>
+          </Card>
         )}
 
         {/* Long Tasks */}
-        <section style={styles.section}>
-          <div style={styles.sectionTitle}>
-            🔴 Long Tasks（主线程阻塞 &gt;50ms）
-            {longTasks.length > 0 && <span style={styles.countBadge}>{longTasks.length}</span>}
-          </div>
+        <Card
+          size="small"
+          title={
+            <Space>
+              <WarningOutlined />
+              Long Tasks（主线程阻塞 &gt;50ms）
+              {longTasks.length > 0 && <Tag>{longTasks.length}</Tag>}
+            </Space>
+          }
+        >
           {longTasks.length === 0 ? (
-            <div style={styles.emptyHint}>
-              暂无 Long Task（&gt;50ms 阻塞任务，需浏览器支持 longtask API）
-            </div>
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={<Text type="secondary">暂无 Long Task（&gt;50ms 阻塞任务，需浏览器支持 longtask API）</Text>}
+            />
           ) : (
-            <div style={styles.tableWrap}>
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>开始时间</th>
-                    <th style={styles.th}>耗时</th>
-                    <th style={styles.th}>来源</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...longTasks]
-                    .sort((a, b) => b.duration - a.duration)
-                    .slice(0, 30)
-                    .map((t, i) => (
-                      <tr key={i} style={styles.tr}>
-                        <td style={styles.td}>{t.startTime.toFixed(0)}ms</td>
-                        <td
-                          style={{
-                            ...styles.td,
-                            color: t.duration > 200 ? '#f44336' : '#ff9800',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {t.duration}ms
-                        </td>
-                        <td style={{ ...styles.td, color: '#888', fontSize: '11px' }}>{t.name}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
+            <Table
+              dataSource={[...longTasks].sort((a, b) => b.duration - a.duration).slice(0, 30).map((item, i) => ({ ...item, key: i }))}
+              columns={longTaskColumns}
+              size="small"
+              pagination={false}
+              scroll={{ y: 240 }}
+            />
           )}
-        </section>
+        </Card>
 
         {/* Resource Timing */}
-        <section style={styles.section}>
-          <div
-            style={{ ...styles.sectionTitle, display: 'flex', alignItems: 'center', gap: '10px' }}
-          >
-            <span>📦 资源加载（耗时 Top 50）</span>
-            {resources.length > 0 && <span style={styles.countBadge}>{resources.length} 条</span>}
-            <div style={styles.filterWrap}>
-              {resourceTypes.map((t) => (
-                <button
-                  key={t}
-                  style={{
-                    ...styles.filterBtn,
-                    ...(resourceFilter === t ? styles.filterBtnActive : {}),
-                  }}
-                  onClick={() => setResourceFilter(t)}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
+        <Card
+          size="small"
+          title={
+            <Space>
+              <InboxOutlined />
+              资源加载（耗时 Top 50）
+              {resources.length > 0 && <Tag>{resources.length} 条</Tag>}
+            </Space>
+          }
+          extra={
+            resources.length > 0 ? (
+              <Segmented
+                size="small"
+                value={resourceFilter}
+                onChange={(val) => setResourceFilter(val as string)}
+                options={resourceTypes.map((t) => ({ label: t, value: t }))}
+              />
+            ) : null
+          }
+        >
           {filteredResources.length === 0 ? (
-            <div style={styles.emptyHint}>暂无资源加载数据</div>
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={<Text type="secondary">暂无资源加载数据</Text>}
+            />
           ) : (
-            <div style={styles.tableWrap}>
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={{ ...styles.th, width: '50%' }}>URL</th>
-                    <th style={styles.th}>类型</th>
-                    <th style={styles.th}>耗时</th>
-                    <th style={styles.th}>大小</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredResources.map((r, i) => (
-                    <tr key={i} style={styles.tr}>
-                      <td style={{ ...styles.td, ...styles.urlCell }} title={r.name}>
-                        {r.name.replace(/^https?:\/\/[^/]+/, '').slice(0, 60) ||
-                          r.name.slice(0, 60)}
-                      </td>
-                      <td style={{ ...styles.td, color: '#9cdcfe', fontSize: '11px' }}>
-                        {r.initiatorType}
-                      </td>
-                      <td
-                        style={{
-                          ...styles.td,
-                          color:
-                            r.duration > 1000
-                              ? '#f44336'
-                              : r.duration > 300
-                                ? '#ff9800'
-                                : '#4caf50',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {r.duration}ms
-                      </td>
-                      <td style={{ ...styles.td, color: '#888', fontSize: '11px' }}>
-                        {formatBytes(r.transferSize)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table
+              dataSource={filteredResources.map((item, i) => ({ ...item, key: i }))}
+              columns={resourceColumns}
+              size="small"
+              pagination={false}
+              scroll={{ y: 240 }}
+            />
           )}
-        </section>
+        </Card>
 
         {/* Interactions */}
         {interactions.length > 0 && (
-          <section style={styles.section}>
-            <div style={styles.sectionTitle}>
-              👆 交互延迟（近 {Math.min(interactions.length, 30)} 次）
-              <span style={styles.countBadge}>{interactions.length}</span>
-            </div>
-            <div style={styles.tableWrap}>
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>交互类型</th>
-                    <th style={styles.th}>延迟</th>
-                    <th style={styles.th}>目标元素</th>
-                    <th style={styles.th}>触发时间</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...interactions]
-                    .reverse()
-                    .slice(0, 30)
-                    .map((item, i) => (
-                      <tr key={i} style={styles.tr}>
-                        <td style={{ ...styles.td, color: '#9cdcfe' }}>{item.type}</td>
-                        <td
-                          style={{
-                            ...styles.td,
-                            color:
-                              item.duration > 200
-                                ? '#f44336'
-                                : item.duration > 100
-                                  ? '#ff9800'
-                                  : '#4caf50',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {item.duration}ms
-                        </td>
-                        <td style={{ ...styles.td, color: '#888', fontSize: '11px' }}>
-                          {item.target || '—'}
-                        </td>
-                        <td style={{ ...styles.td, color: '#666', fontSize: '11px' }}>
-                          {item.startTime.toFixed(0)}ms
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+          <Card
+            size="small"
+            title={
+              <Space>
+                <InteractionOutlined />
+                交互延迟（近 {Math.min(interactions.length, 30)} 次）
+                <Tag>{interactions.length}</Tag>
+              </Space>
+            }
+          >
+            <Table
+              dataSource={[...interactions].reverse().slice(0, 30).map((item, i) => ({ ...item, key: i }))}
+              columns={interactionColumns}
+              size="small"
+              pagination={false}
+              scroll={{ y: 240 }}
+            />
+          </Card>
         )}
 
         {/* User Timing Marks & Measures */}
         {userMarks.length > 0 && (
-          <section style={styles.section}>
-            <div style={styles.sectionTitle}>
-              🏷️ 自定义标记 (performance.mark / measure)
-              <span style={styles.countBadge}>{userMarks.length}</span>
-            </div>
-            <div style={styles.tableWrap}>
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>类型</th>
-                    <th style={{ ...styles.th, width: '45%' }}>名称</th>
-                    <th style={styles.th}>起始 (ms)</th>
-                    <th style={styles.th}>耗时 (ms)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...userMarks].slice(-50).reverse().map((m, i) => (
-                    <tr key={i} style={styles.tr}>
-                      <td style={{ ...styles.td, color: m.type === 'measure' ? '#9cdcfe' : '#ce9178', fontSize: '11px' }}>
-                        {m.type}
-                      </td>
-                      <td style={{ ...styles.td, fontFamily: 'monospace', fontSize: '12px' }} title={m.name}>
-                        {m.name}
-                      </td>
-                      <td style={{ ...styles.td, color: '#888', fontSize: '11px' }}>
-                        {m.startTime.toFixed(1)}
-                      </td>
-                      <td style={{ ...styles.td, color: m.duration != null ? '#4caf50' : '#666', fontSize: '11px' }}>
-                        {m.duration != null ? `${m.duration.toFixed(1)}ms` : '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+          <Card
+            size="small"
+            title={
+              <Space>
+                <TagOutlined />
+                自定义标记 (performance.mark / measure)
+                <Tag>{userMarks.length}</Tag>
+              </Space>
+            }
+          >
+            <Table
+              dataSource={[...userMarks].slice(-50).reverse().map((item, i) => ({ ...item, key: i }))}
+              columns={userMarkColumns}
+              size="small"
+              pagination={false}
+              scroll={{ y: 240 }}
+            />
+          </Card>
         )}
 
         {/* 无数据兜底 */}
         {!loading && !report && (
-          <div style={styles.noData}>
-            <span style={{ fontSize: 32, opacity: 0.3 }}>📡</span>
-            <span>等待设备接入并上报性能数据...</span>
-          </div>
+          <Flex vertical align="center" justify="center" gap={10} style={{ padding: '60px 0' }}>
+            <DashboardOutlined style={{ fontSize: 32, opacity: 0.3 }} />
+            <Text type="secondary">等待设备接入并上报性能数据...</Text>
+          </Flex>
         )}
       </div>
-    </div>
+    </Flex>
   );
 }
-
-const styles: Record<string, CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    backgroundColor: '#1e1e1e',
-    overflow: 'hidden',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    flexShrink: 0,
-    padding: '10px 16px',
-    borderBottom: '1px solid #333',
-    backgroundColor: '#252526',
-  },
-  title: { margin: 0, fontSize: '14px', fontWeight: 600, color: '#ccc' },
-  loadingBadge: { fontSize: '12px', color: '#888' },
-  liveBadge: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '5px',
-    fontSize: '12px',
-    color: '#4fc3f7',
-    marginLeft: 'auto',
-  },
-  liveDot: {
-    width: 7,
-    height: 7,
-    borderRadius: '50%',
-    backgroundColor: '#4caf50',
-    display: 'inline-block',
-  },
-  body: {
-    flex: 1,
-    overflow: 'auto',
-    padding: '12px 16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  section: { backgroundColor: '#252526', borderRadius: '6px', padding: '12px' },
-  sectionTitle: {
-    fontSize: '13px',
-    fontWeight: 600,
-    color: '#bbb',
-    marginBottom: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    flexWrap: 'wrap',
-  },
-  vitalsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
-    gap: '10px',
-  },
-  vitalCard: {
-    backgroundColor: '#1e1e1e',
-    borderRadius: '6px',
-    padding: '10px 12px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  vitalName: { fontSize: '13px', fontWeight: 700, color: '#9cdcfe', letterSpacing: '0.5px' },
-  vitalValue: { fontSize: '20px', fontWeight: 700, lineHeight: 1.2 },
-  vitalRating: { fontSize: '11px', fontWeight: 500 },
-  vitalDesc: { fontSize: '10px', color: '#555', marginTop: '2px' },
-  emptyHint: { fontSize: '12px', color: '#555', padding: '8px 0', fontStyle: 'italic' },
-  noData: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    padding: '60px 0',
-    color: '#555',
-    fontSize: '13px',
-  },
-  tooltip: {
-    backgroundColor: '#1e1e1e',
-    border: '1px solid #444',
-    borderRadius: 4,
-    padding: '8px 10px',
-  },
-  tooltipTime: { fontSize: '11px', color: '#888', marginBottom: 4 },
-  placeholder: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: '#555',
-    gap: '12px',
-  },
-  placeholderIcon: { fontSize: '48px', opacity: 0.3 },
-  placeholderText: { fontSize: '14px' },
-  countBadge: {
-    backgroundColor: '#333',
-    color: '#888',
-    borderRadius: '10px',
-    padding: '1px 7px',
-    fontSize: '11px',
-    fontWeight: 'normal',
-  },
-  tableWrap: { overflowX: 'auto', maxHeight: '240px', overflowY: 'auto' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '12px' },
-  th: {
-    textAlign: 'left',
-    padding: '6px 10px',
-    color: '#666',
-    fontWeight: 500,
-    borderBottom: '1px solid #333',
-    position: 'sticky',
-    top: 0,
-    backgroundColor: '#252526',
-  },
-  tr: { borderBottom: '1px solid #2a2a2a' },
-  td: { padding: '5px 10px', verticalAlign: 'top', color: '#ccc' },
-  urlCell: {
-    fontFamily: 'monospace',
-    fontSize: '11px',
-    color: '#9cdcfe',
-    maxWidth: '300px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  filterWrap: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginLeft: 'auto' },
-  filterBtn: {
-    padding: '2px 8px',
-    fontSize: '11px',
-    border: '1px solid #444',
-    borderRadius: '3px',
-    backgroundColor: 'transparent',
-    color: '#777',
-    cursor: 'pointer',
-  },
-  filterBtnActive: { backgroundColor: '#1890ff22', borderColor: '#1890ff', color: '#4fc3f7' },
-};

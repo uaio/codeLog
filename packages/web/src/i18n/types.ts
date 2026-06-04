@@ -6,14 +6,12 @@ export interface Locale {
     storage: string;
     dom: string;
     perf: string;
-    health: string;
     analysis: string;
     settings: string;
     mock: string;
     system: string;
     indexeddb: string;
     errors: string;
-    perfRun: string;
     offlineLogs: string;
     screenshot: string;
     plugins: string;

@@ -359,6 +359,7 @@ export class Reporter {
       bus.on('performance', (report) => this.reportPerformance(report)),
       bus.on('screenshot', (data) => this.reportScreenshot(data)),
       bus.on('perf_run_raw', (payload) => this.reportPerfRunRaw(payload)),
+      bus.on('system', (payload) => this.sendEnvelope('system', payload)),
     ];
   }
 
